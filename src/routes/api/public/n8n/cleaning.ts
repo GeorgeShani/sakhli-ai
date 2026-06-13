@@ -44,11 +44,27 @@ export const Route = createFileRoute("/api/public/n8n/cleaning")({
         const notified = body.notified === true;
 
         if (task_id) {
-          const patch: Record<string, unknown> = {};
-          for (const k of ["cleaner_name", "cleaner_phone", "scheduled_for", "status", "notes", "booking_id"] as const) {
-            const v = body[k];
-            if (typeof v === "string" && v.length > 0) patch[k] = v;
-          }
+          const patch: {
+            cleaner_name?: string;
+            cleaner_phone?: string;
+            scheduled_for?: string;
+            status?: string;
+            notes?: string;
+            booking_id?: string;
+            notified_at?: string;
+          } = {};
+          const cn = str(body.cleaner_name);
+          if (cn) patch.cleaner_name = cn;
+          const cp = str(body.cleaner_phone);
+          if (cp) patch.cleaner_phone = cp;
+          const sf = str(body.scheduled_for);
+          if (sf) patch.scheduled_for = sf;
+          const st = str(body.status);
+          if (st) patch.status = st;
+          const nt = str(body.notes);
+          if (nt) patch.notes = nt;
+          const bi = str(body.booking_id);
+          if (bi) patch.booking_id = bi;
           if (notified) patch.notified_at = new Date().toISOString();
           const { data, error } = await supabaseAdmin
             .from("cleaning_tasks")
