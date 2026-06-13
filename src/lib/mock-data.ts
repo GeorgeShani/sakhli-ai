@@ -24,17 +24,23 @@ export type Flatmate = {
   salaryBracket: SalaryBracket;
   incomeSource: IncomeSource;
   verified: boolean;
+  /** When set, fitScoreForFlatmate returns this exact AI-curated score. */
+  aiPremiumScore?: number;
 };
 
 export type Property = {
   id: string;
   title: string;
   district: string;
+  address?: string;
+  description?: string;
   price: number;
   bedrooms: number;
   flatmatesNeeded: number;
   amenities: string[];
   image: string;
+  /** When set, fitScoreForProperty returns this exact AI-curated score. */
+  aiPremiumScore?: number;
 };
 
 const avatars = (seed: string) =>
