@@ -5,6 +5,7 @@ import { LanguageToggle } from "./LanguageToggle";
 import { ThemeToggle } from "./ThemeToggle";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
+import { useProfile } from "@/lib/student-store";
 
 export function AppHeader() {
   const { t } = useI18n();
