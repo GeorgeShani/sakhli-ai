@@ -231,12 +231,9 @@ function OnboardingInner() {
           )}
 
           {step === 6 && (
-            <StudentIdUpload
-              fileName={studentIdName}
-              onFile={(name) => {
-                setStudentIdName(name);
-                update("verified", true);
-              }}
+            <AcademicEmailVerify
+              verified={profile.verified}
+              onVerified={() => update("verified", true)}
             />
           )}
 
