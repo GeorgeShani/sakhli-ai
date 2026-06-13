@@ -7,6 +7,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useI18n } from "@/lib/i18n";
 import {
   defaultProfile,
@@ -17,8 +19,9 @@ import {
   type IncomeSource,
   SALARY_RANGES,
   INCOME_SOURCE_LABEL,
+  INCOME_SOURCE_LABEL_KA,
 } from "@/lib/student-store";
-import { ArrowLeft, ArrowRight, Check, Wallet } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Wallet, Briefcase } from "lucide-react";
 
 export const Route = createFileRoute("/onboarding")({
   head: () => ({
@@ -30,7 +33,7 @@ export const Route = createFileRoute("/onboarding")({
   component: OnboardingPage,
 });
 
-const TOTAL = 7;
+const TOTAL = 8;
 
 function OnboardingPage() {
   const { t } = useI18n();
