@@ -109,12 +109,22 @@ function AuthCard() {
           <h2 className="mt-3 font-display text-2xl font-bold tracking-tight">
             ავტორიზაცია / Access Restricted
           </h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            გთხოვთ გაიაროთ ავტორიზაცია ფუნქციონალის სრულად გამოსაყენებლად
+          <p className="mt-2 text-sm text-foreground/80">
+            საუკეთესო თანამცხოვრებლებისა და ბინების სანახავად საჭიროა ავტორიზაცია.
+            თქვენ შეგიძლიათ დაბრუნდეთ მთავარ გვერდზე სტუმრის სტატუსით.
           </p>
           <p className="mt-1 text-xs text-muted-foreground">
-            Please log in to unlock SakhliAI matching and property automation.
+            Authentication required to see matches. You can return to the main page as a guest.
           </p>
+          <Button
+            variant="outline"
+            size="sm"
+            className="mt-4 w-full"
+            onClick={() => navigate({ to: "/" })}
+          >
+            <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />
+            უკან დაბრუნება / Go Back to Homepage
+          </Button>
         </div>
 
         <div className="p-6">
