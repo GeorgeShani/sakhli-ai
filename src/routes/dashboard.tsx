@@ -60,18 +60,25 @@ type Tab = "matches" | "utilities";
 function DashboardPage() {
   const { t } = useI18n();
   const { profile } = useProfile();
-  const { matches } = useMatches();
+  const { matches, record } = useMatches();
   const [tab, setTab] = useState<Tab>("matches");
+  const [selectedFlatmate, setSelectedFlatmate] = useState<Flatmate | null>(null);
 
   const likedPeople = matches
     .filter((m) => m.kind === "person" && m.liked)
     .map((m) => flatmates.find((f) => f.id === m.id))
-    .filter(Boolean);
+    .filter((f): f is Flatmate => Boolean(f));
 
   const likedPlaces = matches
     .filter((m) => m.kind === "place" && m.liked)
     .map((m) => properties.find((p) => p.id === m.id))
     .filter(Boolean);
+
+  const handleUnmatch = (id: string) => {
+    record("person", id, false);
+    setSelectedFlatmate(null);
+  };
+
 
   const tabBtn = (v: Tab, label: string) => (
     <button
