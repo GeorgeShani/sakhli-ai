@@ -4,6 +4,7 @@ import { AppHeader } from "@/components/AppHeader";
 import { AuthGate } from "@/components/AuthGate";
 import { SmartContractCard } from "@/components/SmartContract";
 import { DisputeResolver } from "@/components/DisputeResolver";
+import { CommuteWidget } from "@/components/CommuteWidget";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
