@@ -58,7 +58,15 @@ export function AppHeader() {
             <>
               <Button asChild size="sm" variant="ghost" className="hidden sm:inline-flex" title="User settings">
                 <Link to="/settings">
-                  <UserIcon className="mr-1 h-3.5 w-3.5" />
+                  {studentProfile?.avatar ? (
+                    <img
+                      src={studentProfile.avatar}
+                      alt="avatar"
+                      className="mr-1 h-6 w-6 rounded-full border border-primary/40 object-cover"
+                    />
+                  ) : (
+                    <UserIcon className="mr-1 h-3.5 w-3.5" />
+                  )}
                   {profile?.role ?? "account"}
                 </Link>
               </Button>
