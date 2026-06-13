@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { AppHeader } from "@/components/AppHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +7,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useI18n } from "@/lib/i18n";
 import {
   defaultProfile,
@@ -15,6 +22,17 @@ import {
   type StudentProfile,
 } from "@/lib/student-store";
 import { ArrowLeft, ArrowRight, Check, Upload, ShieldCheck, FileText } from "lucide-react";
+
+const GE_UNIVERSITIES: { value: string; label: string }[] = [
+  { value: "თბილისის სახელმწიფო უნივერსიტეტი (TSU)", label: "თბილისის სახელმწიფო უნივერსიტეტი (TSU)" },
+  { value: "ილიას სახელმწიფო უნივერსიტეტი (Iliauni)", label: "ილიას სახელმწიფო უნივერსიტეტი (Iliauni)" },
+  { value: "საქართველოს ტექნიკური უნივერსიტეტი (GTU)", label: "საქართველოს ტექნიკური უნივერსიტეტი (GTU)" },
+  { value: "თავისუფალი უნივერსიტეტი (Freeuni)", label: "თავისუფალი უნივერსიტეტი (Freeuni)" },
+  { value: "ბიზნესისა და ტექნოლოგიების უნივერსიტეტი (BTU)", label: "ბიზნესისა და ტექნოლოგიების უნივერსიტეტი (BTU)" },
+  { value: "ქუთაისის საერთაშორისო უნივერსიტეტი (KIU)", label: "ქუთაისის საერთაშორისო უნივერსიტეტი (KIU)" },
+  { value: "შავი ზღვის საერთაშორისო უნივერსიტეტი (IBSU)", label: "შავი ზღვის საერთაშორისო უნივერსიტეტი (IBSU)" },
+];
+const OTHER_VALUE = "__other__";
 
 export const Route = createFileRoute("/onboarding")({
   head: () => ({
