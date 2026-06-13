@@ -23,6 +23,7 @@ export type Flatmate = {
   avatar: string;
   salaryBracket: SalaryBracket;
   incomeSource: IncomeSource;
+  verified: boolean;
 };
 
 export type Property = {
