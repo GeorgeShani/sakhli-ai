@@ -630,8 +630,57 @@ function UtilitySplitter({
             <div className="font-display text-2xl font-bold">₾ {total.toFixed(2)}</div>
             <div className="mt-1 text-[11px] opacity-70">{mode === "movein" ? "Split by move-in days" : "Equal split"}</div>
           </div>
+
+          {/* Localized payment */}
+          <div className="mt-4 rounded-xl border border-border bg-card p-4">
+            <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              გადახდა · Proceed to Pay
+            </div>
+            {payStatus === "paid" ? (
+              <div className="mt-3 flex items-center gap-2 rounded-lg border border-emerald-500/60 bg-emerald-500/10 px-3 py-3 text-sm font-semibold text-emerald-600 shadow-[0_0_24px_rgba(16,185,129,0.45)] dark:text-emerald-400">
+                <CheckCircle2 className="h-5 w-5" />
+                <div className="flex-1">
+                  გადახდილია წარმატებით · Paid Successfully
+                  <div className="text-[11px] font-normal opacity-80">
+                    via {payBank === "TBC" ? "TBC Bank" : "Bank of Georgia"} · ₾{total.toFixed(2)}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => pay("TBC")}
+                  disabled={payStatus === "processing"}
+                  className="group relative flex flex-col items-center justify-center gap-1 rounded-lg border border-[#00669b]/40 bg-gradient-to-br from-[#00669b] to-[#004e7c] px-3 py-3 text-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg disabled:cursor-wait disabled:opacity-70"
+                >
+                  {payStatus === "processing" && payBank === "TBC" ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <span className="font-display text-base font-extrabold tracking-tight">TBC</span>
+                  )}
+                  <span className="text-[10px] uppercase opacity-90">TBC Bank</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => pay("BOG")}
+                  disabled={payStatus === "processing"}
+                  className="group relative flex flex-col items-center justify-center gap-1 rounded-lg border border-[#ff6f00]/40 bg-gradient-to-br from-[#ff6f00] to-[#cc4f00] px-3 py-3 text-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg disabled:cursor-wait disabled:opacity-70"
+                >
+                  {payStatus === "processing" && payBank === "BOG" ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <span className="font-display text-base font-extrabold tracking-tight">BOG</span>
+                  )}
+                  <span className="text-[10px] uppercase opacity-90">Bank of Georgia</span>
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
+
+
 
       {/* Per-person breakdown */}
       <div className="card-elevated p-5">
