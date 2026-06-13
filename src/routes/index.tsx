@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppHeader } from "@/components/AppHeader";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n";
-import { ArrowRight, Sparkles, Users, Wallet } from "lucide-react";
+import { ArrowRight, Sparkles, Users, Wallet, UsersRound, FileCheck2, MapPin, ShieldCheck, Workflow, GraduationCap } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
