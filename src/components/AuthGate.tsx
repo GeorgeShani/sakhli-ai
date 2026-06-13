@@ -1,10 +1,10 @@
 import { useState, type ReactNode } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Lock, ShieldCheck, Sparkles, Loader2 } from "lucide-react";
+import { ArrowLeft, Lock, ShieldCheck, Sparkles, Loader2 } from "lucide-react";
 
 type Props = {
   children: ReactNode;
