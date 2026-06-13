@@ -19,6 +19,7 @@ export type StudentProfile = {
   salaryBracket: SalaryBracket;
   incomeSource: IncomeSource;
   incomeSources?: IncomeSource[];
+  avatar?: string;
 };
 
 export type Match = {
