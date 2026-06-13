@@ -10,12 +10,12 @@ const TEMPLATES: Record<"en" | "ka", string[]> = {
   en: [
     "How can I reduce my winter gas utility bill?",
     "What is the safest student neighborhood in Tbilisi?",
-    "How does the SakliAI hybrid revenue model benefit me?",
+    "How does the SakhliAI hybrid revenue model benefit me?",
   ],
   ka: [
     "როგორ შევამცირო ზამთრის გაზის გადასახადი?",
     "რომელია ყველაზე უსაფრთხო სტუდენტური უბანი თბილისში?",
-    "როგორ მეხმარება SakliAI-ის ჰიბრიდული გაქირავების მოდელი?",
+    "როგორ მეხმარება SakhliAI-ის ჰიბრიდული გაქირავების მოდელი?",
   ],
 };
 

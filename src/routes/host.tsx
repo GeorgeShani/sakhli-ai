@@ -401,7 +401,7 @@ function HeroAnalytics({ occupancy, revenue }: { occupancy: number; revenue: num
     <TrendingUp className="w-5 h-5 text-accent" />
   );
   const tipText = lowOccupancy
-    ? "დაბალი დატვირთულობა. ჩართეთ 15%-იანი სტუდენტური ფასდაკლება SakliAI-ზე გრძელვადიანი მდგმურის სწრაფად საპოვნელად / Low occupancy. Activate a 15% Student Discount on SakliAI to secure a long-term tenant immediately."
+    ? "დაბალი დატვირთულობა. ჩართეთ 15%-იანი სტუდენტური ფასდაკლება SakhliAI-ზე გრძელვადიანი მდგმურის სწრაფად საპოვნელად / Low occupancy. Activate a 15% Student Discount on SakhliAI to secure a long-term tenant immediately."
     : "რეკომენდაცია: Airbnb პრიორიტეტი (Airbnb Priority). გადართეთ მოკლევადიან გაქირავებაზე ტურისტული სეზონის პიკისას შემოსავლის 2.5x-ით გასაზრდელად / Recommendation: Switch to Airbnb Priority during active short-term tourist windows to maximize hybrid yield.";
 
   return (
