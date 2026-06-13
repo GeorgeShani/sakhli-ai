@@ -64,18 +64,14 @@ function MatchesPage() {
     const ranked = flatmates
       .map((f) => ({ f, fit: fitScoreForFlatmate(effectiveProfile, f) }))
       .sort((a, b) => b.fit.score - a.fit.score);
-    if (!aiBestFit) return ranked;
-    const top = ranked.filter((r) => r.fit.score > 85);
-    return [...top, ...ranked.filter((r) => r.fit.score <= 85)];
+    return aiBestFit ? ranked.filter((r) => r.fit.score >= 85) : ranked;
   }, [effectiveProfile, aiBestFit]);
 
   const placeStack = useMemo(() => {
     const ranked = properties
       .map((p) => ({ p, fit: fitScoreForProperty(effectiveProfile, p) }))
       .sort((a, b) => b.fit.score - a.fit.score);
-    if (!aiBestFit) return ranked;
-    const top = ranked.filter((r) => r.fit.score > 85);
-    return [...top, ...ranked.filter((r) => r.fit.score <= 85)];
+    return aiBestFit ? ranked.filter((r) => r.fit.score >= 85) : ranked;
   }, [effectiveProfile, aiBestFit]);
 
   if (!loaded) return null;
@@ -144,7 +140,7 @@ function MatchesPage() {
             <div>
               <div className="text-xs font-semibold uppercase tracking-wide">AI Best Fit</div>
               <div className="text-[11px] text-muted-foreground">
-                Prioritize matches above 85% · &gt;85%-ის პრიორიტეტი
+                Show only matches ≥ 85% · მხოლოდ ≥85%-ის ჩვენება
               </div>
             </div>
           </div>

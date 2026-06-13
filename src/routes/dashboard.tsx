@@ -12,7 +12,8 @@ import { flatmates, properties } from "@/lib/mock-data";
 import {
   Droplet,
   Flame,
-  MessageCircle,
+  Home,
+  MapPin,
   Plus,
   Send,
   ShieldCheck,
@@ -37,7 +38,7 @@ export const Route = createFileRoute("/dashboard")({
   ),
 });
 
-type Tab = "matches" | "utilities" | "chat";
+type Tab = "matches" | "utilities";
 
 function DashboardPage() {
   const { t } = useI18n();
@@ -86,7 +87,6 @@ function DashboardPage() {
         <div className="mt-6 flex rounded-lg border border-border bg-secondary p-1">
           {tabBtn("matches", t("dashboard.tab.matches"))}
           {tabBtn("utilities", t("dashboard.tab.utilities"))}
-          {tabBtn("chat", t("dashboard.tab.chat"))}
         </div>
 
         <div className="mt-6">
@@ -142,8 +142,12 @@ function DashboardPage() {
             </div>
           )}
 
-          {tab === "utilities" && <UtilitySplitter flatmateNames={likedPeople.map((f) => f!.name)} />}
-          {tab === "chat" && <ChatPanel matchedNames={likedPeople.map((f) => f!.name)} />}
+          {tab === "utilities" && (
+            <UtilitySplitter
+              flatmateNames={likedPeople.map((f) => f!.name)}
+              activeProperty={likedPlaces[0] ?? undefined}
+            />
+          )}
         </div>
       </div>
     </div>
@@ -199,7 +203,13 @@ const CATEGORY_ICONS: Record<string, typeof Zap> = {
 
 type Roommate = { id: string; name: string; moveInDay: number };
 
-function UtilitySplitter({ flatmateNames }: { flatmateNames: string[] }) {
+function UtilitySplitter({
+  flatmateNames,
+  activeProperty,
+}: {
+  flatmateNames: string[];
+  activeProperty?: (typeof properties)[number];
+}) {
   const { t } = useI18n();
   const [bills, setBills] = useState<Bill[]>([
     { id: "1", category: "Electricity", icon: Zap, amount: 140 },
@@ -238,14 +248,41 @@ function UtilitySplitter({ flatmateNames }: { flatmateNames: string[] }) {
 
   return (
     <div className="space-y-6">
-      <div className="card-elevated p-5">
-        <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="card-elevated overflow-hidden">
+        {activeProperty ? (
+          <div className="flex flex-col gap-4 border-b border-border bg-gradient-to-r from-primary/10 via-accent/10 to-primary/5 p-5 sm:flex-row sm:items-center">
+            <div
+              className="h-20 w-28 shrink-0 rounded-lg bg-cover bg-center shadow-sm"
+              style={{ backgroundImage: `url(${activeProperty.image})` }}
+            />
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-primary">
+                <Home className="h-3.5 w-3.5" /> კომუნალურების დაყოფა · Splitting bills for
+              </div>
+              <div className="mt-0.5 truncate font-display text-lg font-semibold">
+                {activeProperty.title}
+              </div>
+              <div className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
+                <MapPin className="h-3.5 w-3.5" /> {activeProperty.district} · ₾{activeProperty.price}/mo
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 border-b border-dashed border-border bg-muted/40 p-4 text-xs text-muted-foreground">
+            <Home className="h-4 w-4" />
+            აირჩიეთ ან მონიშნეთ ბინა Matches გვერდზე, რომ კალკულატორი დაუკავშირდეს კონკრეტულ ბინას.
+          </div>
+        )}
+
+        <div className="flex flex-wrap items-center justify-between gap-3 p-5">
           <div>
             <h2 className="font-display text-lg font-semibold">
               AI Utility Bill Splitter · სტუდენტური კომუნალურების გამყოფი
             </h2>
             <p className="text-sm text-muted-foreground">
-              Track monthly utilities and split fairly by move-in dates or equally.
+              {activeProperty
+                ? `მონაცემები ეხება: ${activeProperty.title}`
+                : "Track monthly utilities and split fairly by move-in dates or equally."}
             </p>
           </div>
           <div className="flex rounded-md border border-border bg-secondary p-1 text-xs">
@@ -436,89 +473,3 @@ function UtilitySplitter({ flatmateNames }: { flatmateNames: string[] }) {
   );
 }
 
-type Msg = { from: "me" | "them"; text: string };
-
-function ChatPanel({ matchedNames }: { matchedNames: string[] }) {
-  const { t } = useI18n();
-  const [active, setActive] = useState<string | null>(matchedNames[0] ?? null);
-  const [thread, setThread] = useState<Record<string, Msg[]>>({});
-  const [draft, setDraft] = useState("");
-
-  if (matchedNames.length === 0) {
-    return (
-      <div className="card-elevated p-10 text-center">
-        <MessageCircle className="mx-auto h-8 w-8 text-muted-foreground" />
-        <p className="mt-3 text-sm text-muted-foreground">{t("chat.empty")}</p>
-      </div>
-    );
-  }
-
-  const send = () => {
-    if (!active || !draft.trim()) return;
-    setThread((th) => ({
-      ...th,
-      [active]: [...(th[active] ?? []), { from: "me", text: draft.trim() }],
-    }));
-    setDraft("");
-    setTimeout(() => {
-      setThread((th) => ({
-        ...th,
-        [active]: [
-          ...(th[active] ?? []),
-          { from: "them", text: "Hey! Thanks for reaching out 🙂" },
-        ],
-      }));
-    }, 700);
-  };
-
-  const messages = active ? thread[active] ?? [] : [];
-
-  return (
-    <div className="grid gap-3 md:grid-cols-[220px_1fr]">
-      <div className="card-elevated h-fit p-2">
-        {matchedNames.map((n) => (
-          <button
-            key={n}
-            onClick={() => setActive(n)}
-            className={[
-              "block w-full rounded-md px-3 py-2 text-left text-sm transition-colors",
-              active === n ? "bg-secondary font-medium" : "hover:bg-secondary/60",
-            ].join(" ")}
-          >
-            {n}
-          </button>
-        ))}
-      </div>
-      <div className="card-elevated flex h-[440px] flex-col">
-        <div className="border-b border-border px-4 py-3 font-medium">{active}</div>
-        <div className="flex-1 space-y-2 overflow-y-auto p-4">
-          {messages.length === 0 && (
-            <div className="text-center text-xs text-muted-foreground">{t("chat.title")}</div>
-          )}
-          {messages.map((m, i) => (
-            <div
-              key={i}
-              className={[
-                "max-w-[75%] rounded-2xl px-3 py-2 text-sm",
-                m.from === "me"
-                  ? "ml-auto bg-primary text-primary-foreground"
-                  : "bg-secondary text-secondary-foreground",
-              ].join(" ")}
-            >
-              {m.text}
-            </div>
-          ))}
-        </div>
-        <div className="flex items-center gap-2 border-t border-border p-3">
-          <Input
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && send()}
-            placeholder={t("chat.placeholder")}
-          />
-          <Button onClick={send}>{t("chat.send")}</Button>
-        </div>
-      </div>
-    </div>
-  );
-}
