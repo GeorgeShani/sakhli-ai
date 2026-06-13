@@ -17,6 +17,7 @@ export type StudentProfile = {
   bio: string;
   salaryBracket: SalaryBracket;
   incomeSource: IncomeSource;
+  incomeSources?: IncomeSource[];
 };
 
 export type Match = {
@@ -41,14 +42,15 @@ export const defaultProfile: StudentProfile = {
   bio: "",
   salaryBracket: "500_1000",
   incomeSource: "family",
+  incomeSources: ["family"],
 };
 
-/* Salary bracket → estimated monthly income range (GEL) */
-export const SALARY_RANGES: Record<SalaryBracket, { min: number; max: number; label: string }> = {
-  under_500: { min: 0, max: 500, label: "< ₾500" },
-  "500_1000": { min: 500, max: 1000, label: "₾500–1,000" },
-  "1000_2000": { min: 1000, max: 2000, label: "₾1,000–2,000" },
-  "2000_plus": { min: 2000, max: 4000, label: "₾2,000+" },
+/* Salary bracket → estimated monthly income range (GEL), bilingual labels */
+export const SALARY_RANGES: Record<SalaryBracket, { min: number; max: number; label: string; labelKa: string }> = {
+  under_500: { min: 0, max: 500, label: "< 500 GEL", labelKa: "< 500 ლარი" },
+  "500_1000": { min: 500, max: 1000, label: "500 – 1,000 GEL", labelKa: "500 – 1,000 ლარი" },
+  "1000_2000": { min: 1000, max: 2000, label: "1,000 – 2,000 GEL", labelKa: "1,000 – 2,000 ლარი" },
+  "2000_plus": { min: 2000, max: 4000, label: "2,000+ GEL", labelKa: "2,000+ ლარი" },
 };
 
 export const INCOME_SOURCE_LABEL: Record<IncomeSource, string> = {
@@ -56,6 +58,13 @@ export const INCOME_SOURCE_LABEL: Record<IncomeSource, string> = {
   family: "Family",
   scholarship: "Scholarship",
   mixed: "Mixed",
+};
+
+export const INCOME_SOURCE_LABEL_KA: Record<IncomeSource, string> = {
+  job: "სამსახური",
+  family: "ოჯახი",
+  scholarship: "სტიპენდია",
+  mixed: "შერეული",
 };
 
 function read<T>(key: string, fallback: T): T {
