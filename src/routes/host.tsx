@@ -16,6 +16,8 @@ import {
 import { screenApplicant } from "@/lib/mock-data";
 import { supabase } from "@/integrations/supabase/client";
 import { AppHeader } from "@/components/AppHeader";
+import { DemandMap } from "@/components/DemandMap";
+import { SmartContractCard } from "@/components/SmartContract";
 import { AuthGate } from "@/components/AuthGate";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -239,6 +241,26 @@ function HostPage() {
 
         {/* AI Smart Rent Predictor */}
         <SmartRentPredictor />
+
+        {/* Interactive Demand Map */}
+        <div className="mb-6">
+          <DemandMap />
+        </div>
+
+        {/* Featured Smart Contract */}
+        {properties[0] && (
+          <div className="mb-6">
+            <SmartContractCard
+              propertyTitle={properties[0].title}
+              district={properties[0].city ?? "Tbilisi"}
+              monthlyRent={Number(properties[0].price_per_night ?? 1500)}
+              tenantName="Nino K."
+              hostName="You"
+            />
+          </div>
+        )}
+
+
 
 
         {/* Stats */}

@@ -2,6 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { AppHeader } from "@/components/AppHeader";
 import { AuthGate } from "@/components/AuthGate";
+import { SmartContractCard } from "@/components/SmartContract";
+import { DisputeResolver } from "@/components/DisputeResolver";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -135,6 +137,16 @@ function DashboardPage() {
                           </div>
                         ))}
                       </div>
+                    </section>
+                  )}
+                  {likedPlaces[0] && (
+                    <section>
+                      <SmartContractCard
+                        propertyTitle={likedPlaces[0]!.title}
+                        district={likedPlaces[0]!.district}
+                        monthlyRent={likedPlaces[0]!.price}
+                        tenantName={profile?.name || "Student"}
+                      />
                     </section>
                   )}
                 </>
@@ -467,6 +479,17 @@ function UtilitySplitter({
           </div>
         </div>
       </div>
+
+      <div className="card-elevated p-5">
+        <div className="mb-2 text-xs uppercase tracking-wide text-muted-foreground">
+          AI House Rules · კონფლიქტების მედიატორი
+        </div>
+        <p className="mb-3 text-sm text-muted-foreground">
+          არ ეთანხმები flatmate-ს? AI გააანალიზებს onboarding-ის ჩვევებს და გასცემს კომპრომისს.
+        </p>
+        <DisputeResolver />
+      </div>
+
       {/* hidden text helper for i18n keys referenced elsewhere */}
       <span className="sr-only">{t("utilities.total")}</span>
     </div>

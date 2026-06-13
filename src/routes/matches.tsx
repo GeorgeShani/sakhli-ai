@@ -19,6 +19,7 @@ import {
   type FitScore,
   type AssistantBullet,
 } from "@/lib/mock-data";
+import { CommuteWidget } from "@/components/CommuteWidget";
 import {
   Bed,
   MapPin,
@@ -333,6 +334,7 @@ function AssistantBubble({ bullets }: { bullets: AssistantBullet[] }) {
 
 function PlaceCard({ data }: { data: { p: Property; fit: FitScore } }) {
   const { p, fit } = data;
+  const { profile } = useProfile();
   return (
     <div>
       <div
@@ -362,6 +364,7 @@ function PlaceCard({ data }: { data: { p: Property; fit: FitScore } }) {
             <Pill key={a}>{a}</Pill>
           ))}
         </div>
+        <CommuteWidget university={profile?.university} district={p.district} />
       </div>
     </div>
   );
