@@ -87,7 +87,6 @@ function DashboardPage() {
         <div className="mt-6 flex rounded-lg border border-border bg-secondary p-1">
           {tabBtn("matches", t("dashboard.tab.matches"))}
           {tabBtn("utilities", t("dashboard.tab.utilities"))}
-          {tabBtn("chat", t("dashboard.tab.chat"))}
         </div>
 
         <div className="mt-6">
