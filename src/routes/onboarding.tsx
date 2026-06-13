@@ -132,9 +132,9 @@ function OnboardingPage() {
               </div>
               <div className="space-y-2">
                 <Label>{t("onboarding.q1.label")}</Label>
-                <Input
+                <UniversitySelect
                   value={profile.university}
-                  onChange={(e) => update("university", e.target.value)}
+                  onChange={(v) => update("university", v)}
                   placeholder={t("onboarding.q1.placeholder")}
                 />
               </div>
