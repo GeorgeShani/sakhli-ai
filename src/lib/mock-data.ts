@@ -57,6 +57,7 @@ export const flatmates: Flatmate[] = [
     avatar: avatars("nino"),
     salaryBracket: "500_1000",
     incomeSource: "family",
+    verified: true,
   },
   {
     id: "f2",
@@ -74,6 +75,7 @@ export const flatmates: Flatmate[] = [
     avatar: avatars("giorgi"),
     salaryBracket: "1000_2000",
     incomeSource: "job",
+    verified: true,
   },
   {
     id: "f3",
@@ -91,6 +93,7 @@ export const flatmates: Flatmate[] = [
     avatar: avatars("ana"),
     salaryBracket: "500_1000",
     incomeSource: "scholarship",
+    verified: true,
   },
   {
     id: "f4",
@@ -108,6 +111,7 @@ export const flatmates: Flatmate[] = [
     avatar: avatars("luka"),
     salaryBracket: "1000_2000",
     incomeSource: "mixed",
+    verified: false,
   },
   {
     id: "f5",
@@ -125,6 +129,7 @@ export const flatmates: Flatmate[] = [
     avatar: avatars("mariam"),
     salaryBracket: "2000_plus",
     incomeSource: "job",
+    verified: true,
   },
   {
     id: "f6",
@@ -142,6 +147,7 @@ export const flatmates: Flatmate[] = [
     avatar: avatars("saba"),
     salaryBracket: "under_500",
     incomeSource: "family",
+    verified: true,
   },
 ];
 
