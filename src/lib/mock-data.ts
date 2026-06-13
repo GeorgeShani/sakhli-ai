@@ -1,4 +1,11 @@
-import type { SleepSchedule, StudentProfile } from "./student-store";
+import {
+  type IncomeSource,
+  type SalaryBracket,
+  type SleepSchedule,
+  type StudentProfile,
+  SALARY_RANGES,
+  INCOME_SOURCE_LABEL,
+} from "./student-store";
 
 export type Flatmate = {
   id: string;
@@ -14,6 +21,8 @@ export type Flatmate = {
   quiet: boolean;
   bio: string;
   avatar: string;
+  salaryBracket: SalaryBracket;
+  incomeSource: IncomeSource;
 };
 
 export type Property = {
@@ -45,6 +54,8 @@ export const flatmates: Flatmate[] = [
     quiet: true,
     bio: "Literature major, tea addict, very tidy. Looking for a calm flat in Vake.",
     avatar: avatars("nino"),
+    salaryBracket: "500_1000",
+    incomeSource: "family",
   },
   {
     id: "f2",
@@ -60,6 +71,8 @@ export const flatmates: Flatmate[] = [
     quiet: false,
     bio: "CS student & part-time barista. Cook a lot, host friends on weekends.",
     avatar: avatars("giorgi"),
+    salaryBracket: "1000_2000",
+    incomeSource: "job",
   },
   {
     id: "f3",
@@ -75,6 +88,8 @@ export const flatmates: Flatmate[] = [
     quiet: true,
     bio: "Med student. Quiet, organized, allergic to cats. Saulo / Saburtalo preferred.",
     avatar: avatars("ana"),
+    salaryBracket: "500_1000",
+    incomeSource: "scholarship",
   },
   {
     id: "f4",
@@ -90,6 +105,8 @@ export const flatmates: Flatmate[] = [
     quiet: false,
     bio: "Designer, musician. Looking for chill flatmates who don't mind late nights.",
     avatar: avatars("luka"),
+    salaryBracket: "1000_2000",
+    incomeSource: "mixed",
   },
   {
     id: "f5",
@@ -105,6 +122,8 @@ export const flatmates: Flatmate[] = [
     quiet: true,
     bio: "Law grad student. Yoga, runs, very independent. Long-term tenant.",
     avatar: avatars("mariam"),
+    salaryBracket: "2000_plus",
+    incomeSource: "job",
   },
   {
     id: "f6",
@@ -120,6 +139,8 @@ export const flatmates: Flatmate[] = [
     quiet: false,
     bio: "First year business student. Friendly, loves cooking Sunday lunches.",
     avatar: avatars("saba"),
+    salaryBracket: "under_500",
+    incomeSource: "family",
   },
 ];
 
@@ -179,30 +200,29 @@ export const properties: Property[] = [
   },
 ];
 
-/* Compatibility scoring */
+/* ---------- Legacy raw scores (kept for back-compat) ---------- */
+
 export function scoreFlatmate(profile: StudentProfile, f: Flatmate): number {
   let score = 0;
   let max = 0;
 
-  // Budget overlap (closer = better) — 30 pts
   max += 30;
   const diff = Math.abs(profile.budget - f.budget);
   score += Math.max(0, 30 - diff / 30);
 
-  // Sleep schedule — 20 pts
   max += 20;
   if (profile.sleep === f.sleep) score += 20;
   else if (profile.sleep === "flexible" || f.sleep === "flexible") score += 12;
 
-  // Cleanliness diff (1-5) — 20 pts
   max += 20;
   score += Math.max(0, 20 - Math.abs(profile.cleanliness - f.cleanliness) * 5);
 
-  // Habit alignment — 30 pts (smoking, pets, parties, quiet)
   max += 30;
   const habits: (keyof StudentProfile)[] = ["smoking", "pets", "parties", "quiet"];
   for (const h of habits) {
-    if ((profile as any)[h] === (f as any)[h]) score += 7.5;
+    if ((profile as Record<string, unknown>)[h] === (f as unknown as Record<string, unknown>)[h]) {
+      score += 7.5;
+    }
   }
 
   return Math.round((score / max) * 100);
@@ -215,4 +235,137 @@ export function scoreProperty(profile: StudentProfile, p: Property, sharers = 2)
   const sizeBonus = p.flatmatesNeeded > 0 ? 20 : 10;
   const amenityBonus = Math.min(10, p.amenities.length * 2);
   return Math.min(100, Math.round(budgetScore + sizeBonus + amenityBonus));
+}
+
+/* ---------- SakliAI Fit Score (advanced AI logic) ---------- */
+
+export type FitScore = {
+  score: number; // 0-100
+  tier: "excellent" | "good" | "fair" | "risky";
+  reasons: string[]; // short bullets
+  summary: string; // one-line AI-style snippet
+  financialSafe: boolean;
+};
+
+function bracketMid(b: SalaryBracket): number {
+  const r = SALARY_RANGES[b];
+  return (r.min + r.max) / 2;
+}
+
+/** Affordability rule: rent share should be ≤ 40% of estimated income (safe), 40-60% stretch, >60% risky. */
+function affordability(estimatedIncome: number, monthlyRentShare: number) {
+  if (estimatedIncome <= 0) return { pct: 1, points: 0, status: "risky" as const };
+  const pct = monthlyRentShare / estimatedIncome;
+  if (pct <= 0.4) return { pct, points: 40, status: "safe" as const };
+  if (pct <= 0.6) return { pct, points: 25, status: "stretch" as const };
+  if (pct <= 0.8) return { pct, points: 12, status: "tight" as const };
+  return { pct, points: 0, status: "risky" as const };
+}
+
+export function fitScoreForProperty(
+  profile: StudentProfile,
+  p: Property,
+  sharers = Math.max(1, p.flatmatesNeeded + 1),
+): FitScore {
+  const reasons: string[] = [];
+  const perPerson = p.price / sharers;
+  const income = bracketMid(profile.salaryBracket);
+  const aff = affordability(income, perPerson);
+
+  let score = aff.points; // up to 40
+
+  if (aff.status === "safe") reasons.push(`Safe financial range (₾${Math.round(perPerson)} / ₾${income} est.)`);
+  else if (aff.status === "stretch") reasons.push(`Stretch budget — ${Math.round(aff.pct * 100)}% of income`);
+  else if (aff.status === "tight") reasons.push(`Tight budget — ${Math.round(aff.pct * 100)}% of income`);
+  else reasons.push(`Rent share above sustainable income range`);
+
+  // Budget intent match (25 pts)
+  const intentDiff = Math.abs(profile.budget - perPerson);
+  const intentPts = Math.max(0, 25 - intentDiff / 20);
+  score += intentPts;
+  if (intentPts > 18) reasons.push("Matches your stated budget intent");
+
+  // Income stability (15 pts) — job / mixed > scholarship > family
+  const stabilityMap: Record<IncomeSource, number> = { job: 15, mixed: 13, scholarship: 11, family: 9 };
+  score += stabilityMap[profile.incomeSource];
+  reasons.push(`${INCOME_SOURCE_LABEL[profile.incomeSource]}-based income`);
+
+  // Property quality (20 pts)
+  const amenityPts = Math.min(12, p.amenities.length * 2);
+  const sharePts = sharers > 1 ? 8 : 4;
+  score += amenityPts + sharePts;
+  if (amenityPts >= 10) reasons.push(`${p.amenities.length} amenities included`);
+
+  score = Math.min(100, Math.round(score));
+  const tier: FitScore["tier"] = score >= 85 ? "excellent" : score >= 70 ? "good" : score >= 50 ? "fair" : "risky";
+  const summary = buildSummary(tier, reasons.slice(0, 2));
+
+  return { score, tier, reasons, summary, financialSafe: aff.status === "safe" };
+}
+
+export function fitScoreForFlatmate(profile: StudentProfile, f: Flatmate): FitScore {
+  const reasons: string[] = [];
+  let score = 0;
+
+  // Combined affordability — estimate household income vs each person's expected rent share
+  const myIncome = bracketMid(profile.salaryBracket);
+  const theirIncome = bracketMid(f.salaryBracket);
+  const targetRent = (profile.budget + f.budget) / 2;
+  const myAff = affordability(myIncome, targetRent);
+  const theirAff = affordability(theirIncome, targetRent);
+  const combined = (myAff.points + theirAff.points) / 2;
+  score += combined; // up to 40
+  if (myAff.status === "safe" && theirAff.status === "safe") {
+    reasons.push("Both in safe financial range");
+  } else if (myAff.status === "risky" || theirAff.status === "risky") {
+    reasons.push("Mismatched financial capacity — risky split");
+  } else {
+    reasons.push("Workable financial overlap");
+  }
+
+  // Schedule alignment (20)
+  if (profile.sleep === f.sleep) {
+    score += 20;
+    reasons.push("Matching study/sleep schedules");
+  } else if (profile.sleep === "flexible" || f.sleep === "flexible") {
+    score += 12;
+  } else {
+    reasons.push("Different daily rhythms");
+  }
+
+  // Cleanliness (15)
+  const cleanDiff = Math.abs(profile.cleanliness - f.cleanliness);
+  const cleanPts = Math.max(0, 15 - cleanDiff * 4);
+  score += cleanPts;
+  if (cleanPts >= 12) reasons.push("Similar tidiness standards");
+
+  // Habits (25)
+  const habitKeys: Array<keyof Pick<StudentProfile, "smoking" | "pets" | "parties" | "quiet">> = [
+    "smoking",
+    "pets",
+    "parties",
+    "quiet",
+  ];
+  let habitMatch = 0;
+  for (const h of habitKeys) if (profile[h] === f[h]) habitMatch += 1;
+  score += (habitMatch / habitKeys.length) * 25;
+  if (habitMatch >= 3) reasons.push("Lifestyle habits align");
+
+  score = Math.min(100, Math.round(score));
+  const tier: FitScore["tier"] = score >= 85 ? "excellent" : score >= 70 ? "good" : score >= 50 ? "fair" : "risky";
+  const summary = buildSummary(tier, reasons.slice(0, 2));
+
+  return { score, tier, reasons, summary, financialSafe: myAff.status === "safe" && theirAff.status === "safe" };
+}
+
+function buildSummary(tier: FitScore["tier"], top: string[]): string {
+  const prefix =
+    tier === "excellent"
+      ? "Excellent SakliAI fit"
+      : tier === "good"
+        ? "Strong fit"
+        : tier === "fair"
+          ? "Workable fit"
+          : "Risky fit";
+  return top.length ? `${prefix}: ${top.join(" + ").toLowerCase()}.` : `${prefix}.`;
 }

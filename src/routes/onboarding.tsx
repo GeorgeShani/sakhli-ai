@@ -8,8 +8,17 @@ import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useI18n } from "@/lib/i18n";
-import { defaultProfile, useProfile, type SleepSchedule, type StudentProfile } from "@/lib/student-store";
-import { ArrowLeft, ArrowRight, Check } from "lucide-react";
+import {
+  defaultProfile,
+  useProfile,
+  type SleepSchedule,
+  type StudentProfile,
+  type SalaryBracket,
+  type IncomeSource,
+  SALARY_RANGES,
+  INCOME_SOURCE_LABEL,
+} from "@/lib/student-store";
+import { ArrowLeft, ArrowRight, Check, Wallet } from "lucide-react";
 
 export const Route = createFileRoute("/onboarding")({
   head: () => ({
@@ -21,7 +30,7 @@ export const Route = createFileRoute("/onboarding")({
   component: OnboardingPage,
 });
 
-const TOTAL = 6;
+const TOTAL = 7;
 
 function OnboardingPage() {
   const { t } = useI18n();
@@ -194,6 +203,62 @@ function OnboardingPage() {
                 onChange={(e) => update("bio", e.target.value)}
                 placeholder={t("onboarding.q6.placeholder")}
               />
+            </div>
+          )}
+
+          {step === 6 && (
+            <div className="space-y-6">
+              <div>
+                <h2 className="flex items-center gap-2 font-display text-xl font-semibold">
+                  <Wallet className="h-5 w-5 text-primary" /> Financial range
+                </h2>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Used by SakliAI to calculate a safe rent-to-income ratio. Private — never shown to hosts.
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Monthly income bracket (GEL)</Label>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {(Object.keys(SALARY_RANGES) as SalaryBracket[]).map((k) => (
+                    <button
+                      key={k}
+                      type="button"
+                      onClick={() => update("salaryBracket", k)}
+                      className={[
+                        "rounded-xl border p-3 text-left transition-all",
+                        profile.salaryBracket === k
+                          ? "border-accent bg-accent/10 ring-2 ring-accent/40"
+                          : "border-border bg-card hover:border-accent/40",
+                      ].join(" ")}
+                    >
+                      <div className="font-medium">{SALARY_RANGES[k].label}</div>
+                      <div className="text-xs text-muted-foreground">per month</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Income source</Label>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {(Object.keys(INCOME_SOURCE_LABEL) as IncomeSource[]).map((k) => (
+                    <button
+                      key={k}
+                      type="button"
+                      onClick={() => update("incomeSource", k)}
+                      className={[
+                        "rounded-xl border p-3 text-left transition-all",
+                        profile.incomeSource === k
+                          ? "border-accent bg-accent/10 ring-2 ring-accent/40"
+                          : "border-border bg-card hover:border-accent/40",
+                      ].join(" ")}
+                    >
+                      <div className="font-medium">{INCOME_SOURCE_LABEL[k]}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
 

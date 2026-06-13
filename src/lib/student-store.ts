@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 
 export type SleepSchedule = "early_bird" | "night_owl" | "flexible";
+export type SalaryBracket = "under_500" | "500_1000" | "1000_2000" | "2000_plus";
+export type IncomeSource = "job" | "family" | "scholarship" | "mixed";
 
 export type StudentProfile = {
   name: string;
@@ -13,6 +15,8 @@ export type StudentProfile = {
   quiet: boolean;
   cleanliness: number;
   bio: string;
+  salaryBracket: SalaryBracket;
+  incomeSource: IncomeSource;
 };
 
 export type Match = {
@@ -35,6 +39,23 @@ export const defaultProfile: StudentProfile = {
   quiet: true,
   cleanliness: 3,
   bio: "",
+  salaryBracket: "500_1000",
+  incomeSource: "family",
+};
+
+/* Salary bracket → estimated monthly income range (GEL) */
+export const SALARY_RANGES: Record<SalaryBracket, { min: number; max: number; label: string }> = {
+  under_500: { min: 0, max: 500, label: "< ₾500" },
+  "500_1000": { min: 500, max: 1000, label: "₾500–1,000" },
+  "1000_2000": { min: 1000, max: 2000, label: "₾1,000–2,000" },
+  "2000_plus": { min: 2000, max: 4000, label: "₾2,000+" },
+};
+
+export const INCOME_SOURCE_LABEL: Record<IncomeSource, string> = {
+  job: "Job",
+  family: "Family",
+  scholarship: "Scholarship",
+  mixed: "Mixed",
 };
 
 function read<T>(key: string, fallback: T): T {
@@ -52,7 +73,8 @@ export function useProfile() {
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    setProfile(read<StudentProfile | null>(PROFILE_KEY, null));
+    const stored = read<Partial<StudentProfile> | null>(PROFILE_KEY, null);
+    setProfile(stored ? ({ ...defaultProfile, ...stored } as StudentProfile) : null);
     setLoaded(true);
   }, []);
 

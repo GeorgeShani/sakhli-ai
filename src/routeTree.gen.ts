@@ -14,6 +14,8 @@ import { Route as MatchesRouteImport } from './routes/matches'
 import { Route as HostRouteImport } from './routes/host'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiPublicN8nCleaningRouteImport } from './routes/api/public/n8n/cleaning'
+import { Route as ApiPublicN8nBookingRouteImport } from './routes/api/public/n8n/booking'
 
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
@@ -40,6 +42,16 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicN8nCleaningRoute = ApiPublicN8nCleaningRouteImport.update({
+  id: '/api/public/n8n/cleaning',
+  path: '/api/public/n8n/cleaning',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicN8nBookingRoute = ApiPublicN8nBookingRouteImport.update({
+  id: '/api/public/n8n/booking',
+  path: '/api/public/n8n/booking',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -47,6 +59,8 @@ export interface FileRoutesByFullPath {
   '/host': typeof HostRoute
   '/matches': typeof MatchesRoute
   '/onboarding': typeof OnboardingRoute
+  '/api/public/n8n/booking': typeof ApiPublicN8nBookingRoute
+  '/api/public/n8n/cleaning': typeof ApiPublicN8nCleaningRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -54,6 +68,8 @@ export interface FileRoutesByTo {
   '/host': typeof HostRoute
   '/matches': typeof MatchesRoute
   '/onboarding': typeof OnboardingRoute
+  '/api/public/n8n/booking': typeof ApiPublicN8nBookingRoute
+  '/api/public/n8n/cleaning': typeof ApiPublicN8nCleaningRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -62,13 +78,37 @@ export interface FileRoutesById {
   '/host': typeof HostRoute
   '/matches': typeof MatchesRoute
   '/onboarding': typeof OnboardingRoute
+  '/api/public/n8n/booking': typeof ApiPublicN8nBookingRoute
+  '/api/public/n8n/cleaning': typeof ApiPublicN8nCleaningRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/dashboard' | '/host' | '/matches' | '/onboarding'
+  fullPaths:
+    | '/'
+    | '/dashboard'
+    | '/host'
+    | '/matches'
+    | '/onboarding'
+    | '/api/public/n8n/booking'
+    | '/api/public/n8n/cleaning'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dashboard' | '/host' | '/matches' | '/onboarding'
-  id: '__root__' | '/' | '/dashboard' | '/host' | '/matches' | '/onboarding'
+  to:
+    | '/'
+    | '/dashboard'
+    | '/host'
+    | '/matches'
+    | '/onboarding'
+    | '/api/public/n8n/booking'
+    | '/api/public/n8n/cleaning'
+  id:
+    | '__root__'
+    | '/'
+    | '/dashboard'
+    | '/host'
+    | '/matches'
+    | '/onboarding'
+    | '/api/public/n8n/booking'
+    | '/api/public/n8n/cleaning'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -77,6 +117,8 @@ export interface RootRouteChildren {
   HostRoute: typeof HostRoute
   MatchesRoute: typeof MatchesRoute
   OnboardingRoute: typeof OnboardingRoute
+  ApiPublicN8nBookingRoute: typeof ApiPublicN8nBookingRoute
+  ApiPublicN8nCleaningRoute: typeof ApiPublicN8nCleaningRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -116,6 +158,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/n8n/cleaning': {
+      id: '/api/public/n8n/cleaning'
+      path: '/api/public/n8n/cleaning'
+      fullPath: '/api/public/n8n/cleaning'
+      preLoaderRoute: typeof ApiPublicN8nCleaningRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/n8n/booking': {
+      id: '/api/public/n8n/booking'
+      path: '/api/public/n8n/booking'
+      fullPath: '/api/public/n8n/booking'
+      preLoaderRoute: typeof ApiPublicN8nBookingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -125,6 +181,8 @@ const rootRouteChildren: RootRouteChildren = {
   HostRoute: HostRoute,
   MatchesRoute: MatchesRoute,
   OnboardingRoute: OnboardingRoute,
+  ApiPublicN8nBookingRoute: ApiPublicN8nBookingRoute,
+  ApiPublicN8nCleaningRoute: ApiPublicN8nCleaningRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
