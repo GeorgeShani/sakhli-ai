@@ -38,7 +38,7 @@ export const Route = createFileRoute("/dashboard")({
   ),
 });
 
-type Tab = "matches" | "utilities" | "chat";
+type Tab = "matches" | "utilities";
 
 function DashboardPage() {
   const { t } = useI18n();
