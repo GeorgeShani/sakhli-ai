@@ -220,6 +220,14 @@ function HostPage() {
           </div>
         </div>
 
+        {/* Hero analytics: Occupancy / Revenue / AI Tip */}
+        <HeroAnalytics
+          occupancy={occupancyRate}
+          revenue={bookings
+            .filter((b) => b.status !== "cancelled" && b.total_price)
+            .reduce((s, b) => s + Number(b.total_price ?? 0), 0)}
+        />
+
         {/* Stats */}
         <div className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-4">
           <StatCard label="Properties" value={properties.length} icon={<MapPin className="h-4 w-4" />} />
