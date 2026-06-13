@@ -203,7 +203,13 @@ const CATEGORY_ICONS: Record<string, typeof Zap> = {
 
 type Roommate = { id: string; name: string; moveInDay: number };
 
-function UtilitySplitter({ flatmateNames }: { flatmateNames: string[] }) {
+function UtilitySplitter({
+  flatmateNames,
+  activeProperty,
+}: {
+  flatmateNames: string[];
+  activeProperty?: (typeof properties)[number];
+}) {
   const { t } = useI18n();
   const [bills, setBills] = useState<Bill[]>([
     { id: "1", category: "Electricity", icon: Zap, amount: 140 },
