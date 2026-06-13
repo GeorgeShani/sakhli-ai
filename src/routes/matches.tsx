@@ -131,6 +131,27 @@ function MatchesPage() {
           {tabBtn("places", t("matches.tab.places"))}
         </div>
 
+        <div className="mt-3 flex items-center justify-between rounded-lg border border-emerald-500/30 bg-gradient-to-r from-emerald-500/10 to-primary/5 px-3 py-2">
+          <div className="flex items-center gap-2">
+            <span className="relative flex h-2.5 w-2.5">
+              <span
+                className={`absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 ${
+                  aiBestFit ? "animate-ping" : "hidden"
+                }`}
+              />
+              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500" />
+            </span>
+            <div>
+              <div className="text-xs font-semibold uppercase tracking-wide">AI Best Fit</div>
+              <div className="text-[11px] text-muted-foreground">
+                Prioritize matches above 85% · &gt;85%-ის პრიორიტეტი
+              </div>
+            </div>
+          </div>
+          <Switch checked={aiBestFit} onCheckedChange={setAiBestFit} aria-label="AI Best Fit" />
+        </div>
+
+
         <div className="mt-6">
           {stackDone ? (
             <div className="card-elevated p-10 text-center">
