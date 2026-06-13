@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { AppHeader } from "@/components/AppHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,21 +7,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Checkbox } from "@/components/ui/checkbox";
 import { useI18n } from "@/lib/i18n";
 import {
   defaultProfile,
   useProfile,
   type SleepSchedule,
   type StudentProfile,
-  type SalaryBracket,
-  type IncomeSource,
-  SALARY_RANGES,
-  INCOME_SOURCE_LABEL,
-  INCOME_SOURCE_LABEL_KA,
 } from "@/lib/student-store";
-import { ArrowLeft, ArrowRight, Check, Wallet, Briefcase } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Upload, ShieldCheck, FileText } from "lucide-react";
 
 export const Route = createFileRoute("/onboarding")({
   head: () => ({
@@ -33,7 +26,7 @@ export const Route = createFileRoute("/onboarding")({
   component: OnboardingPage,
 });
 
-const TOTAL = 8;
+const TOTAL = 7;
 
 function OnboardingPage() {
   const { t } = useI18n();
@@ -41,6 +34,7 @@ function OnboardingPage() {
   const { save } = useProfile();
   const [step, setStep] = useState(0);
   const [profile, setProfile] = useState<StudentProfile>(defaultProfile);
+  const [studentIdName, setStudentIdName] = useState<string | null>(null);
 
   const update = <K extends keyof StudentProfile>(k: K, v: StudentProfile[K]) =>
     setProfile((p) => ({ ...p, [k]: v }));
@@ -210,96 +204,13 @@ function OnboardingPage() {
           )}
 
           {step === 6 && (
-            <div className="space-y-5">
-              <div>
-                <h2 className="flex items-center gap-2 font-display text-xl font-semibold">
-                  <Wallet className="h-5 w-5 text-primary" />
-                  ფინანსური პროფილი / Financial Profile
-                </h2>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Used by SakhliAI to calculate a safe rent-to-income ratio. Private — never shown to hosts.
-                </p>
-              </div>
-
-              <div className="space-y-3">
-                <Label className="text-sm font-medium">
-                  ყოველთვიური შემოსავალი / Monthly income (GEL)
-                </Label>
-                <RadioGroup
-                  value={profile.salaryBracket}
-                  onValueChange={(v) => update("salaryBracket", v as SalaryBracket)}
-                  className="grid gap-2"
-                >
-                  {(Object.keys(SALARY_RANGES) as SalaryBracket[]).map((k) => (
-                    <label
-                      key={k}
-                      htmlFor={`sal-${k}`}
-                      className={[
-                        "flex cursor-pointer items-center gap-3 rounded-xl border p-4 transition-all",
-                        profile.salaryBracket === k
-                          ? "border-accent bg-accent/10 ring-2 ring-accent/40"
-                          : "border-border bg-card hover:border-accent/40",
-                      ].join(" ")}
-                    >
-                      <RadioGroupItem id={`sal-${k}`} value={k} />
-                      <div className="flex-1">
-                        <div className="font-medium">{SALARY_RANGES[k].label}</div>
-                        <div className="text-xs text-muted-foreground">{SALARY_RANGES[k].labelKa}</div>
-                      </div>
-                    </label>
-                  ))}
-                </RadioGroup>
-              </div>
-            </div>
-          )}
-
-          {step === 7 && (
-            <div className="space-y-5">
-              <div>
-                <h2 className="flex items-center gap-2 font-display text-xl font-semibold">
-                  <Briefcase className="h-5 w-5 text-primary" />
-                  შემოსავლის წყარო / Income Source
-                </h2>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Select all that apply. Helps us match you to financially compatible flatmates.
-                </p>
-              </div>
-
-              <div className="grid gap-2">
-                {(["job", "family", "scholarship"] as IncomeSource[]).map((k) => {
-                  const checked = (profile.incomeSources ?? []).includes(k);
-                  return (
-                    <label
-                      key={k}
-                      htmlFor={`inc-${k}`}
-                      className={[
-                        "flex cursor-pointer items-center gap-3 rounded-xl border p-4 transition-all",
-                        checked
-                          ? "border-accent bg-accent/10 ring-2 ring-accent/40"
-                          : "border-border bg-card hover:border-accent/40",
-                      ].join(" ")}
-                    >
-                      <Checkbox
-                        id={`inc-${k}`}
-                        checked={checked}
-                        onCheckedChange={(v) => {
-                          const cur = new Set(profile.incomeSources ?? []);
-                          if (v) cur.add(k);
-                          else cur.delete(k);
-                          const arr = Array.from(cur) as IncomeSource[];
-                          update("incomeSources", arr.length ? arr : ["family"]);
-                          update("incomeSource", (arr[0] ?? "family") as IncomeSource);
-                        }}
-                      />
-                      <div className="flex-1">
-                        <div className="font-medium">{INCOME_SOURCE_LABEL_KA[k]}</div>
-                        <div className="text-xs text-muted-foreground">{INCOME_SOURCE_LABEL[k]}</div>
-                      </div>
-                    </label>
-                  );
-                })}
-              </div>
-            </div>
+            <StudentIdUpload
+              fileName={studentIdName}
+              onFile={(name) => {
+                setStudentIdName(name);
+                update("verified", true);
+              }}
+            />
           )}
 
           <div className="mt-8 flex items-center justify-between">
@@ -322,6 +233,99 @@ function OnboardingPage() {
             </Button>
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+/* -------- Student ID upload (drag & drop simulator) -------- */
+export function StudentIdUpload({
+  fileName,
+  onFile,
+}: {
+  fileName: string | null;
+  onFile: (name: string) => void;
+}) {
+  const [drag, setDrag] = useState(false);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  const handleFiles = (files: FileList | null) => {
+    const f = files?.[0];
+    if (f) onFile(f.name);
+  };
+
+  return (
+    <div className="space-y-5">
+      <div>
+        <h2 className="flex items-center gap-2 font-display text-xl font-semibold">
+          <ShieldCheck className="h-5 w-5 text-emerald-500" />
+          ვერიფიკაცია / Student Verification
+        </h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          ატვირთეთ სტუდენტური ბარათი ან ცნობა — ჰოსტებს ეძლევათ გარანტია, რომ ხართ ვერიფიცირებული უნივერსიტეტის სტუდენტი.
+          <br />
+          <span className="text-xs">Upload a Student ID or enrollment letter — hosts trust verified university students.</span>
+        </p>
+      </div>
+
+      <div
+        onDragOver={(e) => {
+          e.preventDefault();
+          setDrag(true);
+        }}
+        onDragLeave={() => setDrag(false)}
+        onDrop={(e) => {
+          e.preventDefault();
+          setDrag(false);
+          handleFiles(e.dataTransfer.files);
+        }}
+        onClick={() => inputRef.current?.click()}
+        className={[
+          "flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed p-10 text-center transition-all",
+          drag
+            ? "border-emerald-500 bg-emerald-500/10"
+            : fileName
+              ? "border-emerald-500/60 bg-emerald-500/5"
+              : "border-border bg-card hover:border-accent/60",
+        ].join(" ")}
+      >
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/*,application/pdf"
+          className="hidden"
+          onChange={(e) => handleFiles(e.target.files)}
+        />
+        {fileName ? (
+          <>
+            <ShieldCheck className="h-10 w-10 text-emerald-500" />
+            <div className="mt-3 font-display text-lg font-semibold text-emerald-600 dark:text-emerald-400">
+              ✓ Verified Student
+            </div>
+            <div className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
+              <FileText className="h-3.5 w-3.5" />
+              {fileName}
+            </div>
+            <div className="mt-1 text-[11px] text-muted-foreground">Tap to replace</div>
+          </>
+        ) : (
+          <>
+            <Upload className="h-10 w-10 text-muted-foreground" />
+            <div className="mt-3 font-medium">
+              ატვირთეთ სტუდენტური ბარათი ან ცნობა
+            </div>
+            <div className="text-sm text-muted-foreground">Upload Student ID</div>
+            <div className="mt-2 text-xs text-muted-foreground">
+              Drag & drop or click to browse · JPG, PNG, PDF
+            </div>
+          </>
+        )}
+      </div>
+
+      <div className="rounded-md border border-emerald-500/30 bg-emerald-500/5 p-3 text-xs text-muted-foreground">
+        <ShieldCheck className="mr-1 inline h-3.5 w-3.5 text-emerald-500" />
+        Your document is encrypted end-to-end and only used to issue the green
+        <span className="font-semibold"> "Verified Student"</span> badge on your match cards.
       </div>
     </div>
   );

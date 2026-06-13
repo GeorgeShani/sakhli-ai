@@ -195,6 +195,12 @@ function PersonCard({ data }: { data: { f: Flatmate; fit: FitScore } }) {
             <GraduationCap className="h-3.5 w-3.5" />
             {f.university}
           </div>
+          {f.verified && (
+            <div className="mt-2 inline-flex items-center gap-1 rounded-full border border-emerald-500/60 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-600 dark:text-emerald-400 shadow-[0_0_12px_rgba(16,185,129,0.45)]">
+              <ShieldCheck className="h-3 w-3" />
+              Verified Student
+            </div>
+          )}
         </div>
       </div>
       <div className="space-y-3 p-6">

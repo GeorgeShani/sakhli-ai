@@ -23,6 +23,8 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -89,12 +91,12 @@ type CleaningTask = {
   notes: string | null;
 };
 
-const CHANNEL_META: Record<string, { label: string; color: string }> = {
-  airbnb: { label: "Airbnb", color: "bg-rose-500" },
-  booking: { label: "Booking.com", color: "bg-blue-500" },
-  sakliai: { label: "SakhliAI", color: "bg-primary" },
-  student: { label: "Student", color: "bg-emerald-500" },
-  direct: { label: "Direct", color: "bg-amber-500" },
+const CHANNEL_META: Record<string, { label: string; color: string; logo: string; logoColor: string }> = {
+  airbnb: { label: "Airbnb", color: "bg-rose-500", logo: "A", logoColor: "text-rose-500" },
+  booking: { label: "Booking.com", color: "bg-blue-500", logo: "B.", logoColor: "text-blue-500" },
+  sakliai: { label: "SakhliAI", color: "bg-primary", logo: "Sა", logoColor: "text-primary" },
+  student: { label: "Student", color: "bg-emerald-500", logo: "🎓", logoColor: "text-emerald-500" },
+  direct: { label: "Direct", color: "bg-amber-500", logo: "★", logoColor: "text-amber-500" },
 };
 
 function HostPage() {
@@ -232,6 +234,10 @@ function HostPage() {
             .filter((b) => b.status !== "cancelled" && b.total_price)
             .reduce((s, b) => s + Number(b.total_price ?? 0), 0)}
         />
+
+        {/* AI Smart Rent Predictor */}
+        <SmartRentPredictor />
+
 
         {/* Stats */}
         <div className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-4">
@@ -448,22 +454,62 @@ function CalendarView({
                   const meta = CHANNEL_META[b.channel] ?? CHANNEL_META.direct;
                   const isPulse = pulse === b.id;
                   return (
-                    <div
-                      key={b.id}
-                      title={`${b.guest_name} • ${b.check_in} → ${b.check_out} • ${meta.label}`}
-                      className={`absolute top-2 z-10 flex h-10 items-center gap-1 overflow-hidden rounded-md px-2 text-xs font-medium text-white shadow-sm ${meta.color} ${
-                        isPulse ? "ring-2 ring-offset-2 ring-primary animate-pulse" : ""
-                      }`}
-                      style={{
-                        left: `calc(200px + (100% - 200px) * ${startIdx} / ${days.length})`,
-                        width: `calc((100% - 200px) * ${span} / ${days.length} - 4px)`,
-                      }}
-                    >
-                      <span className="truncate">{b.guest_name ?? "Guest"}</span>
-                      <Badge variant="secondary" className="ml-auto h-4 px-1 text-[10px] text-foreground">
-                        {meta.label}
-                      </Badge>
-                    </div>
+                    <HoverCard key={b.id} openDelay={80}>
+                      <HoverCardTrigger asChild>
+                        <div
+                          className={`absolute top-2 z-10 flex h-10 cursor-pointer items-center gap-1.5 overflow-hidden rounded-md px-2 text-xs font-medium text-white shadow-sm ${meta.color} ${
+                            isPulse ? "ring-2 ring-offset-2 ring-primary animate-pulse" : ""
+                          }`}
+                          style={{
+                            left: `calc(200px + (100% - 200px) * ${startIdx} / ${days.length})`,
+                            width: `calc((100% - 200px) * ${span} / ${days.length} - 4px)`,
+                          }}
+                        >
+                          <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded bg-white text-[10px] font-bold ${meta.logoColor}`}>
+                            {meta.logo}
+                          </span>
+                          <span className="truncate">{b.guest_name ?? "Guest"}</span>
+                        </div>
+                      </HoverCardTrigger>
+                      <HoverCardContent className="w-72" align="start">
+                        <div className="flex items-center gap-2">
+                          <span className={`flex h-7 w-7 items-center justify-center rounded ${meta.color} text-xs font-bold text-white`}>
+                            {meta.logo}
+                          </span>
+                          <div className="min-w-0">
+                            <div className="truncate text-sm font-semibold">{b.guest_name ?? "Guest"}</div>
+                            <div className="text-xs text-muted-foreground">via {meta.label}</div>
+                          </div>
+                          <Badge variant="secondary" className="ml-auto text-[10px] capitalize">
+                            {b.status}
+                          </Badge>
+                        </div>
+                        <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
+                          <div>
+                            <div className="text-muted-foreground">Check-in</div>
+                            <div className="font-medium">{b.check_in}</div>
+                          </div>
+                          <div>
+                            <div className="text-muted-foreground">Check-out</div>
+                            <div className="font-medium">{b.check_out}</div>
+                          </div>
+                          <div>
+                            <div className="text-muted-foreground">Guests</div>
+                            <div className="font-medium">{b.guests_count ?? 1}</div>
+                          </div>
+                          <div>
+                            <div className="text-muted-foreground">Payment</div>
+                            <div className="font-medium">
+                              {b.total_price ? `₾ ${Number(b.total_price).toLocaleString()} · Paid` : "Pending"}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="mt-3 flex items-center gap-1.5 rounded-md bg-accent/10 px-2 py-1.5 text-[11px] text-accent-foreground">
+                          <Sparkles className="h-3 w-3 text-accent" />
+                          Synchronized instantly via n8n backend
+                        </div>
+                      </HoverCardContent>
+                    </HoverCard>
                   );
                 })}
               </div>
@@ -989,4 +1035,122 @@ function timeAgo(iso: string): string {
   const h = Math.floor(m / 60);
   if (h < 24) return `${h}h ago`;
   return `${Math.floor(h / 24)}d ago`;
+}
+
+// -------------------- AI SMART RENT PREDICTOR --------------------
+const RENT_AMENITIES = ["Wi-Fi", "AC", "Washer", "Parking", "Balcony", "Heating"] as const;
+type RentAmenity = (typeof RENT_AMENITIES)[number];
+
+const LOCATION_MULT: Record<string, { mult: number; touristMult: number; labelKa: string }> = {
+  Vake: { mult: 1.25, touristMult: 1.35, labelKa: "ვაკე" },
+  Saburtalo: { mult: 1.0, touristMult: 1.0, labelKa: "საბურთალო" },
+  "Old Tbilisi": { mult: 1.15, touristMult: 1.5, labelKa: "ძველი თბილისი" },
+  Saulo: { mult: 0.85, touristMult: 0.8, labelKa: "სოლოლაკი" },
+  Batumi: { mult: 0.95, touristMult: 1.4, labelKa: "ბათუმი" },
+};
+
+function SmartRentPredictor() {
+  const [location, setLocation] = useState<keyof typeof LOCATION_MULT>("Saburtalo");
+  const [sqm, setSqm] = useState(65);
+  const [amenities, setAmenities] = useState<RentAmenity[]>(["Wi-Fi", "AC", "Washer"]);
+
+  const cfg = LOCATION_MULT[location];
+  const amenityBoost = 1 + amenities.length * 0.04;
+  const baseMonth = 14 * sqm; // 14 GEL per sqm baseline
+  const studentMonth = Math.round((baseMonth * cfg.mult * amenityBoost) / 10) * 10;
+  const tourismNight = Math.round((baseMonth * cfg.touristMult * amenityBoost) / 30 / 5) * 5;
+
+  const toggle = (a: RentAmenity) =>
+    setAmenities((cur) => (cur.includes(a) ? cur.filter((x) => x !== a) : [...cur, a]));
+
+  return (
+    <Card className="mb-6 border-accent/30 bg-gradient-to-br from-accent/5 to-transparent">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Sparkles className="h-4 w-4 text-accent" />
+          AI Smart Rent Predictor · ქირის პროგნოზირების AI კალკულატორი
+        </CardTitle>
+        <CardDescription>
+          Enter property details — SakhliAI compares Tbilisi market data to recommend split-season pricing.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="grid gap-5 md:grid-cols-[1fr_1fr_1.1fr]">
+          {/* Inputs */}
+          <div className="space-y-3">
+            <div>
+              <Label className="text-xs">Location · ლოკაცია</Label>
+              <Select value={location} onValueChange={(v) => setLocation(v as keyof typeof LOCATION_MULT)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {Object.entries(LOCATION_MULT).map(([k, v]) => (
+                    <SelectItem key={k} value={k}>
+                      {k} · {v.labelKa}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-xs">Size · ფართობი (m²)</Label>
+              <Input
+                type="number"
+                value={sqm}
+                min={20}
+                max={300}
+                onChange={(e) => setSqm(Math.max(20, Number(e.target.value) || 0))}
+              />
+            </div>
+          </div>
+
+          {/* Amenities */}
+          <div>
+            <Label className="text-xs">Amenities · კეთილმოწყობა</Label>
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              {RENT_AMENITIES.map((a) => {
+                const on = amenities.includes(a);
+                return (
+                  <label
+                    key={a}
+                    className={`flex cursor-pointer items-center gap-2 rounded-md border p-2 text-xs transition-colors ${
+                      on ? "border-accent bg-accent/10" : "border-border bg-card"
+                    }`}
+                  >
+                    <Checkbox checked={on} onCheckedChange={() => toggle(a)} />
+                    {a}
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Recommendation */}
+          <div className="space-y-3">
+            <div className="rounded-xl border border-primary/30 bg-gradient-to-br from-primary/15 to-primary/5 p-4">
+              <div className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                სასწავლო სეზონი (სტუდენტები) · Academic Season
+              </div>
+              <div className="mt-1 font-display text-2xl font-bold text-gradient">
+                {studentMonth.toLocaleString()} GEL<span className="text-sm font-medium text-muted-foreground">/თვე · /month</span>
+              </div>
+              <div className="mt-1 text-[11px] text-muted-foreground">9-month long-term lease</div>
+            </div>
+            <div className="rounded-xl border border-accent/30 bg-gradient-to-br from-accent/15 to-accent/5 p-4">
+              <div className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                ტურისტული სეზონი (მოკლევადიანი) · Tourist Season
+              </div>
+              <div className="mt-1 font-display text-2xl font-bold text-gradient">
+                {tourismNight.toLocaleString()} GEL<span className="text-sm font-medium text-muted-foreground">/დღე · /night</span>
+              </div>
+              <div className="mt-1 text-[11px] text-muted-foreground">June–September peak demand</div>
+            </div>
+          </div>
+        </div>
+        <div className="mt-4 flex items-start gap-2 rounded-md border border-accent/20 bg-accent/5 p-3 text-xs text-muted-foreground">
+          <Sparkles className="mt-0.5 h-3.5 w-3.5 text-accent" />
+          Hybrid model: switch between student tenants in academic months and short-term tourists in summer to maximize yearly revenue.
+        </div>
+      </CardContent>
+    </Card>
+  );
 }

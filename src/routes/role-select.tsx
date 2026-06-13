@@ -7,10 +7,9 @@ import { useAuth, type AppRole } from "@/lib/auth";
 import {
   GraduationCap,
   Building2,
-  Sparkles,
-  ShieldCheck,
   Loader2,
   ArrowRight,
+  ArrowLeft,
 } from "lucide-react";
 
 export const Route = createFileRoute("/role-select")({
@@ -39,7 +38,7 @@ const CARDS: Card[] = [
     icon: GraduationCap,
     titleKa: "ბინის ქირაობა (სტუდენტი)",
     titleEn: "Rent a Flat (Student)",
-    desc: "Take the 8-step compatibility quiz and swipe through fit-scored flatmates and homes.",
+    desc: "Take the compatibility quiz and swipe through fit-scored flatmates and homes near your university.",
     to: "/onboarding",
     tint: "from-primary/15 to-primary/5 text-primary",
   },
@@ -48,27 +47,9 @@ const CARDS: Card[] = [
     icon: Building2,
     titleKa: "ბინის გაქირავება (მასპინძელი)",
     titleEn: "Rent Out My House (Host)",
-    desc: "Unified live calendar, channel sync (Airbnb, Booking.com), and occupancy analytics.",
+    desc: "Unified live calendar, channel sync (Airbnb, Booking.com), AI rent predictor, and occupancy analytics.",
     to: "/host",
     tint: "from-accent/20 to-accent/5 text-accent",
-  },
-  {
-    role: "cleaner",
-    icon: Sparkles,
-    titleKa: "დასუფთავება & ლოჯისტიკა (დამლაგებელი)",
-    titleEn: "Turnover & Cleaning Staff",
-    desc: "Mobile portal with assigned tasks, checklists, and one-tap completion to release inventory.",
-    to: "/cleaner",
-    tint: "from-emerald-500/15 to-emerald-500/5 text-emerald-600",
-  },
-  {
-    role: "parent",
-    icon: ShieldCheck,
-    titleKa: "მშობლის კონტროლი (გარანტორი)",
-    titleEn: "Parents' Assurance Portal",
-    desc: "View-only: compatibility scores, vetted lease agreement, and SakhliAI Vault deposit status.",
-    to: "/parent",
-    tint: "from-rose-500/15 to-rose-500/5 text-rose-600",
   },
 ];
 
@@ -172,13 +153,12 @@ function RoleSelectInner() {
           })}
         </div>
 
-        {profile?.role && (
-          <div className="mt-6 text-center">
-            <Button variant="ghost" onClick={() => navigate({ to: "/" })}>
-              Skip — go home
-            </Button>
-          </div>
-        )}
+        <div className="mt-8 text-center">
+          <Button variant="ghost" onClick={() => navigate({ to: "/" })}>
+            <ArrowLeft className="mr-1.5 h-4 w-4" />
+            უკან დაბრუნება / Go Back to Homepage
+          </Button>
+        </div>
       </main>
     </div>
   );

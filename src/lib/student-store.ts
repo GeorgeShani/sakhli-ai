@@ -15,6 +15,7 @@ export type StudentProfile = {
   quiet: boolean;
   cleanliness: number;
   bio: string;
+  verified: boolean;
   salaryBracket: SalaryBracket;
   incomeSource: IncomeSource;
   incomeSources?: IncomeSource[];
@@ -40,6 +41,7 @@ export const defaultProfile: StudentProfile = {
   quiet: true,
   cleanliness: 3,
   bio: "",
+  verified: false,
   salaryBracket: "500_1000",
   incomeSource: "family",
   incomeSources: ["family"],

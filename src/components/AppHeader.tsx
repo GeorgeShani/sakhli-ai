@@ -8,8 +8,6 @@ import { useAuth, type AppRole } from "@/lib/auth";
 const ROLE_HOME: Record<AppRole, string> = {
   student: "/matches",
   host: "/host",
-  cleaner: "/cleaner",
-  parent: "/parent",
 };
 
 export function AppHeader() {
@@ -53,8 +51,6 @@ export function AppHeader() {
           {(!profile?.role || profile.role === "student") && navItem("/matches", t("nav.matches"))}
           {(!profile?.role || profile.role === "student") && navItem("/dashboard", t("nav.dashboard"))}
           {(!profile?.role || profile.role === "host") && navItem("/host", "Host")}
-          {profile?.role === "cleaner" && navItem("/cleaner", "Cleaner")}
-          {profile?.role === "parent" && navItem("/parent", "Parent")}
         </nav>
 
         <div className="flex items-center gap-2">
