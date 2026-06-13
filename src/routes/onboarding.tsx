@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AppHeader } from "@/components/AppHeader";
+import { AuthGate } from "@/components/AuthGate";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -21,7 +22,7 @@ import {
   type SleepSchedule,
   type StudentProfile,
 } from "@/lib/student-store";
-import { ArrowLeft, ArrowRight, Check, Upload, ShieldCheck, FileText } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Loader2, Mail, ShieldCheck } from "lucide-react";
 
 const GE_UNIVERSITIES: { value: string; label: string }[] = [
   { value: "თბილისის სახელმწიფო უნივერსიტეტი (TSU)", label: "თბილისის სახელმწიფო უნივერსიტეტი (TSU)" },
