@@ -48,6 +48,14 @@ export const Route = createFileRoute("/onboarding")({
 const TOTAL = 7;
 
 function OnboardingPage() {
+  return (
+    <AuthGate requireRole={false}>
+      <OnboardingInner />
+    </AuthGate>
+  );
+}
+
+function OnboardingInner() {
   const { t } = useI18n();
   const navigate = useNavigate();
   const { save } = useProfile();
