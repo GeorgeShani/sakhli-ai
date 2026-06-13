@@ -11,7 +11,9 @@ import {
   AlertCircle,
   Phone,
   MapPin,
+  GraduationCap,
 } from "lucide-react";
+import { screenApplicant } from "@/lib/mock-data";
 import { supabase } from "@/integrations/supabase/client";
 import { AppHeader } from "@/components/AppHeader";
 import { AuthGate } from "@/components/AuthGate";
