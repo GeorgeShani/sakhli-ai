@@ -583,21 +583,23 @@ function UtilitySplitter({
                   }
                   className="h-8 flex-1"
                 />
-                <div className="flex items-center gap-1">
-                  <Label className="text-[10px] uppercase tracking-wide text-muted-foreground">Day</Label>
-                  <Input
-                    type="number"
-                    min={1}
-                    max={30}
-                    className="h-8 w-14"
-                    value={r.moveInDay}
-                    onChange={(e) =>
-                      setRoommates((rs) =>
-                        rs.map((x, j) => (j === i ? { ...x, moveInDay: Math.max(1, Math.min(30, Number(e.target.value) || 1)) } : x)),
-                      )
-                    }
-                  />
-                </div>
+                {mode === "movein" && (
+                  <div className="flex items-center gap-1">
+                    <Label className="text-[10px] uppercase tracking-wide text-muted-foreground">Day</Label>
+                    <Input
+                      type="number"
+                      min={1}
+                      max={30}
+                      className="h-8 w-14"
+                      value={r.moveInDay}
+                      onChange={(e) =>
+                        setRoommates((rs) =>
+                          rs.map((x, j) => (j === i ? { ...x, moveInDay: Math.max(1, Math.min(30, Number(e.target.value) || 1)) } : x)),
+                        )
+                      }
+                    />
+                  </div>
+                )}
                 {roommates.length > 1 && (
                   <Button
                     size="icon"
