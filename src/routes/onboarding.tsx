@@ -61,7 +61,6 @@ function OnboardingInner() {
   const { save } = useProfile();
   const [step, setStep] = useState(0);
   const [profile, setProfile] = useState<StudentProfile>(defaultProfile);
-  const [profile, setProfile] = useState<StudentProfile>(defaultProfile);
 
   const update = <K extends keyof StudentProfile>(k: K, v: StudentProfile[K]) =>
     setProfile((p) => ({ ...p, [k]: v }));
