@@ -58,6 +58,7 @@ export function AiAssistantBubble() {
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const path = useRouterState({ select: (s) => s.location.pathname });
   const { profile } = useAuth();
+  const { locale } = useI18n();
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -70,11 +71,15 @@ export function AiAssistantBubble() {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [msgs]);
 
+  const ask = (text: string) => {
+    const reply = autoReply(text, path, profile?.role);
+    setMsgs((m) => [...m, { role: "user", text }, { role: "ai", text: reply }]);
+  };
+
   const send = () => {
     const text = input.trim();
     if (!text) return;
-    const reply = autoReply(text, path, profile?.role);
-    setMsgs((m) => [...m, { role: "user", text }, { role: "ai", text: reply }]);
+    ask(text);
     setInput("");
   };
 
