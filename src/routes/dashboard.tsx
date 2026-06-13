@@ -423,7 +423,16 @@ function UtilitySplitter({
   const [mode, setMode] = useState<"equal" | "movein">("movein");
   const [category, setCategory] = useState("Electricity");
   const [amount, setAmount] = useState("");
+  const [payStatus, setPayStatus] = useState<"idle" | "processing" | "paid">("idle");
+  const [payBank, setPayBank] = useState<"TBC" | "BOG" | null>(null);
   const monthDays = 30;
+
+  const pay = (bank: "TBC" | "BOG") => {
+    if (payStatus === "processing") return;
+    setPayBank(bank);
+    setPayStatus("processing");
+    window.setTimeout(() => setPayStatus("paid"), 1200);
+  };
 
   const total = bills.reduce((s, b) => s + b.amount, 0);
 
