@@ -206,7 +206,7 @@ function MatchesPage() {
               <p className="mt-2 text-sm text-muted-foreground">
                 განაახლეთ ტარიფი შეუზღუდავი მატჩებისთვის. · Upgrade to keep swiping unlimited matches.
               </p>
-              <div className="mt-6 flex justify-center gap-3">
+              <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
                 <Button
                   onClick={() => {
                     setPricingReason("swipe_limit");
@@ -215,6 +215,7 @@ function MatchesPage() {
                 >
                   <Crown className="mr-1.5 h-4 w-4" /> განაახლეთ ტარიფი / Switch Plans
                 </Button>
+                <FreeSwipeCountdown />
                 <Button asChild variant="outline">
                   <Link to="/dashboard">{t("nav.dashboard")}</Link>
                 </Button>
