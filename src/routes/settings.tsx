@@ -18,6 +18,7 @@ import {
   Moon,
   ShieldCheck,
   Sun,
+  Upload,
   User as UserIcon,
 } from "lucide-react";
 import { toast } from "sonner";
