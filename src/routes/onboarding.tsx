@@ -348,3 +348,59 @@ export function StudentIdUpload({
     </div>
   );
 }
+
+/* -------- University select with "Other" fallback -------- */
+function UniversitySelect({
+  value,
+  onChange,
+  placeholder,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+}) {
+  const isPreset = useMemo(
+    () => GE_UNIVERSITIES.some((u) => u.value === value),
+    [value],
+  );
+  const [otherMode, setOtherMode] = useState<boolean>(!!value && !isPreset);
+
+  const selectValue = otherMode ? OTHER_VALUE : isPreset ? value : "";
+
+  return (
+    <div className="space-y-2">
+      <Select
+        value={selectValue}
+        onValueChange={(v) => {
+          if (v === OTHER_VALUE) {
+            setOtherMode(true);
+            onChange("");
+          } else {
+            setOtherMode(false);
+            onChange(v);
+          }
+        }}
+      >
+        <SelectTrigger className="font-sans">
+          <SelectValue placeholder="აირჩიეთ უნივერსიტეტი / Select university" />
+        </SelectTrigger>
+        <SelectContent className="font-sans max-h-72">
+          {GE_UNIVERSITIES.map((u) => (
+            <SelectItem key={u.value} value={u.value}>
+              {u.label}
+            </SelectItem>
+          ))}
+          <SelectItem value={OTHER_VALUE}>სხვა / Other…</SelectItem>
+        </SelectContent>
+      </Select>
+      {otherMode && (
+        <Input
+          autoFocus
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder ?? "თქვენი უნივერსიტეტი / Your university"}
+        />
+      )}
+    </div>
+  );
+}
