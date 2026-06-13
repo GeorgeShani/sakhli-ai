@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as RoleSelectRouteImport } from './routes/role-select'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as MatchesRouteImport } from './routes/matches'
@@ -18,6 +19,11 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiPublicN8nCleaningRouteImport } from './routes/api/public/n8n/cleaning'
 import { Route as ApiPublicN8nBookingRouteImport } from './routes/api/public/n8n/booking'
 
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RoleSelectRoute = RoleSelectRouteImport.update({
   id: '/role-select',
   path: '/role-select',
@@ -66,6 +72,7 @@ export interface FileRoutesByFullPath {
   '/matches': typeof MatchesRoute
   '/onboarding': typeof OnboardingRoute
   '/role-select': typeof RoleSelectRoute
+  '/settings': typeof SettingsRoute
   '/api/public/n8n/booking': typeof ApiPublicN8nBookingRoute
   '/api/public/n8n/cleaning': typeof ApiPublicN8nCleaningRoute
 }
@@ -76,6 +83,7 @@ export interface FileRoutesByTo {
   '/matches': typeof MatchesRoute
   '/onboarding': typeof OnboardingRoute
   '/role-select': typeof RoleSelectRoute
+  '/settings': typeof SettingsRoute
   '/api/public/n8n/booking': typeof ApiPublicN8nBookingRoute
   '/api/public/n8n/cleaning': typeof ApiPublicN8nCleaningRoute
 }
@@ -87,6 +95,7 @@ export interface FileRoutesById {
   '/matches': typeof MatchesRoute
   '/onboarding': typeof OnboardingRoute
   '/role-select': typeof RoleSelectRoute
+  '/settings': typeof SettingsRoute
   '/api/public/n8n/booking': typeof ApiPublicN8nBookingRoute
   '/api/public/n8n/cleaning': typeof ApiPublicN8nCleaningRoute
 }
@@ -99,6 +108,7 @@ export interface FileRouteTypes {
     | '/matches'
     | '/onboarding'
     | '/role-select'
+    | '/settings'
     | '/api/public/n8n/booking'
     | '/api/public/n8n/cleaning'
   fileRoutesByTo: FileRoutesByTo
@@ -109,6 +119,7 @@ export interface FileRouteTypes {
     | '/matches'
     | '/onboarding'
     | '/role-select'
+    | '/settings'
     | '/api/public/n8n/booking'
     | '/api/public/n8n/cleaning'
   id:
@@ -119,6 +130,7 @@ export interface FileRouteTypes {
     | '/matches'
     | '/onboarding'
     | '/role-select'
+    | '/settings'
     | '/api/public/n8n/booking'
     | '/api/public/n8n/cleaning'
   fileRoutesById: FileRoutesById
@@ -130,12 +142,20 @@ export interface RootRouteChildren {
   MatchesRoute: typeof MatchesRoute
   OnboardingRoute: typeof OnboardingRoute
   RoleSelectRoute: typeof RoleSelectRoute
+  SettingsRoute: typeof SettingsRoute
   ApiPublicN8nBookingRoute: typeof ApiPublicN8nBookingRoute
   ApiPublicN8nCleaningRoute: typeof ApiPublicN8nCleaningRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/role-select': {
       id: '/role-select'
       path: '/role-select'
@@ -202,6 +222,7 @@ const rootRouteChildren: RootRouteChildren = {
   MatchesRoute: MatchesRoute,
   OnboardingRoute: OnboardingRoute,
   RoleSelectRoute: RoleSelectRoute,
+  SettingsRoute: SettingsRoute,
   ApiPublicN8nBookingRoute: ApiPublicN8nBookingRoute,
   ApiPublicN8nCleaningRoute: ApiPublicN8nCleaningRoute,
 }
