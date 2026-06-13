@@ -2,6 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { AppHeader } from "@/components/AppHeader";
 import { AuthGate } from "@/components/AuthGate";
+import { SmartContractCard } from "@/components/SmartContract";
+import { DisputeResolver } from "@/components/DisputeResolver";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -135,6 +137,16 @@ function DashboardPage() {
                           </div>
                         ))}
                       </div>
+                    </section>
+                  )}
+                  {likedPlaces[0] && (
+                    <section>
+                      <SmartContractCard
+                        propertyTitle={likedPlaces[0]!.title}
+                        district={likedPlaces[0]!.district}
+                        monthlyRent={likedPlaces[0]!.price}
+                        tenantName={profile?.name || "Student"}
+                      />
                     </section>
                   )}
                 </>
