@@ -8,8 +8,17 @@ import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useI18n } from "@/lib/i18n";
-import { defaultProfile, useProfile, type SleepSchedule, type StudentProfile } from "@/lib/student-store";
-import { ArrowLeft, ArrowRight, Check } from "lucide-react";
+import {
+  defaultProfile,
+  useProfile,
+  type SleepSchedule,
+  type StudentProfile,
+  type SalaryBracket,
+  type IncomeSource,
+  SALARY_RANGES,
+  INCOME_SOURCE_LABEL,
+} from "@/lib/student-store";
+import { ArrowLeft, ArrowRight, Check, Wallet } from "lucide-react";
 
 export const Route = createFileRoute("/onboarding")({
   head: () => ({
@@ -21,7 +30,7 @@ export const Route = createFileRoute("/onboarding")({
   component: OnboardingPage,
 });
 
-const TOTAL = 6;
+const TOTAL = 7;
 
 function OnboardingPage() {
   const { t } = useI18n();
