@@ -76,6 +76,7 @@ export function AuthGate({ children, requireRole = true }: Props) {
 
 function AuthCard() {
   const { signIn, signUp } = useAuth();
+  const navigate = useNavigate();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
