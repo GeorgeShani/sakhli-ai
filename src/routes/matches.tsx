@@ -140,7 +140,7 @@ function MatchesPage() {
             <div>
               <div className="text-xs font-semibold uppercase tracking-wide">AI Best Fit</div>
               <div className="text-[11px] text-muted-foreground">
-                Prioritize matches above 85% · &gt;85%-ის პრიორიტეტი
+                Show only matches ≥ 85% · მხოლოდ ≥85%-ის ჩვენება
               </div>
             </div>
           </div>
