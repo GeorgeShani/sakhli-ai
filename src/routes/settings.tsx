@@ -158,29 +158,50 @@ function SettingsPage() {
           </Button>
 
           {showAvatars && (
-            <div className="mt-3 grid grid-cols-6 gap-2 rounded-lg border border-border bg-secondary/40 p-3">
-              {AVATAR_OPTIONS.map((url) => {
-                const selected = activeProfile.avatar === url;
-                return (
-                  <button
-                    key={url}
-                    type="button"
-                    onClick={() => handlePickAvatar(url)}
-                    className={[
-                      "relative aspect-square overflow-hidden rounded-full border-2 transition-all hover:scale-105",
-                      selected ? "border-primary shadow-[0_0_14px_var(--primary)]" : "border-border",
-                    ].join(" ")}
-                  >
-                    <img src={url} alt="avatar option" className="h-full w-full object-cover" />
-                    {selected && (
-                      <span className="absolute bottom-0 right-0 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                        <Check className="h-2.5 w-2.5" />
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
+            <>
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleUpload}
+              />
+              <div className="mt-3 grid grid-cols-4 gap-2 rounded-lg border border-border bg-secondary/40 p-3 sm:grid-cols-7">
+                {AVATAR_OPTIONS.map((url) => {
+                  const selected = activeProfile.avatar === url;
+                  return (
+                    <button
+                      key={url}
+                      type="button"
+                      onClick={() => handlePickAvatar(url)}
+                      className={[
+                        "relative aspect-square overflow-hidden rounded-full border-2 transition-all hover:scale-105",
+                        selected ? "border-primary shadow-[0_0_14px_var(--primary)]" : "border-border",
+                      ].join(" ")}
+                    >
+                      <img src={url} alt="avatar option" className="h-full w-full object-cover" />
+                      {selected && (
+                        <span className="absolute bottom-0 right-0 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                          <Check className="h-2.5 w-2.5" />
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+                <button
+                  type="button"
+                  onClick={() => fileRef.current?.click()}
+                  className="relative flex aspect-square flex-col items-center justify-center gap-0.5 rounded-full border-2 border-dashed border-primary/60 bg-primary/5 text-primary transition-all hover:scale-105 hover:bg-primary/10"
+                  title="ფოტოს ატვირთვა / Upload Custom Photo"
+                >
+                  <Upload className="h-4 w-4" />
+                  <span className="text-[8px] font-semibold leading-none">UPLOAD</span>
+                </button>
+              </div>
+              <div className="mt-2 text-center text-[11px] text-muted-foreground">
+                + ფოტოს ატვირთვა / Upload Custom Photo
+              </div>
+            </>
           )}
         </div>
 
