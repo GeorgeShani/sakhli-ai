@@ -20,6 +20,8 @@ import {
   type AssistantBullet,
 } from "@/lib/mock-data";
 import { CommuteWidget } from "@/components/CommuteWidget";
+import { PricingModal } from "@/components/PricingModal";
+import { useSubscription } from "@/lib/subscription";
 import {
   Bed,
   MapPin,
@@ -33,6 +35,8 @@ import {
   Brush,
   AlertTriangle,
   Wand2,
+  Crown,
+  Lock,
 } from "lucide-react";
 
 export const Route = createFileRoute("/matches")({
