@@ -210,57 +210,94 @@ function OnboardingPage() {
           )}
 
           {step === 6 && (
-            <div className="space-y-6">
+            <div className="space-y-5">
               <div>
                 <h2 className="flex items-center gap-2 font-display text-xl font-semibold">
-                  <Wallet className="h-5 w-5 text-primary" /> Financial range
+                  <Wallet className="h-5 w-5 text-primary" />
+                  ფინანსური პროფილი / Financial Profile
                 </h2>
                 <p className="mt-1 text-sm text-muted-foreground">
                   Used by SakhliAI to calculate a safe rent-to-income ratio. Private — never shown to hosts.
                 </p>
               </div>
 
-              <div className="space-y-2">
-                <Label>Monthly income bracket (GEL)</Label>
-                <div className="grid gap-2 sm:grid-cols-2">
+              <div className="space-y-3">
+                <Label className="text-sm font-medium">
+                  ყოველთვიური შემოსავალი / Monthly income (GEL)
+                </Label>
+                <RadioGroup
+                  value={profile.salaryBracket}
+                  onValueChange={(v) => update("salaryBracket", v as SalaryBracket)}
+                  className="grid gap-2"
+                >
                   {(Object.keys(SALARY_RANGES) as SalaryBracket[]).map((k) => (
-                    <button
+                    <label
                       key={k}
-                      type="button"
-                      onClick={() => update("salaryBracket", k)}
+                      htmlFor={`sal-${k}`}
                       className={[
-                        "rounded-xl border p-3 text-left transition-all",
+                        "flex cursor-pointer items-center gap-3 rounded-xl border p-4 transition-all",
                         profile.salaryBracket === k
                           ? "border-accent bg-accent/10 ring-2 ring-accent/40"
                           : "border-border bg-card hover:border-accent/40",
                       ].join(" ")}
                     >
-                      <div className="font-medium">{SALARY_RANGES[k].label}</div>
-                      <div className="text-xs text-muted-foreground">per month</div>
-                    </button>
+                      <RadioGroupItem id={`sal-${k}`} value={k} />
+                      <div className="flex-1">
+                        <div className="font-medium">{SALARY_RANGES[k].label}</div>
+                        <div className="text-xs text-muted-foreground">{SALARY_RANGES[k].labelKa}</div>
+                      </div>
+                    </label>
                   ))}
-                </div>
+                </RadioGroup>
+              </div>
+            </div>
+          )}
+
+          {step === 7 && (
+            <div className="space-y-5">
+              <div>
+                <h2 className="flex items-center gap-2 font-display text-xl font-semibold">
+                  <Briefcase className="h-5 w-5 text-primary" />
+                  შემოსავლის წყარო / Income Source
+                </h2>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Select all that apply. Helps us match you to financially compatible flatmates.
+                </p>
               </div>
 
-              <div className="space-y-2">
-                <Label>Income source</Label>
-                <div className="grid gap-2 sm:grid-cols-2">
-                  {(Object.keys(INCOME_SOURCE_LABEL) as IncomeSource[]).map((k) => (
-                    <button
+              <div className="grid gap-2">
+                {(["job", "family", "scholarship"] as IncomeSource[]).map((k) => {
+                  const checked = (profile.incomeSources ?? []).includes(k);
+                  return (
+                    <label
                       key={k}
-                      type="button"
-                      onClick={() => update("incomeSource", k)}
+                      htmlFor={`inc-${k}`}
                       className={[
-                        "rounded-xl border p-3 text-left transition-all",
-                        profile.incomeSource === k
+                        "flex cursor-pointer items-center gap-3 rounded-xl border p-4 transition-all",
+                        checked
                           ? "border-accent bg-accent/10 ring-2 ring-accent/40"
                           : "border-border bg-card hover:border-accent/40",
                       ].join(" ")}
                     >
-                      <div className="font-medium">{INCOME_SOURCE_LABEL[k]}</div>
-                    </button>
-                  ))}
-                </div>
+                      <Checkbox
+                        id={`inc-${k}`}
+                        checked={checked}
+                        onCheckedChange={(v) => {
+                          const cur = new Set(profile.incomeSources ?? []);
+                          if (v) cur.add(k);
+                          else cur.delete(k);
+                          const arr = Array.from(cur) as IncomeSource[];
+                          update("incomeSources", arr.length ? arr : ["family"]);
+                          update("incomeSource", (arr[0] ?? "family") as IncomeSource);
+                        }}
+                      />
+                      <div className="flex-1">
+                        <div className="font-medium">{INCOME_SOURCE_LABEL_KA[k]}</div>
+                        <div className="text-xs text-muted-foreground">{INCOME_SOURCE_LABEL[k]}</div>
+                      </div>
+                    </label>
+                  );
+                })}
               </div>
             </div>
           )}
