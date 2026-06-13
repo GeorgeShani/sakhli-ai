@@ -12,6 +12,9 @@ import {
   Phone,
   MapPin,
   GraduationCap,
+  TrendingUp,
+  AlertTriangle,
+  ShieldCheck,
 } from "lucide-react";
 import { screenApplicant } from "@/lib/mock-data";
 import { supabase } from "@/integrations/supabase/client";
@@ -103,6 +106,46 @@ const CHANNEL_META: Record<string, { label: string; color: string; logo: string;
   direct: { label: "Direct", color: "bg-amber-500", logo: "★", logoColor: "text-amber-500" },
 };
 
+// Curated default catalog used when the host has no properties in the DB yet.
+const DEFAULT_PROPERTIES: Property[] = [
+  {
+    id: "default-saburtalo-101",
+    title: "საბურთალოს სტუდენტური ჰაბი #101 (Saburtalo Flat near Technical Uni)",
+    city: "Saburtalo",
+    address: "Pekini Ave, near GTU",
+    image_url: null,
+    listing_type: "hybrid",
+    price_per_night: 55,
+  },
+  {
+    id: "default-vake-204",
+    title: "ვაკის მინიმალისტური აპარტამენტი #204 (Vake Suite near Iliauni)",
+    city: "Vake",
+    address: "Chavchavadze Ave, near ISU",
+    image_url: null,
+    listing_type: "hybrid",
+    price_per_night: 72,
+  },
+  {
+    id: "default-old-tbilisi-302",
+    title: "ძველი თბილისის ჰიბრიდული ბინა #302 (Old Tbilisi Tourist/Student Unit)",
+    city: "Old Tbilisi",
+    address: "Betlemi St, Sololaki",
+    image_url: null,
+    listing_type: "hybrid",
+    price_per_night: 80,
+  },
+  {
+    id: "default-rustavi-401",
+    title: "რუსთავის მუნიციპალური სივრცე #401 (Rustavi Central Smart Flat)",
+    city: "Rustavi",
+    address: "Kostava St, Rustavi",
+    image_url: null,
+    listing_type: "hybrid",
+    price_per_night: 38,
+  },
+];
+
 function HostPage() {
   const [properties, setProperties] = useState<Property[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -111,7 +154,7 @@ function HostPage() {
   const [selectedProp, setSelectedProp] = useState<string>("all");
   const [pulse, setPulse] = useState<string | null>(null);
 
-  // initial load
+  // initial load — falls back to a curated Tbilisi/Rustavi catalog when the DB is empty
   useEffect(() => {
     (async () => {
       const [p, b, s, t] = await Promise.all([
@@ -120,7 +163,8 @@ function HostPage() {
         supabase.from("channel_sync").select("*"),
         supabase.from("cleaning_tasks").select("*").order("scheduled_for"),
       ]);
-      if (p.data) setProperties(p.data as Property[]);
+      const dbProps = (p.data as Property[] | null) ?? [];
+      setProperties(dbProps.length > 0 ? dbProps : DEFAULT_PROPERTIES);
       if (b.data) setBookings(b.data as Booking[]);
       if (s.data) setSyncs(s.data as ChannelSync[]);
       if (t.data) setTasks(t.data as CleaningTask[]);
@@ -346,12 +390,17 @@ function StatCard({ label, value, icon }: { label: string; value: number | strin
 }
 
 function HeroAnalytics({ occupancy, revenue }: { occupancy: number; revenue: number }) {
-  const tip =
-    occupancy >= 80
-      ? "Demand is high for June. Increase short-term weekend rates by 15%."
-      : occupancy >= 50
-        ? "Occupancy is healthy — bundle a 7-night stay discount to lift weekday demand."
-        : "Low occupancy. Run a 10% Booking.com promo and reduce minimum-stay to 1 night.";
+  // Student-discount-first AI recommendations (no host promos / corporate booking deals).
+  const lowOccupancy = occupancy < 50;
+  const tipIcon = lowOccupancy ? (
+    <AlertTriangle className="w-5 h-5 text-warning" />
+  ) : (
+    <TrendingUp className="w-5 h-5 text-accent" />
+  );
+  const tipText = lowOccupancy
+    ? "დაბალი დატვირთულობა. ჩართეთ 15%-იანი სტუდენტური ფასდაკლება SakliAI-ზე გრძელვადიანი მდგმურის სწრაფად საპოვნელად / Low occupancy. Activate a 15% Student Discount on SakliAI to secure a long-term tenant immediately."
+    : "რეკომენდაცია: Airbnb პრიორიტეტი (Airbnb Priority). გადართეთ მოკლევადიან გაქირავებაზე ტურისტული სეზონის პიკისას შემოსავლის 2.5x-ით გასაზრდელად / Recommendation: Switch to Airbnb Priority during active short-term tourist windows to maximize hybrid yield.";
+
   return (
     <div className="mb-4 grid gap-4 md:grid-cols-3">
       <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
@@ -376,15 +425,81 @@ function HeroAnalytics({ occupancy, revenue }: { occupancy: number; revenue: num
           <div className="mt-2 text-xs text-muted-foreground">across all channels</div>
         </CardContent>
       </Card>
-      <Card className="border-accent/30 bg-gradient-to-br from-accent/10 to-transparent">
+      <Card
+        className={`border-accent/30 bg-gradient-to-br ${
+          lowOccupancy ? "from-warning/10" : "from-accent/10"
+        } to-transparent`}
+      >
         <CardContent className="p-5">
           <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
-            <Sparkles className="h-3.5 w-3.5 text-accent" /> AI Optimization · რჩევა
+            <Sparkles className="w-4 h-4 text-accent" /> AI Optimization · რჩევა
           </div>
-          <div className="mt-1 text-sm font-medium leading-snug">{tip}</div>
+          <div className="mt-2 flex items-start gap-2 text-sm font-medium leading-snug">
+            <span className="mt-0.5 shrink-0">{tipIcon}</span>
+            <span>{tipText}</span>
+          </div>
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+// -------------------- AIRBNB PRIORITY TOGGLE --------------------
+function AirbnbPriorityToggle() {
+  const [active, setActive] = useState(false);
+
+  const onToggle = (v: boolean) => {
+    setActive(v);
+    if (v) {
+      toast.success(
+        "სისტემა გადავიდა მოკლევადიან ტურისტულ რეჟიმზე. კალენდარი სინქრონიზებულია n8n-ის მიერ / System shifted to short-term tourist optimization. Calendar synchronized via n8n backend.",
+        { duration: 4500 },
+      );
+    } else {
+      toast("Airbnb Priority disabled — reverted to hybrid student-first balance.");
+    }
+  };
+
+  return (
+    <Card
+      className={`mb-6 border-2 transition-colors ${
+        active
+          ? "border-emerald-500/50 bg-gradient-to-br from-emerald-500/10 to-transparent"
+          : "border-accent/30 bg-gradient-to-br from-accent/5 to-transparent"
+      }`}
+    >
+      <CardContent className="flex flex-wrap items-center justify-between gap-4 p-5">
+        <div className="flex items-start gap-3">
+          <div className="rounded-md bg-rose-500/15 p-2 text-rose-500">
+            <TrendingUp className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="font-display text-lg font-semibold">
+              Airbnb პრიორიტეტი / Airbnb Priority
+            </div>
+            <div className="text-xs text-muted-foreground">
+              Tourist-season override — pushes Airbnb / Booking calendars to the top of the n8n
+              sync queue.
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          {active && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2.5 py-1 text-xs font-medium text-emerald-700 dark:text-emerald-300">
+              <ShieldCheck className="w-4 h-4" />
+              Synced via n8n
+            </span>
+          )}
+          <Switch checked={active} onCheckedChange={onToggle} aria-label="Toggle Airbnb Priority" />
+        </div>
+      </CardContent>
+      {active && (
+        <CardContent className="border-t border-emerald-500/20 bg-emerald-500/5 px-5 py-3 text-xs text-emerald-800 dark:text-emerald-200">
+          ✅ სისტემა გადავიდა მოკლევადიან ტურისტულ რეჟიმზე. კალენდარი სინქრონიზებულია n8n-ის მიერ /
+          System shifted to short-term tourist optimization. Calendar synchronized via n8n backend.
+        </CardContent>
+      )}
+    </Card>
   );
 }
 
