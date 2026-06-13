@@ -479,6 +479,17 @@ function UtilitySplitter({
           </div>
         </div>
       </div>
+
+      <div className="card-elevated p-5">
+        <div className="mb-2 text-xs uppercase tracking-wide text-muted-foreground">
+          AI House Rules · კონფლიქტების მედიატორი
+        </div>
+        <p className="mb-3 text-sm text-muted-foreground">
+          არ ეთანხმები flatmate-ს? AI გააანალიზებს onboarding-ის ჩვევებს და გასცემს კომპრომისს.
+        </p>
+        <DisputeResolver />
+      </div>
+
       {/* hidden text helper for i18n keys referenced elsewhere */}
       <span className="sr-only">{t("utilities.total")}</span>
     </div>
