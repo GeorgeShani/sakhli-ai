@@ -12,9 +12,9 @@ const en: Dict = {
   "nav.dashboard": "Dashboard",
   "nav.start": "Get started",
 
-  "hero.title": "Your next home. Your kind of people.",
+  "hero.title": "Find your flatmate. Find your flat.",
   "hero.subtitle":
-    "SakhliAI pairs students across Georgia with compatible flatmates — matched by how you live, not just where.",
+    "SakhliAI matches students in Georgia with compatible flatmates and long-term homes — using behavior, budget, and lifestyle, not just photos.",
   "hero.cta.primary": "Start matching",
   "hero.cta.secondary": "How it works",
   "hero.stat.students": "Students onboarded",
@@ -116,9 +116,9 @@ const ka: Dict = {
   "nav.dashboard": "დაფა",
   "nav.start": "დაიწყე",
 
-  "hero.title": "შენი მომავალი სახლი. შენი ხალხი.",
+  "hero.title": "იპოვე თანამცხოვრები. იპოვე ბინა.",
   "hero.subtitle":
-    "SakhliAI აკავშირებს სტუდენტებს საქართველოში თავსებად თანამცხოვრებთან — იმის მიხედვით, როგორ ცხოვრობ, და არა მხოლოდ სად.",
+    "SakhliAI აკავშირებს სტუდენტებს საქართველოში თავსებად თანამცხოვრებთან და გრძელვადიან ბინებთან — ქცევის, ბიუჯეტისა და ცხოვრების სტილის მიხედვით.",
   "hero.cta.primary": "დაიწყე შერჩევა",
   "hero.cta.secondary": "როგორ მუშაობს",
   "hero.stat.students": "რეგისტრირებული სტუდენტი",
