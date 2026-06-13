@@ -4,6 +4,20 @@ import { Bot, Send, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/lib/auth";
+import { useI18n } from "@/lib/i18n";
+
+const TEMPLATES: Record<"en" | "ka", string[]> = {
+  en: [
+    "How can I reduce my winter gas utility bill?",
+    "What is the safest student neighborhood in Tbilisi?",
+    "How does the SakliAI hybrid revenue model benefit me?",
+  ],
+  ka: [
+    "როგორ შევამცირო ზამთრის გაზის გადასახადი?",
+    "რომელია ყველაზე უსაფრთხო სტუდენტური უბანი თბილისში?",
+    "როგორ მეხმარება SakliAI-ის ჰიბრიდული გაქირავების მოდელი?",
+  ],
+};
 
 type Msg = { role: "ai" | "user"; text: string };
 
