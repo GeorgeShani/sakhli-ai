@@ -12,8 +12,8 @@ type Props = {
 
 const PLAN_FEATURES: Record<Plan, { en: string[]; ka: string[] }> = {
   free: {
-    en: ["Up to 5 swipes", "Browse public listings", "Basic profile"],
-    ka: ["5 სვაიპამდე", "საჯარო განცხადებები", "ძირითადი პროფილი"],
+    en: ["5 Daily Swipes (limit resets daily)", "Browse public listings", "Basic profile"],
+    ka: ["5 დღიური სვაიპი (ლიმიტი ახლდება ყოველდღიურად)", "საჯარო განცხადებები", "ძირითადი პროფილი"],
   },
   plus: {
     en: ["Unlimited swipes", "AI Best Fit filter", "Basic compatibility filters", "Verified student badge"],
