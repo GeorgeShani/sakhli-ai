@@ -15,6 +15,7 @@ export type StudentProfile = {
   quiet: boolean;
   cleanliness: number;
   bio: string;
+  verified: boolean;
   salaryBracket: SalaryBracket;
   incomeSource: IncomeSource;
   incomeSources?: IncomeSource[];
