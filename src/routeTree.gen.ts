@@ -9,14 +9,27 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as RoleSelectRouteImport } from './routes/role-select'
+import { Route as ParentRouteImport } from './routes/parent'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as MatchesRouteImport } from './routes/matches'
 import { Route as HostRouteImport } from './routes/host'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as CleanerRouteImport } from './routes/cleaner'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiPublicN8nCleaningRouteImport } from './routes/api/public/n8n/cleaning'
 import { Route as ApiPublicN8nBookingRouteImport } from './routes/api/public/n8n/booking'
 
+const RoleSelectRoute = RoleSelectRouteImport.update({
+  id: '/role-select',
+  path: '/role-select',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ParentRoute = ParentRouteImport.update({
+  id: '/parent',
+  path: '/parent',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
@@ -37,6 +50,11 @@ const DashboardRoute = DashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CleanerRoute = CleanerRouteImport.update({
+  id: '/cleaner',
+  path: '/cleaner',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -55,29 +73,38 @@ const ApiPublicN8nBookingRoute = ApiPublicN8nBookingRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/cleaner': typeof CleanerRoute
   '/dashboard': typeof DashboardRoute
   '/host': typeof HostRoute
   '/matches': typeof MatchesRoute
   '/onboarding': typeof OnboardingRoute
+  '/parent': typeof ParentRoute
+  '/role-select': typeof RoleSelectRoute
   '/api/public/n8n/booking': typeof ApiPublicN8nBookingRoute
   '/api/public/n8n/cleaning': typeof ApiPublicN8nCleaningRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/cleaner': typeof CleanerRoute
   '/dashboard': typeof DashboardRoute
   '/host': typeof HostRoute
   '/matches': typeof MatchesRoute
   '/onboarding': typeof OnboardingRoute
+  '/parent': typeof ParentRoute
+  '/role-select': typeof RoleSelectRoute
   '/api/public/n8n/booking': typeof ApiPublicN8nBookingRoute
   '/api/public/n8n/cleaning': typeof ApiPublicN8nCleaningRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/cleaner': typeof CleanerRoute
   '/dashboard': typeof DashboardRoute
   '/host': typeof HostRoute
   '/matches': typeof MatchesRoute
   '/onboarding': typeof OnboardingRoute
+  '/parent': typeof ParentRoute
+  '/role-select': typeof RoleSelectRoute
   '/api/public/n8n/booking': typeof ApiPublicN8nBookingRoute
   '/api/public/n8n/cleaning': typeof ApiPublicN8nCleaningRoute
 }
@@ -85,44 +112,70 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/cleaner'
     | '/dashboard'
     | '/host'
     | '/matches'
     | '/onboarding'
+    | '/parent'
+    | '/role-select'
     | '/api/public/n8n/booking'
     | '/api/public/n8n/cleaning'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/cleaner'
     | '/dashboard'
     | '/host'
     | '/matches'
     | '/onboarding'
+    | '/parent'
+    | '/role-select'
     | '/api/public/n8n/booking'
     | '/api/public/n8n/cleaning'
   id:
     | '__root__'
     | '/'
+    | '/cleaner'
     | '/dashboard'
     | '/host'
     | '/matches'
     | '/onboarding'
+    | '/parent'
+    | '/role-select'
     | '/api/public/n8n/booking'
     | '/api/public/n8n/cleaning'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CleanerRoute: typeof CleanerRoute
   DashboardRoute: typeof DashboardRoute
   HostRoute: typeof HostRoute
   MatchesRoute: typeof MatchesRoute
   OnboardingRoute: typeof OnboardingRoute
+  ParentRoute: typeof ParentRoute
+  RoleSelectRoute: typeof RoleSelectRoute
   ApiPublicN8nBookingRoute: typeof ApiPublicN8nBookingRoute
   ApiPublicN8nCleaningRoute: typeof ApiPublicN8nCleaningRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/role-select': {
+      id: '/role-select'
+      path: '/role-select'
+      fullPath: '/role-select'
+      preLoaderRoute: typeof RoleSelectRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/parent': {
+      id: '/parent'
+      path: '/parent'
+      fullPath: '/parent'
+      preLoaderRoute: typeof ParentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/onboarding': {
       id: '/onboarding'
       path: '/onboarding'
@@ -151,6 +204,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/cleaner': {
+      id: '/cleaner'
+      path: '/cleaner'
+      fullPath: '/cleaner'
+      preLoaderRoute: typeof CleanerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -177,10 +237,13 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CleanerRoute: CleanerRoute,
   DashboardRoute: DashboardRoute,
   HostRoute: HostRoute,
   MatchesRoute: MatchesRoute,
   OnboardingRoute: OnboardingRoute,
+  ParentRoute: ParentRoute,
+  RoleSelectRoute: RoleSelectRoute,
   ApiPublicN8nBookingRoute: ApiPublicN8nBookingRoute,
   ApiPublicN8nCleaningRoute: ApiPublicN8nCleaningRoute,
 }

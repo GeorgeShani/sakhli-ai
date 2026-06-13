@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppHeader } from "@/components/AppHeader";
+import { AuthGate } from "@/components/AuthGate";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -34,7 +35,11 @@ import {
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/host")({
-  component: HostPage,
+  component: () => (
+    <AuthGate>
+      <HostPage />
+    </AuthGate>
+  ),
   errorComponent: ({ error }) => (
     <div className="p-8 text-center text-destructive">Failed to load: {error.message}</div>
   ),

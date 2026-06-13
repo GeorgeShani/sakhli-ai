@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { AppHeader } from "@/components/AppHeader";
+import { AuthGate } from "@/components/AuthGate";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -37,7 +38,11 @@ export const Route = createFileRoute("/dashboard")({
       { name: "description", content: "Your matches, utility splits, and chats." },
     ],
   }),
-  component: DashboardPage,
+  component: () => (
+    <AuthGate>
+      <DashboardPage />
+    </AuthGate>
+  ),
 });
 
 type Tab = "matches" | "utilities" | "chat";
