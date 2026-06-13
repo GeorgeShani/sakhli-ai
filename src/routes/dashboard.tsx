@@ -37,7 +37,11 @@ export const Route = createFileRoute("/dashboard")({
       { name: "description", content: "Your matches, utility splits, and chats." },
     ],
   }),
-  component: DashboardPage,
+  component: () => (
+    <AuthGate>
+      <DashboardPage />
+    </AuthGate>
+  ),
 });
 
 type Tab = "matches" | "utilities" | "chat";
