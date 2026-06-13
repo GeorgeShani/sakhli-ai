@@ -133,6 +133,20 @@ export function AiAssistantBubble() {
             ))}
           </div>
 
+          <div className="flex flex-wrap gap-1.5 border-t border-border bg-background/30 p-2">
+            {TEMPLATES[locale].map((q) => (
+              <button
+                key={q}
+                type="button"
+                onClick={() => ask(q)}
+                className="truncate rounded-full border border-primary/30 bg-primary/5 px-2.5 py-1 text-[11px] text-foreground transition-colors hover:bg-primary/10"
+                title={q}
+              >
+                {q}
+              </button>
+            ))}
+          </div>
+
           <div className="flex items-center gap-2 border-t border-border bg-background/50 p-2">
             <Input
               value={input}
