@@ -189,7 +189,7 @@ function DashboardPage() {
 
           {tab === "utilities" && (
             <UtilitySplitter
-              flatmateNames={likedPeople.map((f) => f!.name)}
+              flatmateNames={likedPeople.map((f) => f.name)}
               activeProperty={likedPlaces[0] ?? undefined}
             />
           )}
