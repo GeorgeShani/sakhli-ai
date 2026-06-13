@@ -9,7 +9,7 @@ const UNI_HUBS: Record<string, { walk: number; metro: number; bus: number; hub: 
 };
 
 function pickHub(uni?: string, district?: string) {
-  const base = (uni && UNI_HUBS[uni]) ?? { walk: 20, metro: 3, bus: 5, hub: uni ?? "კამპუსი" };
+  const base = (uni ? UNI_HUBS[uni] : undefined) ?? { walk: 20, metro: 3, bus: 5, hub: uni ?? "კამპუსი" };
   // distance scaling by district
   const f =
     district === "Saburtalo" ? 0.7 : district === "Vake" ? 1 : district === "Old Tbilisi" ? 1.2 : 1.4;
