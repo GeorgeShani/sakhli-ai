@@ -128,20 +128,35 @@ function DashboardPage() {
                 <>
                   {likedPeople.length > 0 && (
                     <section>
-                      <h2 className="mb-3 font-display text-lg font-semibold">{t("matches.tab.people")}</h2>
+                      <div className="mb-3 flex items-center justify-between gap-2">
+                        <h2 className="font-display text-lg font-semibold">{t("matches.tab.people")}</h2>
+                        <Button asChild size="sm" variant="outline">
+                          <Link to="/matches">
+                            <Plus className="mr-1 h-3.5 w-3.5" />
+                            ახალი თანამცხოვრებლის დამატება / Add New Match
+                          </Link>
+                        </Button>
+                      </div>
                       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                        {likedPeople.map((f) => f && (
-                          <div key={f.id} className="card-elevated flex items-center gap-3 p-4">
+                        {likedPeople.map((f) => (
+                          <button
+                            key={f.id}
+                            type="button"
+                            onClick={() => setSelectedFlatmate(f)}
+                            className="card-elevated flex items-center gap-3 p-4 text-left transition-all hover:-translate-y-0.5 hover:shadow-lg hover:ring-1 hover:ring-primary/40"
+                          >
                             <img src={f.avatar} alt={f.name} className="h-12 w-12 rounded-full bg-secondary" />
                             <div className="min-w-0 flex-1">
                               <div className="truncate font-medium">{f.name}</div>
                               <div className="truncate text-xs text-muted-foreground">{f.university}</div>
                             </div>
-                          </div>
+                            {f.verified && <ShieldCheck className="h-4 w-4 shrink-0 text-emerald-500" />}
+                          </button>
                         ))}
                       </div>
                     </section>
                   )}
+
                   {likedPlaces.length > 0 && (
                     <section>
                       <h2 className="mb-3 font-display text-lg font-semibold">{t("matches.tab.places")}</h2>
