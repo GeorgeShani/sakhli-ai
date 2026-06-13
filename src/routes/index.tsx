@@ -45,7 +45,7 @@ function HomePage() {
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
               <Button asChild size="lg" className="h-12 px-6">
-                <Link to="/onboarding">
+                <Link to="/role-select">
                   {t("hero.cta.primary")} <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
@@ -111,7 +111,7 @@ function HomePage() {
           </div>
           <div className="mt-12 text-center">
             <Button asChild size="lg" className="h-12 px-6">
-              <Link to="/onboarding">
+              <Link to="/role-select">
                 {t("hero.cta.primary")} <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
