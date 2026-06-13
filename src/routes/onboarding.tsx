@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AppHeader } from "@/components/AppHeader";
+import { AuthGate } from "@/components/AuthGate";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -21,7 +22,7 @@ import {
   type SleepSchedule,
   type StudentProfile,
 } from "@/lib/student-store";
-import { ArrowLeft, ArrowRight, Check, Upload, ShieldCheck, FileText } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Loader2, Mail, ShieldCheck } from "lucide-react";
 
 const GE_UNIVERSITIES: { value: string; label: string }[] = [
   { value: "თბილისის სახელმწიფო უნივერსიტეტი (TSU)", label: "თბილისის სახელმწიფო უნივერსიტეტი (TSU)" },
@@ -47,12 +48,19 @@ export const Route = createFileRoute("/onboarding")({
 const TOTAL = 7;
 
 function OnboardingPage() {
+  return (
+    <AuthGate requireRole={false}>
+      <OnboardingInner />
+    </AuthGate>
+  );
+}
+
+function OnboardingInner() {
   const { t } = useI18n();
   const navigate = useNavigate();
   const { save } = useProfile();
   const [step, setStep] = useState(0);
   const [profile, setProfile] = useState<StudentProfile>(defaultProfile);
-  const [studentIdName, setStudentIdName] = useState<string | null>(null);
 
   const update = <K extends keyof StudentProfile>(k: K, v: StudentProfile[K]) =>
     setProfile((p) => ({ ...p, [k]: v }));
@@ -222,12 +230,9 @@ function OnboardingPage() {
           )}
 
           {step === 6 && (
-            <StudentIdUpload
-              fileName={studentIdName}
-              onFile={(name) => {
-                setStudentIdName(name);
-                update("verified", true);
-              }}
+            <AcademicEmailVerify
+              verified={profile.verified}
+              onVerified={() => update("verified", true)}
             />
           )}
 
@@ -256,21 +261,57 @@ function OnboardingPage() {
   );
 }
 
-/* -------- Student ID upload (drag & drop simulator) -------- */
-export function StudentIdUpload({
-  fileName,
-  onFile,
-}: {
-  fileName: string | null;
-  onFile: (name: string) => void;
-}) {
-  const [drag, setDrag] = useState(false);
-  const inputRef = useRef<HTMLInputElement | null>(null);
+/* -------- Academic email + OTP verification -------- */
+const ACADEMIC_DOMAINS = [".edu.ge", ".edu", ".ac.ge", "tsu.edu.ge", "iliauni.edu.ge", "gtu.ge", "freeuni.edu.ge", "btu.edu.ge", "kiu.edu.ge", "ibsu.edu.ge"];
 
-  const handleFiles = (files: FileList | null) => {
-    const f = files?.[0];
-    if (f) onFile(f.name);
+function isAcademicEmail(email: string) {
+  const lower = email.trim().toLowerCase();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(lower)) return false;
+  return ACADEMIC_DOMAINS.some((d) => lower.endsWith(d));
+}
+
+export function AcademicEmailVerify({
+  verified,
+  onVerified,
+}: {
+  verified: boolean;
+  onVerified: () => void;
+}) {
+  const [email, setEmail] = useState("");
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [code, setCode] = useState(["", "", "", ""]);
+  const [error, setError] = useState<string | null>(null);
+  const inputsRef = useRef<Array<HTMLInputElement | null>>([]);
+
+  const sendCode = () => {
+    setError(null);
+    if (!isAcademicEmail(email)) {
+      setError("გთხოვთ შეიყვანოთ აკადემიური ელ-ფოსტა (e.g. .edu.ge) / Please enter a valid academic email.");
+      return;
+    }
+    setSending(true);
+    setSent(false);
+    setTimeout(() => {
+      setSending(false);
+      setSent(true);
+      setTimeout(() => inputsRef.current[0]?.focus(), 50);
+    }, 900);
   };
+
+  const handleDigit = (i: number, v: string) => {
+    const digit = v.replace(/\D/g, "").slice(-1);
+    const next = [...code];
+    next[i] = digit;
+    setCode(next);
+    if (digit && i < 3) inputsRef.current[i + 1]?.focus();
+  };
+
+  useEffect(() => {
+    if (sent && code.every((d) => d !== "") && !verified) {
+      onVerified();
+    }
+  }, [code, sent, verified, onVerified]);
 
   return (
     <div className="space-y-5">
@@ -280,71 +321,87 @@ export function StudentIdUpload({
           ვერიფიკაცია / Student Verification
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          ატვირთეთ სტუდენტური ბარათი ან ცნობა — ჰოსტებს ეძლევათ გარანტია, რომ ხართ ვერიფიცირებული უნივერსიტეტის სტუდენტი.
+          დაადასტურეთ თქვენი სტუდენტური სტატუსი აკადემიური ელ-ფოსტით.
           <br />
-          <span className="text-xs">Upload a Student ID or enrollment letter — hosts trust verified university students.</span>
+          <span className="text-xs">Verify your student status with your university email.</span>
         </p>
       </div>
 
-      <div
-        onDragOver={(e) => {
-          e.preventDefault();
-          setDrag(true);
-        }}
-        onDragLeave={() => setDrag(false)}
-        onDrop={(e) => {
-          e.preventDefault();
-          setDrag(false);
-          handleFiles(e.dataTransfer.files);
-        }}
-        onClick={() => inputRef.current?.click()}
-        className={[
-          "flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed p-10 text-center transition-all",
-          drag
-            ? "border-emerald-500 bg-emerald-500/10"
-            : fileName
-              ? "border-emerald-500/60 bg-emerald-500/5"
-              : "border-border bg-card hover:border-accent/60",
-        ].join(" ")}
-      >
-        <input
-          ref={inputRef}
-          type="file"
-          accept="image/*,application/pdf"
-          className="hidden"
-          onChange={(e) => handleFiles(e.target.files)}
-        />
-        {fileName ? (
-          <>
-            <ShieldCheck className="h-10 w-10 text-emerald-500" />
-            <div className="mt-3 font-display text-lg font-semibold text-emerald-600 dark:text-emerald-400">
-              ✓ Verified Student
-            </div>
-            <div className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
-              <FileText className="h-3.5 w-3.5" />
-              {fileName}
-            </div>
-            <div className="mt-1 text-[11px] text-muted-foreground">Tap to replace</div>
-          </>
-        ) : (
-          <>
-            <Upload className="h-10 w-10 text-muted-foreground" />
-            <div className="mt-3 font-medium">
-              ატვირთეთ სტუდენტური ბარათი ან ცნობა
-            </div>
-            <div className="text-sm text-muted-foreground">Upload Student ID</div>
-            <div className="mt-2 text-xs text-muted-foreground">
-              Drag & drop or click to browse · JPG, PNG, PDF
-            </div>
-          </>
+      <div className="space-y-2">
+        <Label htmlFor="academic-email">სტუდენტური ელ-ფოსტა / Academic Email Address</Label>
+        <div className="relative">
+          <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            id="academic-email"
+            type="email"
+            value={email}
+            disabled={verified}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              setSent(false);
+              setCode(["", "", "", ""]);
+            }}
+            placeholder="e.g., username@tsu.edu.ge"
+            className="pl-9"
+            autoComplete="email"
+          />
+        </div>
+        <Button
+          type="button"
+          onClick={sendCode}
+          disabled={sending || verified || !email}
+          className="w-full sm:w-auto"
+        >
+          {sending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          კოდის გაგზავნა / Send Verification Code
+        </Button>
+        {error && (
+          <div className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+            {error}
+          </div>
         )}
       </div>
 
-      <div className="rounded-md border border-emerald-500/30 bg-emerald-500/5 p-3 text-xs text-muted-foreground">
-        <ShieldCheck className="mr-1 inline h-3.5 w-3.5 text-emerald-500" />
-        Your document is encrypted end-to-end and only used to issue the green
-        <span className="font-semibold"> "Verified Student"</span> badge on your match cards.
-      </div>
+      {sent && (
+        <div className="space-y-3 rounded-xl border border-border bg-secondary/40 p-4">
+          <div className="text-xs text-muted-foreground">
+            შეიყვანეთ 4-ნიშნა კოდი გაგზავნილი მისამართზე <span className="font-medium text-foreground">{email}</span>
+          </div>
+          <div className="flex justify-center gap-3">
+            {code.map((d, i) => (
+              <input
+                key={i}
+                ref={(el) => { inputsRef.current[i] = el; }}
+                value={d}
+                disabled={verified}
+                inputMode="numeric"
+                maxLength={1}
+                onChange={(e) => handleDigit(i, e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Backspace" && !code[i] && i > 0) inputsRef.current[i - 1]?.focus();
+                }}
+                className="h-14 w-12 rounded-xl border border-border bg-card text-center font-display text-2xl font-bold shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {verified && (
+        <div className="flex animate-in fade-in zoom-in-95 items-center gap-3 rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-4 shadow-[0_0_30px_-8px_rgba(16,185,129,0.6)]">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg shadow-emerald-500/50">
+            <Check className="h-5 w-5" />
+          </div>
+          <div>
+            <div className="font-display text-base font-semibold text-emerald-700 dark:text-emerald-300">
+              ✓ Verified Student
+            </div>
+            <div className="text-xs text-muted-foreground">
+              თქვენი აკადემიური ელ-ფოსტა დადასტურებულია.
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
