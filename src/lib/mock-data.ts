@@ -445,6 +445,16 @@ export function fitScoreForProperty(
 }
 
 export function fitScoreForFlatmate(profile: StudentProfile, f: Flatmate): FitScore {
+  if (typeof f.aiPremiumScore === "number") {
+    const score = Math.max(0, Math.min(100, Math.round(f.aiPremiumScore)));
+    return {
+      score,
+      tier: score >= 85 ? "excellent" : score >= 70 ? "good" : score >= 50 ? "fair" : "risky",
+      reasons: ["AI Premium curated match", "Top SakhliAI ranked profile"],
+      summary: "AI Premium pick — top SakhliAI ranking.",
+      financialSafe: true,
+    };
+  }
   const reasons: string[] = [];
   let score = 0;
 
