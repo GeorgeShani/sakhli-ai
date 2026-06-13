@@ -142,8 +142,12 @@ function DashboardPage() {
             </div>
           )}
 
-          {tab === "utilities" && <UtilitySplitter flatmateNames={likedPeople.map((f) => f!.name)} />}
-          {tab === "chat" && <ChatPanel matchedNames={likedPeople.map((f) => f!.name)} />}
+          {tab === "utilities" && (
+            <UtilitySplitter
+              flatmateNames={likedPeople.map((f) => f!.name)}
+              activeProperty={likedPlaces[0] ?? undefined}
+            />
+          )}
         </div>
       </div>
     </div>
