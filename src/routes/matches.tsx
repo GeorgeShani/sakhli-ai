@@ -4,6 +4,8 @@ import { AppHeader } from "@/components/AppHeader";
 import { AuthGate } from "@/components/AuthGate";
 import { SwipeCard } from "@/components/SwipeCard";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useI18n } from "@/lib/i18n";
 import { useMatches, useProfile, defaultProfile, type StudentProfile } from "@/lib/student-store";
 import {
@@ -11,11 +13,26 @@ import {
   properties,
   fitScoreForFlatmate,
   fitScoreForProperty,
+  aiAssistantBullets,
   type Flatmate,
   type Property,
   type FitScore,
+  type AssistantBullet,
 } from "@/lib/mock-data";
-import { Bed, MapPin, GraduationCap, BedDouble, Sparkles, ShieldCheck } from "lucide-react";
+import {
+  Bed,
+  MapPin,
+  GraduationCap,
+  BedDouble,
+  Sparkles,
+  ShieldCheck,
+  ChevronDown,
+  Coins,
+  Moon,
+  Brush,
+  AlertTriangle,
+  Wand2,
+} from "lucide-react";
 
 export const Route = createFileRoute("/matches")({
   head: () => ({
