@@ -56,23 +56,27 @@ function MatchesPage() {
   const { matches, record, reset } = useMatches();
   const [tab, setTab] = useState<Tab>("people");
   const [index, setIndex] = useState({ people: 0, places: 0 });
+  const [aiBestFit, setAiBestFit] = useState(false);
 
   const effectiveProfile: StudentProfile = profile ?? defaultProfile;
 
-  const peopleStack = useMemo(
-    () =>
-      flatmates
-        .map((f) => ({ f, fit: fitScoreForFlatmate(effectiveProfile, f) }))
-        .sort((a, b) => b.fit.score - a.fit.score),
-    [effectiveProfile],
-  );
-  const placeStack = useMemo(
-    () =>
-      properties
-        .map((p) => ({ p, fit: fitScoreForProperty(effectiveProfile, p) }))
-        .sort((a, b) => b.fit.score - a.fit.score),
-    [effectiveProfile],
-  );
+  const peopleStack = useMemo(() => {
+    const ranked = flatmates
+      .map((f) => ({ f, fit: fitScoreForFlatmate(effectiveProfile, f) }))
+      .sort((a, b) => b.fit.score - a.fit.score);
+    if (!aiBestFit) return ranked;
+    const top = ranked.filter((r) => r.fit.score > 85);
+    return [...top, ...ranked.filter((r) => r.fit.score <= 85)];
+  }, [effectiveProfile, aiBestFit]);
+
+  const placeStack = useMemo(() => {
+    const ranked = properties
+      .map((p) => ({ p, fit: fitScoreForProperty(effectiveProfile, p) }))
+      .sort((a, b) => b.fit.score - a.fit.score);
+    if (!aiBestFit) return ranked;
+    const top = ranked.filter((r) => r.fit.score > 85);
+    return [...top, ...ranked.filter((r) => r.fit.score <= 85)];
+  }, [effectiveProfile, aiBestFit]);
 
   if (!loaded) return null;
 
