@@ -235,6 +235,10 @@ function HostPage() {
             .reduce((s, b) => s + Number(b.total_price ?? 0), 0)}
         />
 
+        {/* AI Smart Rent Predictor */}
+        <SmartRentPredictor />
+
+
         {/* Stats */}
         <div className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-4">
           <StatCard label="Properties" value={properties.length} icon={<MapPin className="h-4 w-4" />} />
