@@ -1,6 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { ArrowRight, Sparkles, Users, Wallet, Home as HomeIcon, Moon, Coffee, BookOpen } from "lucide-react";
 
 export const Route = createFileRoute("/")({
@@ -22,33 +24,96 @@ export const Route = createFileRoute("/")({
   component: HomePage,
 });
 
-// Tailwind arbitrary-color tokens (scoped to landing) keep global theme intact.
-const NAVY = "#0A0F1E";
-const NAVY_2 = "#0E1530";
-const ELECTRIC = "#2D6FFF";
-const ELECTRIC_SOFT = "#5B8CFF";
-const OFFWHITE = "#F5F2ED";
-const MUTED = "#9BA6C2";
+type Palette = {
+  bg: string;
+  bg2: string;
+  electric: string;
+  electricSoft: string;
+  text: string;
+  textSoft: string; // rgba for opacity
+  muted: string;
+  cardBg: string;
+  cardBorder: string;
+  navBg: string;
+  navBorder: string;
+  borderSoft: string;
+  glassBg: string;
+  grainBlend: "overlay" | "multiply";
+  grainOpacity: number;
+};
+
+const darkPalette: Palette = {
+  bg: "#0A0F1E",
+  bg2: "#0E1530",
+  electric: "#2D6FFF",
+  electricSoft: "#5B8CFF",
+  text: "#F5F2ED",
+  textSoft: "rgba(245,242,237,0.72)",
+  muted: "#9BA6C2",
+  cardBg: "rgba(255,255,255,0.04)",
+  cardBorder: "rgba(45,111,255,0.28)",
+  navBg: "rgba(10,15,30,0.55)",
+  navBorder: "rgba(245,242,237,0.06)",
+  borderSoft: "rgba(245,242,237,0.08)",
+  glassBg: "rgba(255,255,255,0.025)",
+  grainBlend: "overlay",
+  grainOpacity: 0.045,
+};
+
+const lightPalette: Palette = {
+  bg: "#F5F2ED",
+  bg2: "#EDE7DE",
+  electric: "#2D6FFF",
+  electricSoft: "#5B8CFF",
+  text: "#0A0F1E",
+  textSoft: "rgba(10,15,30,0.72)",
+  muted: "#5A6885",
+  cardBg: "rgba(255,255,255,0.7)",
+  cardBorder: "rgba(45,111,255,0.28)",
+  navBg: "rgba(245,242,237,0.7)",
+  navBorder: "rgba(10,15,30,0.06)",
+  borderSoft: "rgba(10,15,30,0.08)",
+  glassBg: "rgba(255,255,255,0.55)",
+  grainBlend: "multiply",
+  grainOpacity: 0.06,
+};
+
+function useIsDark() {
+  const [isDark, setIsDark] = useState(false);
+  useEffect(() => {
+    const el = document.documentElement;
+    const update = () => setIsDark(el.classList.contains("dark"));
+    update();
+    const obs = new MutationObserver(update);
+    obs.observe(el, { attributes: true, attributeFilter: ["class"] });
+    return () => obs.disconnect();
+  }, []);
+  return isDark;
+}
 
 function HomePage() {
   const { t } = useI18n();
+  const isDark = useIsDark();
+  const p = isDark ? darkPalette : lightPalette;
 
   return (
     <div
       className="relative min-h-screen overflow-hidden"
-      style={{ background: NAVY, color: OFFWHITE, fontFamily: '"DM Sans", Inter, system-ui, sans-serif' }}
+      style={{ background: p.bg, color: p.text, fontFamily: '"DM Sans", Inter, system-ui, sans-serif' }}
     >
       {/* Grain texture overlay */}
       <div
         aria-hidden
-        className="pointer-events-none fixed inset-0 z-[1] opacity-[0.045] mix-blend-overlay"
+        className="pointer-events-none fixed inset-0 z-[1]"
         style={{
+          mixBlendMode: p.grainBlend,
+          opacity: p.grainOpacity,
           backgroundImage:
             "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>\")",
         }}
       />
 
-      <LandingNav />
+      <LandingNav p={p} />
 
       {/* HERO */}
       <section className="relative z-[2]">
@@ -57,7 +122,7 @@ function HomePage() {
           aria-hidden
           className="pointer-events-none absolute right-[-10%] top-[-10%] h-[640px] w-[640px] rounded-full"
           style={{
-            background: `radial-gradient(closest-side, ${ELECTRIC}55, ${ELECTRIC}10 55%, transparent 75%)`,
+            background: `radial-gradient(closest-side, ${p.electric}55, ${p.electric}10 55%, transparent 75%)`,
             filter: "blur(8px)",
           }}
         />
@@ -71,17 +136,17 @@ function HomePage() {
               style={{
                 borderColor: "rgba(45,111,255,0.35)",
                 background: "rgba(45,111,255,0.08)",
-                color: OFFWHITE,
+                color: p.text,
               }}
             >
               <span className="relative inline-flex h-2 w-2">
                 <span
                   className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-75"
-                  style={{ background: ELECTRIC_SOFT }}
+                  style={{ background: p.electricSoft }}
                 />
                 <span
                   className="relative inline-flex h-2 w-2 rounded-full"
-                  style={{ background: ELECTRIC }}
+                  style={{ background: p.electric }}
                 />
               </span>
               Live in Tbilisi, Batumi & 3 more cities
@@ -96,7 +161,9 @@ function HomePage() {
             >
               <span
                 style={{
-                  backgroundImage: `linear-gradient(100deg, ${OFFWHITE} 0%, ${ELECTRIC_SOFT} 55%, #B5A8FF 100%)`,
+                  backgroundImage: isDark
+                    ? `linear-gradient(100deg, ${p.text} 0%, ${p.electricSoft} 55%, #B5A8FF 100%)`
+                    : `linear-gradient(100deg, ${p.text} 0%, ${p.electric} 55%, #6E4BFF 100%)`,
                   WebkitBackgroundClip: "text",
                   backgroundClip: "text",
                   color: "transparent",
@@ -108,7 +175,7 @@ function HomePage() {
 
             <p
               className="mt-6 max-w-xl text-left text-base leading-relaxed md:text-lg"
-              style={{ color: "rgba(245,242,237,0.72)" }}
+              style={{ color: p.textSoft }}
             >
               {t("hero.subtitle")}
             </p>
@@ -118,7 +185,7 @@ function HomePage() {
                 asChild
                 size="lg"
                 className="h-12 rounded-xl px-6 border-0 shadow-[0_10px_30px_-10px_rgba(45,111,255,0.6)]"
-                style={{ background: ELECTRIC, color: "#fff" }}
+                style={{ background: p.electric, color: "#fff" }}
               >
                 <Link to="/role-select">
                   {t("hero.cta.primary")} <ArrowRight className="ml-1 h-4 w-4" />
@@ -128,9 +195,9 @@ function HomePage() {
                 href="#how"
                 className="inline-flex h-12 items-center rounded-xl border px-5 text-sm transition-colors"
                 style={{
-                  borderColor: "rgba(245,242,237,0.18)",
-                  color: OFFWHITE,
-                  background: "rgba(255,255,255,0.02)",
+                  borderColor: p.borderSoft,
+                  color: p.text,
+                  background: isDark ? "rgba(255,255,255,0.02)" : "rgba(255,255,255,0.5)",
                 }}
               >
                 {t("hero.cta.secondary")}
@@ -148,8 +215,8 @@ function HomePage() {
                   key={l}
                   className="rounded-2xl border px-4 py-4 backdrop-blur-md"
                   style={{
-                    borderColor: "rgba(45,111,255,0.28)",
-                    background: "rgba(255,255,255,0.04)",
+                    borderColor: p.cardBorder,
+                    background: p.cardBg,
                   }}
                 >
                   <div
@@ -157,12 +224,12 @@ function HomePage() {
                     style={{
                       fontFamily: '"Playfair Display", Georgia, serif',
                       fontWeight: 600,
-                      color: OFFWHITE,
+                      color: p.text,
                     }}
                   >
                     {n}
                   </div>
-                  <div className="mt-1 text-[11px] leading-tight" style={{ color: MUTED }}>
+                  <div className="mt-1 text-[11px] leading-tight" style={{ color: p.muted }}>
                     {l}
                   </div>
                 </div>
@@ -172,20 +239,20 @@ function HomePage() {
 
           {/* RIGHT — floating match card */}
           <div className="relative md:col-span-5">
-            <MatchCard />
+            <MatchCard p={p} />
           </div>
         </div>
 
         {/* Wavy divider */}
-        <WavyDivider color={NAVY_2} />
+        <WavyDivider color={p.bg2} />
       </section>
 
       {/* Features */}
-      <section className="relative z-[2]" style={{ background: NAVY_2 }}>
+      <section className="relative z-[2]" style={{ background: p.bg2 }}>
         <div className="mx-auto max-w-6xl px-6 py-20">
           <h2
             className="max-w-2xl text-3xl md:text-4xl"
-            style={{ fontFamily: '"Playfair Display", Georgia, serif', fontWeight: 600, color: OFFWHITE }}
+            style={{ fontFamily: '"Playfair Display", Georgia, serif', fontWeight: 600, color: p.text }}
           >
             {t("features.title")}
           </h2>
@@ -199,30 +266,30 @@ function HomePage() {
                 key={title}
                 className="rounded-2xl border p-6 backdrop-blur-sm"
                 style={{
-                  borderColor: "rgba(245,242,237,0.08)",
-                  background: "rgba(255,255,255,0.025)",
+                  borderColor: p.borderSoft,
+                  background: p.glassBg,
                 }}
               >
                 <div
                   className="inline-flex h-10 w-10 items-center justify-center rounded-xl"
-                  style={{ background: "rgba(45,111,255,0.15)", color: ELECTRIC_SOFT }}
+                  style={{ background: "rgba(45,111,255,0.15)", color: p.electric }}
                 >
                   <Icon className="h-5 w-5" />
                 </div>
                 <h3
                   className="mt-4 text-lg"
-                  style={{ fontFamily: '"Playfair Display", Georgia, serif', fontWeight: 600, color: OFFWHITE }}
+                  style={{ fontFamily: '"Playfair Display", Georgia, serif', fontWeight: 600, color: p.text }}
                 >
                   {title}
                 </h3>
-                <p className="mt-2 text-sm leading-relaxed" style={{ color: "rgba(245,242,237,0.7)" }}>
+                <p className="mt-2 text-sm leading-relaxed" style={{ color: p.textSoft }}>
                   {d}
                 </p>
               </div>
             ))}
           </div>
         </div>
-        <WavyDivider color={NAVY} flip />
+        <WavyDivider color={p.bg} flip />
       </section>
 
       {/* How */}
@@ -230,7 +297,7 @@ function HomePage() {
         <div className="mx-auto max-w-6xl px-6 py-20">
           <h2
             className="text-3xl md:text-4xl"
-            style={{ fontFamily: '"Playfair Display", Georgia, serif', fontWeight: 600, color: OFFWHITE }}
+            style={{ fontFamily: '"Playfair Display", Georgia, serif', fontWeight: 600, color: p.text }}
           >
             {t("how.title")}
           </h2>
@@ -244,8 +311,8 @@ function HomePage() {
                 key={s.n}
                 className="relative rounded-2xl border p-6"
                 style={{
-                  borderColor: "rgba(245,242,237,0.08)",
-                  background: "rgba(255,255,255,0.025)",
+                  borderColor: p.borderSoft,
+                  background: p.glassBg,
                 }}
               >
                 <div
@@ -261,11 +328,11 @@ function HomePage() {
                 </div>
                 <h3
                   className="mt-2 text-lg"
-                  style={{ fontFamily: '"Playfair Display", Georgia, serif', fontWeight: 600, color: OFFWHITE }}
+                  style={{ fontFamily: '"Playfair Display", Georgia, serif', fontWeight: 600, color: p.text }}
                 >
                   {s.t}
                 </h3>
-                <p className="mt-2 text-sm leading-relaxed" style={{ color: "rgba(245,242,237,0.7)" }}>
+                <p className="mt-2 text-sm leading-relaxed" style={{ color: p.textSoft }}>
                   {s.d}
                 </p>
               </div>
@@ -276,7 +343,7 @@ function HomePage() {
               asChild
               size="lg"
               className="h-12 rounded-xl px-6 border-0 shadow-[0_10px_30px_-10px_rgba(45,111,255,0.6)]"
-              style={{ background: ELECTRIC, color: "#fff" }}
+              style={{ background: p.electric, color: "#fff" }}
             >
               <Link to="/role-select">
                 {t("hero.cta.primary")} <ArrowRight className="ml-1 h-4 w-4" />
@@ -288,7 +355,7 @@ function HomePage() {
 
       <footer
         className="relative z-[2] border-t py-8 text-center text-xs"
-        style={{ borderColor: "rgba(245,242,237,0.08)", color: MUTED }}
+        style={{ borderColor: p.borderSoft, color: p.muted }}
       >
         © {new Date().getFullYear()} {t("app.name")}. {t("footer.rights")}
       </footer>
@@ -296,28 +363,28 @@ function HomePage() {
   );
 }
 
-function LandingNav() {
+function LandingNav({ p }: { p: Palette }) {
   const { t } = useI18n();
   return (
     <header className="sticky top-0 z-30">
       <div
         className="border-b backdrop-blur-md"
         style={{
-          background: "rgba(10,15,30,0.55)",
-          borderColor: "rgba(245,242,237,0.06)",
+          background: p.navBg,
+          borderColor: p.navBorder,
         }}
       >
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
           <Link to="/" className="flex items-center gap-2.5">
             <span
               className="inline-flex h-8 w-8 items-center justify-center rounded-lg"
-              style={{ background: ELECTRIC, color: "#fff" }}
+              style={{ background: p.electric, color: "#fff" }}
             >
               <HomeIcon className="h-4 w-4" />
             </span>
             <span
               className="text-lg tracking-tight"
-              style={{ fontFamily: '"Playfair Display", Georgia, serif', fontWeight: 600, color: OFFWHITE }}
+              style={{ fontFamily: '"Playfair Display", Georgia, serif', fontWeight: 600, color: p.text }}
             >
               {t("app.name")}
             </span>
@@ -326,32 +393,43 @@ function LandingNav() {
           <nav className="hidden items-center gap-1 md:flex">
             <span
               className="rounded-full px-3.5 py-1.5 text-sm"
-              style={{ background: "rgba(45,111,255,0.16)", color: OFFWHITE }}
+              style={{ background: "rgba(45,111,255,0.16)", color: p.text }}
             >
               {t("nav.home")}
             </span>
-            <a href="#how" className="rounded-full px-3.5 py-1.5 text-sm transition-colors hover:bg-white/5" style={{ color: "rgba(245,242,237,0.7)" }}>
+            <a
+              href="#how"
+              className="rounded-full px-3.5 py-1.5 text-sm transition-colors hover:bg-black/5 dark:hover:bg-white/5"
+              style={{ color: p.textSoft }}
+            >
               {t("hero.cta.secondary")}
             </a>
-            <Link to="/matches" className="rounded-full px-3.5 py-1.5 text-sm transition-colors hover:bg-white/5" style={{ color: "rgba(245,242,237,0.7)" }}>
+            <Link
+              to="/matches"
+              className="rounded-full px-3.5 py-1.5 text-sm transition-colors hover:bg-black/5 dark:hover:bg-white/5"
+              style={{ color: p.textSoft }}
+            >
               {t("nav.matches")}
             </Link>
           </nav>
 
-          <Link
-            to="/role-select"
-            className="inline-flex h-9 items-center rounded-xl px-4 text-sm font-medium shadow-[0_8px_24px_-10px_rgba(45,111,255,0.7)]"
-            style={{ background: ELECTRIC, color: "#fff" }}
-          >
-            {t("nav.start")}
-          </Link>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <Link
+              to="/role-select"
+              className="inline-flex h-9 items-center rounded-xl px-4 text-sm font-medium shadow-[0_8px_24px_-10px_rgba(45,111,255,0.7)]"
+              style={{ background: p.electric, color: "#fff" }}
+            >
+              {t("nav.start")}
+            </Link>
+          </div>
         </div>
       </div>
     </header>
   );
 }
 
-function MatchCard() {
+function MatchCard({ p }: { p: Palette }) {
   return (
     <div className="relative mx-auto w-full max-w-sm">
       {/* Stacked echo card */}
@@ -366,18 +444,18 @@ function MatchCard() {
       <div
         className="relative rounded-3xl border p-6 backdrop-blur-md"
         style={{
-          borderColor: "rgba(245,242,237,0.12)",
-          background: "linear-gradient(160deg, rgba(255,255,255,0.07), rgba(255,255,255,0.02))",
+          borderColor: p.borderSoft,
+          background: p.cardBg,
           boxShadow: "0 30px 80px -30px rgba(45,111,255,0.5)",
         }}
       >
         <div className="flex items-center justify-between">
-          <span className="text-[11px] uppercase tracking-[0.18em]" style={{ color: MUTED }}>
+          <span className="text-[11px] uppercase tracking-[0.18em]" style={{ color: p.muted }}>
             New match
           </span>
           <span
             className="rounded-full px-2.5 py-0.5 text-[11px]"
-            style={{ background: "rgba(91,140,255,0.18)", color: ELECTRIC_SOFT }}
+            style={{ background: "rgba(91,140,255,0.18)", color: p.electric }}
           >
             94% fit
           </span>
@@ -398,11 +476,11 @@ function MatchCard() {
           <div className="min-w-0">
             <div
               className="truncate text-lg"
-              style={{ fontFamily: '"Playfair Display", serif', fontWeight: 600, color: OFFWHITE }}
+              style={{ fontFamily: '"Playfair Display", serif', fontWeight: 600, color: p.text }}
             >
               Nino K.
             </div>
-            <div className="text-xs" style={{ color: MUTED }}>
+            <div className="text-xs" style={{ color: p.muted }}>
               TSU · Architecture · Vake
             </div>
           </div>
@@ -414,10 +492,10 @@ function MatchCard() {
             { Icon: BookOpen, label: "Studio hours 5–8pm" },
             { Icon: Coffee, label: "Slow mornings, espresso first" },
           ].map(({ Icon, label }) => (
-            <div key={label} className="flex items-center gap-2.5 text-xs" style={{ color: "rgba(245,242,237,0.78)" }}>
+            <div key={label} className="flex items-center gap-2.5 text-xs" style={{ color: p.textSoft }}>
               <span
                 className="inline-flex h-6 w-6 items-center justify-center rounded-md"
-                style={{ background: "rgba(45,111,255,0.14)", color: ELECTRIC_SOFT }}
+                style={{ background: "rgba(45,111,255,0.14)", color: p.electric }}
               >
                 <Icon className="h-3 w-3" />
               </span>
@@ -426,18 +504,18 @@ function MatchCard() {
           ))}
         </div>
 
-        <div className="mt-5 border-t pt-4" style={{ borderColor: "rgba(245,242,237,0.08)" }}>
-          <div className="flex items-center justify-between text-[11px]" style={{ color: MUTED }}>
+        <div className="mt-5 border-t pt-4" style={{ borderColor: p.borderSoft }}>
+          <div className="flex items-center justify-between text-[11px]" style={{ color: p.muted }}>
             <span>Budget · 900 GEL</span>
             <span>Move-in · Sep 1</span>
           </div>
           <div
             className="mt-3 h-1.5 w-full overflow-hidden rounded-full"
-            style={{ background: "rgba(245,242,237,0.08)" }}
+            style={{ background: p.borderSoft }}
           >
             <div
               className="h-full rounded-full"
-              style={{ width: "94%", background: `linear-gradient(90deg, ${ELECTRIC}, ${ELECTRIC_SOFT})` }}
+              style={{ width: "94%", background: `linear-gradient(90deg, ${p.electric}, ${p.electricSoft})` }}
             />
           </div>
         </div>
