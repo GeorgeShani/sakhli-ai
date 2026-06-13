@@ -156,24 +156,71 @@ function MatchesPage() {
             <span className="relative flex h-2.5 w-2.5">
               <span
                 className={`absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 ${
-                  aiBestFit ? "animate-ping" : "hidden"
+                  aiBestFit && isPaid ? "animate-ping" : "hidden"
                 }`}
               />
               <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500" />
             </span>
             <div>
-              <div className="text-xs font-semibold uppercase tracking-wide">AI Best Fit</div>
+              <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide">
+                AI Best Fit
+                {!isPaid && (
+                  <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-1.5 py-0.5 text-[9px] font-bold uppercase text-primary">
+                    <Lock className="h-2.5 w-2.5" /> Plus
+                  </span>
+                )}
+              </div>
               <div className="text-[11px] text-muted-foreground">
                 Show only matches ≥ 85% · მხოლოდ ≥85%-ის ჩვენება
               </div>
             </div>
           </div>
-          <Switch checked={aiBestFit} onCheckedChange={setAiBestFit} aria-label="AI Best Fit" />
+          <Switch checked={aiBestFit && isPaid} onCheckedChange={handleAiToggle} aria-label="AI Best Fit" />
         </div>
 
+        {!isPaid && (
+          <div className="mt-2 flex items-center justify-between rounded-lg border border-primary/30 bg-primary/5 px-3 py-2 text-[11px]">
+            <span className="text-muted-foreground">
+              Free plan · <span className="font-semibold text-foreground">{swipesLeft}</span> swipes left
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                setPricingReason("manual");
+                setPricingOpen(true);
+              }}
+              className="inline-flex items-center gap-1 font-semibold text-primary hover:underline"
+            >
+              <Crown className="h-3 w-3" /> განაახლეთ ტარიფი / Upgrade
+            </button>
+          </div>
+        )}
 
         <div className="mt-6">
-          {stackDone ? (
+          {swipeBlocked ? (
+            <div className="card-elevated p-10 text-center">
+              <Lock className="mx-auto h-8 w-8 text-primary" />
+              <h3 className="mt-3 font-display text-xl font-semibold">
+                მიაღწიე უფასო ლიმიტს · Free swipe limit reached
+              </h3>
+              <p className="mt-2 text-sm text-muted-foreground">
+                განაახლეთ ტარიფი შეუზღუდავი მატჩებისთვის. · Upgrade to keep swiping unlimited matches.
+              </p>
+              <div className="mt-6 flex justify-center gap-3">
+                <Button
+                  onClick={() => {
+                    setPricingReason("swipe_limit");
+                    setPricingOpen(true);
+                  }}
+                >
+                  <Crown className="mr-1.5 h-4 w-4" /> განაახლეთ ტარიფი / Switch Plans
+                </Button>
+                <Button asChild variant="outline">
+                  <Link to="/dashboard">{t("nav.dashboard")}</Link>
+                </Button>
+              </div>
+            </div>
+          ) : stackDone ? (
             <div className="card-elevated p-10 text-center">
               <h3 className="font-display text-xl font-semibold">{t("matches.empty.title")}</h3>
               <p className="mt-2 text-sm text-muted-foreground">{t("matches.empty.desc")}</p>
@@ -182,6 +229,7 @@ function MatchesPage() {
                   variant="outline"
                   onClick={() => {
                     reset();
+                    resetSwipes();
                     setIndex({ people: 0, places: 0 });
                   }}
                 >
@@ -207,6 +255,8 @@ function MatchesPage() {
           {matches.filter((m) => m.liked).length} connections so far
         </div>
       </div>
+
+      <PricingModal open={pricingOpen} onOpenChange={setPricingOpen} reason={pricingReason} />
     </div>
   );
 }
