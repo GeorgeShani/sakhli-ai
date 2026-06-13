@@ -59,6 +59,7 @@ function DashboardPage() {
   const { matches, record } = useMatches();
   const [tab, setTab] = useState<Tab>("matches");
   const [selectedFlatmate, setSelectedFlatmate] = useState<Flatmate | null>(null);
+  const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
 
   const likedPeople = matches
     .filter((m) => m.kind === "person" && m.liked)
@@ -68,12 +69,18 @@ function DashboardPage() {
   const likedPlaces = matches
     .filter((m) => m.kind === "place" && m.liked)
     .map((m) => properties.find((p) => p.id === m.id))
-    .filter(Boolean);
+    .filter((p): p is Property => Boolean(p));
 
   const handleUnmatch = (id: string) => {
     record("person", id, false);
     setSelectedFlatmate(null);
   };
+
+  const handleUnmatchProperty = (id: string) => {
+    record("place", id, false);
+    setSelectedProperty(null);
+  };
+
 
 
   const tabBtn = (v: Tab, label: string) => (
