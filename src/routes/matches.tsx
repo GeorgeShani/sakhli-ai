@@ -451,3 +451,27 @@ function Pill({ children }: { children: React.ReactNode }) {
     </span>
   );
 }
+
+function FreeSwipeCountdown() {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const id = window.setInterval(() => setNow(Date.now()), 60_000);
+    return () => window.clearInterval(id);
+  }, []);
+  const next = new Date();
+  next.setHours(24, 0, 0, 0);
+  const diff = Math.max(0, next.getTime() - now);
+  const h = Math.floor(diff / 3_600_000);
+  const m = Math.floor((diff % 3_600_000) / 60_000);
+  const fmt = `${String(h).padStart(2, "0")}h ${String(m).padStart(2, "0")}m`;
+  return (
+    <div className="inline-flex items-center gap-2 rounded-lg border border-border bg-secondary/60 px-3 py-2 font-mono text-xs">
+      <span className="relative flex h-2 w-2">
+        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75" />
+        <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-500" />
+      </span>
+      <span className="text-muted-foreground">შემდეგი უფასო სვაიპი · Next free swipe in:</span>
+      <span className="font-semibold text-foreground">{fmt}</span>
+    </div>
+  );
+}
