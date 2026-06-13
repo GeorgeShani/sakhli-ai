@@ -4,6 +4,20 @@ import { Bot, Send, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/lib/auth";
+import { useI18n } from "@/lib/i18n";
+
+const TEMPLATES: Record<"en" | "ka", string[]> = {
+  en: [
+    "How can I reduce my winter gas utility bill?",
+    "What is the safest student neighborhood in Tbilisi?",
+    "How does the SakliAI hybrid revenue model benefit me?",
+  ],
+  ka: [
+    "როგორ შევამცირო ზამთრის გაზის გადასახადი?",
+    "რომელია ყველაზე უსაფრთხო სტუდენტური უბანი თბილისში?",
+    "როგორ მეხმარება SakliAI-ის ჰიბრიდული გაქირავების მოდელი?",
+  ],
+};
 
 type Msg = { role: "ai" | "user"; text: string };
 
@@ -44,6 +58,7 @@ export function AiAssistantBubble() {
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const path = useRouterState({ select: (s) => s.location.pathname });
   const { profile } = useAuth();
+  const { locale } = useI18n();
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -56,11 +71,15 @@ export function AiAssistantBubble() {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [msgs]);
 
+  const ask = (text: string) => {
+    const reply = autoReply(text, path, profile?.role);
+    setMsgs((m) => [...m, { role: "user", text }, { role: "ai", text: reply }]);
+  };
+
   const send = () => {
     const text = input.trim();
     if (!text) return;
-    const reply = autoReply(text, path, profile?.role);
-    setMsgs((m) => [...m, { role: "user", text }, { role: "ai", text: reply }]);
+    ask(text);
     setInput("");
   };
 
@@ -111,6 +130,20 @@ export function AiAssistantBubble() {
                   {m.text}
                 </div>
               </div>
+            ))}
+          </div>
+
+          <div className="flex flex-wrap gap-1.5 border-t border-border bg-background/30 p-2">
+            {TEMPLATES[locale].map((q) => (
+              <button
+                key={q}
+                type="button"
+                onClick={() => ask(q)}
+                className="truncate rounded-full border border-primary/30 bg-primary/5 px-2.5 py-1 text-[11px] text-foreground transition-colors hover:bg-primary/10"
+                title={q}
+              >
+                {q}
+              </button>
             ))}
           </div>
 

@@ -614,9 +614,9 @@ function UtilitySplitter({
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
+      <div className="grid items-start gap-6 lg:grid-cols-[1fr_340px]">
         {/* Bills */}
-        <div className="card-elevated p-5">
+        <div className="card-elevated h-auto self-start p-5 pb-4">
           <h3 className="font-display text-base font-semibold">Monthly bills</h3>
           <div className="mt-4 grid gap-2 sm:grid-cols-2">
             {bills.map((b) => {

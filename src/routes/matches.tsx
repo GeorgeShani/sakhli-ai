@@ -20,6 +20,8 @@ import {
   type AssistantBullet,
 } from "@/lib/mock-data";
 import { CommuteWidget } from "@/components/CommuteWidget";
+import { PricingModal } from "@/components/PricingModal";
+import { useSubscription } from "@/lib/subscription";
 import {
   Bed,
   MapPin,
@@ -33,6 +35,8 @@ import {
   Brush,
   AlertTriangle,
   Wand2,
+  Crown,
+  Lock,
 } from "lucide-react";
 
 export const Route = createFileRoute("/matches")({
@@ -55,9 +59,12 @@ function MatchesPage() {
   const { t } = useI18n();
   const { profile, loaded } = useProfile();
   const { matches, record, reset } = useMatches();
+  const { isPaid, bumpSwipes, swipeBlocked, swipesLeft, resetSwipes } = useSubscription();
   const [tab, setTab] = useState<Tab>("people");
   const [index, setIndex] = useState({ people: 0, places: 0 });
   const [aiBestFit, setAiBestFit] = useState(false);
+  const [pricingOpen, setPricingOpen] = useState(false);
+  const [pricingReason, setPricingReason] = useState<"swipe_limit" | "ai_best_fit" | "manual">("manual");
 
   const effectiveProfile: StudentProfile = profile ?? defaultProfile;
 
@@ -65,19 +72,24 @@ function MatchesPage() {
     const ranked = flatmates
       .map((f) => ({ f, fit: fitScoreForFlatmate(effectiveProfile, f) }))
       .sort((a, b) => b.fit.score - a.fit.score);
-    return aiBestFit ? ranked.filter((r) => r.fit.score >= 85) : ranked;
-  }, [effectiveProfile, aiBestFit]);
+    return aiBestFit && isPaid ? ranked.filter((r) => r.fit.score >= 85) : ranked;
+  }, [effectiveProfile, aiBestFit, isPaid]);
 
   const placeStack = useMemo(() => {
     const ranked = properties
       .map((p) => ({ p, fit: fitScoreForProperty(effectiveProfile, p) }))
       .sort((a, b) => b.fit.score - a.fit.score);
-    return aiBestFit ? ranked.filter((r) => r.fit.score >= 85) : ranked;
-  }, [effectiveProfile, aiBestFit]);
+    return aiBestFit && isPaid ? ranked.filter((r) => r.fit.score >= 85) : ranked;
+  }, [effectiveProfile, aiBestFit, isPaid]);
 
   if (!loaded) return null;
 
   const handleSwipe = (liked: boolean) => {
+    if (swipeBlocked) {
+      setPricingReason("swipe_limit");
+      setPricingOpen(true);
+      return;
+    }
     if (tab === "people") {
       const current = peopleStack[index.people];
       if (current) record("person", current.f.id, liked);
@@ -87,11 +99,22 @@ function MatchesPage() {
       if (current) record("place", current.p.id, liked);
       setIndex((i) => ({ ...i, places: i.places + 1 }));
     }
+    if (!isPaid) bumpSwipes();
+  };
+
+  const handleAiToggle = (checked: boolean) => {
+    if (checked && !isPaid) {
+      setPricingReason("ai_best_fit");
+      setPricingOpen(true);
+      return;
+    }
+    setAiBestFit(checked);
   };
 
   const stackDone =
     (tab === "people" && index.people >= peopleStack.length) ||
     (tab === "places" && index.places >= placeStack.length);
+
 
   const tabBtn = (v: Tab, label: string) => (
     <button
@@ -133,24 +156,71 @@ function MatchesPage() {
             <span className="relative flex h-2.5 w-2.5">
               <span
                 className={`absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 ${
-                  aiBestFit ? "animate-ping" : "hidden"
+                  aiBestFit && isPaid ? "animate-ping" : "hidden"
                 }`}
               />
               <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500" />
             </span>
             <div>
-              <div className="text-xs font-semibold uppercase tracking-wide">AI Best Fit</div>
+              <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide">
+                AI Best Fit
+                {!isPaid && (
+                  <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-1.5 py-0.5 text-[9px] font-bold uppercase text-primary">
+                    <Lock className="h-2.5 w-2.5" /> Plus
+                  </span>
+                )}
+              </div>
               <div className="text-[11px] text-muted-foreground">
                 Show only matches ≥ 85% · მხოლოდ ≥85%-ის ჩვენება
               </div>
             </div>
           </div>
-          <Switch checked={aiBestFit} onCheckedChange={setAiBestFit} aria-label="AI Best Fit" />
+          <Switch checked={aiBestFit && isPaid} onCheckedChange={handleAiToggle} aria-label="AI Best Fit" />
         </div>
 
+        {!isPaid && (
+          <div className="mt-2 flex items-center justify-between rounded-lg border border-primary/30 bg-primary/5 px-3 py-2 text-[11px]">
+            <span className="text-muted-foreground">
+              Free plan · <span className="font-semibold text-foreground">{swipesLeft}</span> swipes left
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                setPricingReason("manual");
+                setPricingOpen(true);
+              }}
+              className="inline-flex items-center gap-1 font-semibold text-primary hover:underline"
+            >
+              <Crown className="h-3 w-3" /> განაახლეთ ტარიფი / Upgrade
+            </button>
+          </div>
+        )}
 
         <div className="mt-6">
-          {stackDone ? (
+          {swipeBlocked ? (
+            <div className="card-elevated p-10 text-center">
+              <Lock className="mx-auto h-8 w-8 text-primary" />
+              <h3 className="mt-3 font-display text-xl font-semibold">
+                მიაღწიე უფასო ლიმიტს · Free swipe limit reached
+              </h3>
+              <p className="mt-2 text-sm text-muted-foreground">
+                განაახლეთ ტარიფი შეუზღუდავი მატჩებისთვის. · Upgrade to keep swiping unlimited matches.
+              </p>
+              <div className="mt-6 flex justify-center gap-3">
+                <Button
+                  onClick={() => {
+                    setPricingReason("swipe_limit");
+                    setPricingOpen(true);
+                  }}
+                >
+                  <Crown className="mr-1.5 h-4 w-4" /> განაახლეთ ტარიფი / Switch Plans
+                </Button>
+                <Button asChild variant="outline">
+                  <Link to="/dashboard">{t("nav.dashboard")}</Link>
+                </Button>
+              </div>
+            </div>
+          ) : stackDone ? (
             <div className="card-elevated p-10 text-center">
               <h3 className="font-display text-xl font-semibold">{t("matches.empty.title")}</h3>
               <p className="mt-2 text-sm text-muted-foreground">{t("matches.empty.desc")}</p>
@@ -159,6 +229,7 @@ function MatchesPage() {
                   variant="outline"
                   onClick={() => {
                     reset();
+                    resetSwipes();
                     setIndex({ people: 0, places: 0 });
                   }}
                 >
@@ -184,6 +255,8 @@ function MatchesPage() {
           {matches.filter((m) => m.liked).length} connections so far
         </div>
       </div>
+
+      <PricingModal open={pricingOpen} onOpenChange={setPricingOpen} reason={pricingReason} />
     </div>
   );
 }
