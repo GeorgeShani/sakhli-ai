@@ -153,13 +153,12 @@ function RoleSelectInner() {
           })}
         </div>
 
-        {profile?.role && (
-          <div className="mt-6 text-center">
-            <Button variant="ghost" onClick={() => navigate({ to: "/" })}>
-              Skip — go home
-            </Button>
-          </div>
-        )}
+        <div className="mt-8 text-center">
+          <Button variant="ghost" onClick={() => navigate({ to: "/" })}>
+            <ArrowLeft className="mr-1.5 h-4 w-4" />
+            უკან დაბრუნება / Go Back to Homepage
+          </Button>
+        </div>
       </main>
     </div>
   );
