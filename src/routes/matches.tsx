@@ -220,6 +220,11 @@ function FitBadge({ fit }: { fit: FitScore }) {
 
 function PersonCard({ data }: { data: { f: Flatmate; fit: FitScore } }) {
   const { f, fit } = data;
+  const { profile } = useProfile();
+  const effective = profile ?? defaultProfile;
+  const bullets = useMemo(() => aiAssistantBullets(effective, f), [effective, f]);
+  const isAiPick = fit.score > 85;
+
   return (
     <div>
       <div className="flex items-start gap-4 bg-gradient-to-br from-accent/15 to-primary/5 p-6">
@@ -230,9 +235,20 @@ function PersonCard({ data }: { data: { f: Flatmate; fit: FitScore } }) {
           draggable={false}
         />
         <div className="flex-1">
-          <h3 className="font-display text-2xl font-bold">
-            {f.name} <span className="text-base font-normal text-muted-foreground">· {f.age}</span>
-          </h3>
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="font-display text-2xl font-bold">
+              {f.name} <span className="text-base font-normal text-muted-foreground">· {f.age}</span>
+            </h3>
+            {isAiPick && (
+              <span className="relative inline-flex items-center gap-1 rounded-full border border-emerald-500/60 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-600 dark:text-emerald-400 shadow-[0_0_14px_rgba(16,185,129,0.55)]">
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+                </span>
+                AI Recommended
+              </span>
+            )}
+          </div>
           <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
             <GraduationCap className="h-3.5 w-3.5" />
             {f.university}
@@ -247,6 +263,7 @@ function PersonCard({ data }: { data: { f: Flatmate; fit: FitScore } }) {
       </div>
       <div className="space-y-3 p-6">
         <FitBadge fit={fit} />
+        <AssistantBubble bullets={bullets} />
         <p className="text-sm leading-relaxed">{f.bio}</p>
         <div className="flex flex-wrap gap-1.5">
           <Pill>Budget: ₾{f.budget}</Pill>
@@ -263,6 +280,60 @@ function PersonCard({ data }: { data: { f: Flatmate; fit: FitScore } }) {
     </div>
   );
 }
+
+function bulletIcon(kind: AssistantBullet["icon"]) {
+  const cls = "h-3.5 w-3.5 shrink-0 mt-0.5";
+  switch (kind) {
+    case "money":
+      return <Coins className={`${cls} text-emerald-500`} />;
+    case "schedule":
+      return <Moon className={`${cls} text-indigo-400`} />;
+    case "habit":
+      return <Brush className={`${cls} text-primary`} />;
+    case "warning":
+      return <AlertTriangle className={`${cls} text-amber-500`} />;
+    default:
+      return <Sparkles className={`${cls} text-accent`} />;
+  }
+}
+
+function AssistantBubble({ bullets }: { bullets: AssistantBullet[] }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <Collapsible open={open} onOpenChange={setOpen}>
+      <CollapsibleTrigger
+        className="group flex w-full items-center justify-between rounded-xl border border-primary/30 bg-gradient-to-r from-primary/10 via-accent/10 to-primary/5 px-3 py-2.5 text-left transition-colors hover:from-primary/15 hover:to-accent/15"
+        onMouseEnter={() => setOpen(true)}
+      >
+        <span className="flex items-center gap-2">
+          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/15 text-primary">
+            <Wand2 className="h-3.5 w-3.5" />
+          </span>
+          <span className="text-xs font-semibold uppercase tracking-wide text-foreground">
+            SakhliAI ასისტენტი
+          </span>
+          <span className="hidden text-[11px] text-muted-foreground sm:inline">
+            · რატომ გერჩევთ
+          </span>
+        </span>
+        <ChevronDown
+          className={`h-4 w-4 text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`}
+        />
+      </CollapsibleTrigger>
+      <CollapsibleContent className="overflow-hidden data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
+        <ul className="mt-2 space-y-1.5 rounded-xl border border-border bg-card p-3 text-[13px] leading-snug text-foreground shadow-sm">
+          {bullets.map((b, i) => (
+            <li key={i} className="flex items-start gap-2">
+              {bulletIcon(b.icon)}
+              <span>{b.text}</span>
+            </li>
+          ))}
+        </ul>
+      </CollapsibleContent>
+    </Collapsible>
+  );
+}
+
 
 function PlaceCard({ data }: { data: { p: Property; fit: FitScore } }) {
   const { p, fit } = data;
