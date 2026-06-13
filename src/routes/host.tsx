@@ -1036,3 +1036,121 @@ function timeAgo(iso: string): string {
   if (h < 24) return `${h}h ago`;
   return `${Math.floor(h / 24)}d ago`;
 }
+
+// -------------------- AI SMART RENT PREDICTOR --------------------
+const RENT_AMENITIES = ["Wi-Fi", "AC", "Washer", "Parking", "Balcony", "Heating"] as const;
+type RentAmenity = (typeof RENT_AMENITIES)[number];
+
+const LOCATION_MULT: Record<string, { mult: number; touristMult: number; labelKa: string }> = {
+  Vake: { mult: 1.25, touristMult: 1.35, labelKa: "ვაკე" },
+  Saburtalo: { mult: 1.0, touristMult: 1.0, labelKa: "საბურთალო" },
+  "Old Tbilisi": { mult: 1.15, touristMult: 1.5, labelKa: "ძველი თბილისი" },
+  Saulo: { mult: 0.85, touristMult: 0.8, labelKa: "სოლოლაკი" },
+  Batumi: { mult: 0.95, touristMult: 1.4, labelKa: "ბათუმი" },
+};
+
+function SmartRentPredictor() {
+  const [location, setLocation] = useState<keyof typeof LOCATION_MULT>("Saburtalo");
+  const [sqm, setSqm] = useState(65);
+  const [amenities, setAmenities] = useState<RentAmenity[]>(["Wi-Fi", "AC", "Washer"]);
+
+  const cfg = LOCATION_MULT[location];
+  const amenityBoost = 1 + amenities.length * 0.04;
+  const baseMonth = 14 * sqm; // 14 GEL per sqm baseline
+  const studentMonth = Math.round((baseMonth * cfg.mult * amenityBoost) / 10) * 10;
+  const tourismNight = Math.round((baseMonth * cfg.touristMult * amenityBoost) / 30 / 5) * 5;
+
+  const toggle = (a: RentAmenity) =>
+    setAmenities((cur) => (cur.includes(a) ? cur.filter((x) => x !== a) : [...cur, a]));
+
+  return (
+    <Card className="mb-6 border-accent/30 bg-gradient-to-br from-accent/5 to-transparent">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Sparkles className="h-4 w-4 text-accent" />
+          AI Smart Rent Predictor · ქირის პროგნოზირების AI კალკულატორი
+        </CardTitle>
+        <CardDescription>
+          Enter property details — SakhliAI compares Tbilisi market data to recommend split-season pricing.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="grid gap-5 md:grid-cols-[1fr_1fr_1.1fr]">
+          {/* Inputs */}
+          <div className="space-y-3">
+            <div>
+              <Label className="text-xs">Location · ლოკაცია</Label>
+              <Select value={location} onValueChange={(v) => setLocation(v as keyof typeof LOCATION_MULT)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {Object.entries(LOCATION_MULT).map(([k, v]) => (
+                    <SelectItem key={k} value={k}>
+                      {k} · {v.labelKa}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-xs">Size · ფართობი (m²)</Label>
+              <Input
+                type="number"
+                value={sqm}
+                min={20}
+                max={300}
+                onChange={(e) => setSqm(Math.max(20, Number(e.target.value) || 0))}
+              />
+            </div>
+          </div>
+
+          {/* Amenities */}
+          <div>
+            <Label className="text-xs">Amenities · კეთილმოწყობა</Label>
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              {RENT_AMENITIES.map((a) => {
+                const on = amenities.includes(a);
+                return (
+                  <label
+                    key={a}
+                    className={`flex cursor-pointer items-center gap-2 rounded-md border p-2 text-xs transition-colors ${
+                      on ? "border-accent bg-accent/10" : "border-border bg-card"
+                    }`}
+                  >
+                    <Checkbox checked={on} onCheckedChange={() => toggle(a)} />
+                    {a}
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Recommendation */}
+          <div className="space-y-3">
+            <div className="rounded-xl border border-primary/30 bg-gradient-to-br from-primary/15 to-primary/5 p-4">
+              <div className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                სასწავლო სეზონი (სტუდენტები) · Academic Season
+              </div>
+              <div className="mt-1 font-display text-2xl font-bold text-gradient">
+                {studentMonth.toLocaleString()} GEL<span className="text-sm font-medium text-muted-foreground">/თვე · /month</span>
+              </div>
+              <div className="mt-1 text-[11px] text-muted-foreground">9-month long-term lease</div>
+            </div>
+            <div className="rounded-xl border border-accent/30 bg-gradient-to-br from-accent/15 to-accent/5 p-4">
+              <div className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                ტურისტული სეზონი (მოკლევადიანი) · Tourist Season
+              </div>
+              <div className="mt-1 font-display text-2xl font-bold text-gradient">
+                {tourismNight.toLocaleString()} GEL<span className="text-sm font-medium text-muted-foreground">/დღე · /night</span>
+              </div>
+              <div className="mt-1 text-[11px] text-muted-foreground">June–September peak demand</div>
+            </div>
+          </div>
+        </div>
+        <div className="mt-4 flex items-start gap-2 rounded-md border border-accent/20 bg-accent/5 p-3 text-xs text-muted-foreground">
+          <Sparkles className="mt-0.5 h-3.5 w-3.5 text-accent" />
+          Hybrid model: switch between student tenants in academic months and short-term tourists in summer to maximize yearly revenue.
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
