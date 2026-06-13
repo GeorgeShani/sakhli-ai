@@ -267,6 +267,9 @@ function HostPage() {
             <TabsTrigger value="channels">
               <Radio className="mr-2 h-4 w-4" /> Channels
             </TabsTrigger>
+            <TabsTrigger value="applicants">
+              <Sparkles className="mr-2 h-4 w-4" /> Applicants
+            </TabsTrigger>
             <TabsTrigger value="ops">
               <Sparkles className="mr-2 h-4 w-4" /> Operations
             </TabsTrigger>
@@ -282,6 +285,12 @@ function HostPage() {
 
           <TabsContent value="channels" className="mt-4">
             <ChannelsView properties={properties} syncs={syncs} />
+          </TabsContent>
+
+          <TabsContent value="applicants" className="mt-4">
+            <TenantScreeningView
+              properties={selectedProp === "all" ? properties : properties.filter((p) => p.id === selectedProp)}
+            />
           </TabsContent>
 
           <TabsContent value="ops" className="mt-4">
