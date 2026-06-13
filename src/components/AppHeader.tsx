@@ -4,12 +4,7 @@ import { useI18n } from "@/lib/i18n";
 import { LanguageToggle } from "./LanguageToggle";
 import { ThemeToggle } from "./ThemeToggle";
 import { Button } from "@/components/ui/button";
-import { useAuth, type AppRole } from "@/lib/auth";
-
-const ROLE_HOME: Record<AppRole, string> = {
-  student: "/matches",
-  host: "/host",
-};
+import { useAuth } from "@/lib/auth";
 
 export function AppHeader() {
   const { t } = useI18n();
@@ -59,14 +54,12 @@ export function AppHeader() {
           <LanguageToggle />
           {user ? (
             <>
-              {profile?.role && (
-                <Button asChild size="sm" variant="ghost" className="hidden sm:inline-flex">
-                  <Link to={ROLE_HOME[profile.role]}>
-                    <UserIcon className="mr-1 h-3.5 w-3.5" />
-                    {profile.role}
-                  </Link>
-                </Button>
-              )}
+              <Button asChild size="sm" variant="ghost" className="hidden sm:inline-flex" title="User settings">
+                <Link to="/settings">
+                  <UserIcon className="mr-1 h-3.5 w-3.5" />
+                  {profile?.role ?? "account"}
+                </Link>
+              </Button>
               <Button size="sm" variant="outline" onClick={handleSignOut}>
                 <LogOut className="mr-1 h-3.5 w-3.5" />
                 Sign out

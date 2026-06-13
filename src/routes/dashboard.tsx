@@ -8,18 +8,29 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useI18n } from "@/lib/i18n";
 import { useMatches, useProfile } from "@/lib/student-store";
-import { flatmates, properties } from "@/lib/mock-data";
+import { flatmates, type Flatmate, properties } from "@/lib/mock-data";
 import {
+  CheckCircle2,
   Droplet,
   Flame,
   Home,
+  Loader2,
+  Mail,
   MapPin,
   Plus,
   Send,
   ShieldCheck,
   Trash2,
+  UserMinus,
   Users,
   Wallet,
   Wifi,
@@ -45,18 +56,25 @@ type Tab = "matches" | "utilities";
 function DashboardPage() {
   const { t } = useI18n();
   const { profile } = useProfile();
-  const { matches } = useMatches();
+  const { matches, record } = useMatches();
   const [tab, setTab] = useState<Tab>("matches");
+  const [selectedFlatmate, setSelectedFlatmate] = useState<Flatmate | null>(null);
 
   const likedPeople = matches
     .filter((m) => m.kind === "person" && m.liked)
     .map((m) => flatmates.find((f) => f.id === m.id))
-    .filter(Boolean);
+    .filter((f): f is Flatmate => Boolean(f));
 
   const likedPlaces = matches
     .filter((m) => m.kind === "place" && m.liked)
     .map((m) => properties.find((p) => p.id === m.id))
     .filter(Boolean);
+
+  const handleUnmatch = (id: string) => {
+    record("person", id, false);
+    setSelectedFlatmate(null);
+  };
+
 
   const tabBtn = (v: Tab, label: string) => (
     <button
@@ -106,20 +124,35 @@ function DashboardPage() {
                 <>
                   {likedPeople.length > 0 && (
                     <section>
-                      <h2 className="mb-3 font-display text-lg font-semibold">{t("matches.tab.people")}</h2>
+                      <div className="mb-3 flex items-center justify-between gap-2">
+                        <h2 className="font-display text-lg font-semibold">{t("matches.tab.people")}</h2>
+                        <Button asChild size="sm" variant="outline">
+                          <Link to="/matches">
+                            <Plus className="mr-1 h-3.5 w-3.5" />
+                            ახალი თანამცხოვრებლის დამატება / Add New Match
+                          </Link>
+                        </Button>
+                      </div>
                       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                        {likedPeople.map((f) => f && (
-                          <div key={f.id} className="card-elevated flex items-center gap-3 p-4">
+                        {likedPeople.map((f) => (
+                          <button
+                            key={f.id}
+                            type="button"
+                            onClick={() => setSelectedFlatmate(f)}
+                            className="card-elevated flex items-center gap-3 p-4 text-left transition-all hover:-translate-y-0.5 hover:shadow-lg hover:ring-1 hover:ring-primary/40"
+                          >
                             <img src={f.avatar} alt={f.name} className="h-12 w-12 rounded-full bg-secondary" />
                             <div className="min-w-0 flex-1">
                               <div className="truncate font-medium">{f.name}</div>
                               <div className="truncate text-xs text-muted-foreground">{f.university}</div>
                             </div>
-                          </div>
+                            {f.verified && <ShieldCheck className="h-4 w-4 shrink-0 text-emerald-500" />}
+                          </button>
                         ))}
                       </div>
                     </section>
                   )}
+
                   {likedPlaces.length > 0 && (
                     <section>
                       <h2 className="mb-3 font-display text-lg font-semibold">{t("matches.tab.places")}</h2>
@@ -156,15 +189,158 @@ function DashboardPage() {
 
           {tab === "utilities" && (
             <UtilitySplitter
-              flatmateNames={likedPeople.map((f) => f!.name)}
+              flatmateNames={likedPeople.map((f) => f.name)}
               activeProperty={likedPlaces[0] ?? undefined}
             />
           )}
         </div>
       </div>
+
+      <FlatmateDetailsDialog
+        flatmate={selectedFlatmate}
+        onOpenChange={(open) => !open && setSelectedFlatmate(null)}
+        onUnmatch={handleUnmatch}
+      />
     </div>
   );
 }
+
+/* -------- Flatmate details dialog -------- */
+function FlatmateDetailsDialog({
+  flatmate,
+  onOpenChange,
+  onUnmatch,
+}: {
+  flatmate: Flatmate | null;
+  onOpenChange: (open: boolean) => void;
+  onUnmatch: (id: string) => void;
+}) {
+  const sleepLabel: Record<Flatmate["sleep"], string> = {
+    early_bird: "🌅 Early bird",
+    night_owl: "🌙 Night owl",
+    flexible: "🔄 Flexible",
+  };
+  // Deterministic mock compatibility breakdown
+  const score = flatmate
+    ? 70 + ((flatmate.id.charCodeAt(flatmate.id.length - 1) * 7) % 30)
+    : 0;
+  const breakdown = flatmate
+    ? [
+        { label: "Lifestyle", value: Math.min(100, score + 5) },
+        { label: "Budget", value: Math.max(60, score - 8) },
+        { label: "Cleanliness", value: 60 + flatmate.cleanliness * 8 },
+        { label: "Schedule", value: flatmate.sleep === "flexible" ? 95 : 82 },
+      ]
+    : [];
+
+  return (
+    <Dialog open={!!flatmate} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-lg">
+        {flatmate && (
+          <>
+            <DialogHeader>
+              <div className="flex items-center gap-4">
+                <img
+                  src={flatmate.avatar}
+                  alt={flatmate.name}
+                  className="h-16 w-16 rounded-full bg-secondary ring-2 ring-primary/30"
+                />
+                <div className="min-w-0 flex-1 text-left">
+                  <DialogTitle className="flex items-center gap-2 font-display text-xl">
+                    {flatmate.name}
+                    {flatmate.verified && (
+                      <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/60 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-600 dark:text-emerald-400">
+                        <ShieldCheck className="h-3 w-3" /> Verified
+                      </span>
+                    )}
+                  </DialogTitle>
+                  <DialogDescription className="mt-0.5">
+                    {flatmate.university} · age {flatmate.age}
+                  </DialogDescription>
+                </div>
+                <div className="rounded-xl bg-gradient-to-br from-primary to-accent px-3 py-2 text-center text-primary-foreground shadow">
+                  <div className="text-[10px] uppercase opacity-80">Match</div>
+                  <div className="font-display text-xl font-bold">{score}%</div>
+                </div>
+              </div>
+            </DialogHeader>
+
+            <div className="mt-3 flex items-center gap-2 rounded-md border border-border bg-secondary/50 p-2 text-xs">
+              <Mail className="h-3.5 w-3.5 text-emerald-500" />
+              <span className="font-medium">Academic email verified</span>
+              <span className="ml-auto text-muted-foreground">.edu.ge</span>
+            </div>
+
+            <div className="mt-4">
+              <div className="text-xs uppercase tracking-wide text-muted-foreground">
+                Compatibility breakdown
+              </div>
+              <div className="mt-2 space-y-2">
+                {breakdown.map((b) => (
+                  <div key={b.label}>
+                    <div className="flex justify-between text-xs">
+                      <span>{b.label}</span>
+                      <span className="font-semibold">{b.value}%</span>
+                    </div>
+                    <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-secondary">
+                      <div
+                        className="h-full rounded-full bg-gradient-to-r from-primary to-accent"
+                        style={{ width: `${b.value}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-4 grid grid-cols-2 gap-2 text-sm">
+              <div className="rounded-md border border-border bg-card p-2">
+                <div className="text-[10px] uppercase text-muted-foreground">Sleep</div>
+                <div className="mt-0.5">{sleepLabel[flatmate.sleep]}</div>
+              </div>
+              <div className="rounded-md border border-border bg-card p-2">
+                <div className="text-[10px] uppercase text-muted-foreground">Cleanliness</div>
+                <div className="mt-0.5">🧹 {flatmate.cleanliness}/5</div>
+              </div>
+              <div className="rounded-md border border-border bg-card p-2">
+                <div className="text-[10px] uppercase text-muted-foreground">Budget</div>
+                <div className="mt-0.5 font-semibold">₾ {flatmate.budget}</div>
+              </div>
+              <div className="rounded-md border border-border bg-card p-2">
+                <div className="text-[10px] uppercase text-muted-foreground">Lifestyle</div>
+                <div className="mt-0.5 text-xs">
+                  {flatmate.smoking ? "🚬 " : ""}
+                  {flatmate.pets ? "🐾 " : ""}
+                  {flatmate.parties ? "🎉 " : "🤫 "}
+                  {flatmate.quiet ? "Quiet" : "Social"}
+                </div>
+              </div>
+            </div>
+
+            <p className="mt-3 rounded-md bg-secondary/50 p-3 text-sm text-muted-foreground">
+              {flatmate.bio}
+            </p>
+
+            <div className="mt-5 flex gap-2">
+              <Button
+                variant="destructive"
+                className="flex-1"
+                onClick={() => onUnmatch(flatmate.id)}
+              >
+                <UserMinus className="mr-2 h-4 w-4" />
+                კავშირის გაწყვეტა / Unmatch
+              </Button>
+              <Button variant="outline" onClick={() => onOpenChange(false)}>
+                Close
+              </Button>
+            </div>
+          </>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 
 /* -------- Profile card (lifestyle only, no income) -------- */
 function ProfileCard({ profile }: { profile: ReturnType<typeof useProfile>["profile"] }) {
@@ -232,18 +408,27 @@ function UtilitySplitter({
   const [roommates, setRoommates] = useState<Roommate[]>(() => {
     const base: Roommate[] = [{ id: "me", name: "You", moveInDay: 1 }];
     flatmateNames.slice(0, 2).forEach((n, i) =>
-      base.push({ id: `r${i}`, name: n, moveInDay: 1 }),
+      base.push({ id: `r${i}`, name: n, moveInDay: i === 0 ? 8 : 15 }),
     );
     if (base.length === 1) {
-      base.push({ id: "r0", name: "Nino", moveInDay: 1 });
-      base.push({ id: "r1", name: "Giorgi", moveInDay: 10 });
+      base.push({ id: "r0", name: "Nino", moveInDay: 8 });
+      base.push({ id: "r1", name: "Giorgi", moveInDay: 15 });
     }
     return base;
   });
   const [mode, setMode] = useState<"equal" | "movein">("movein");
   const [category, setCategory] = useState("Electricity");
   const [amount, setAmount] = useState("");
+  const [payStatus, setPayStatus] = useState<"idle" | "processing" | "paid">("idle");
+  const [payBank, setPayBank] = useState<"TBC" | "BOG" | null>(null);
   const monthDays = 30;
+
+  const pay = (bank: "TBC" | "BOG") => {
+    if (payStatus === "processing") return;
+    setPayBank(bank);
+    setPayStatus("processing");
+    window.setTimeout(() => setPayStatus("paid"), 1200);
+  };
 
   const total = bills.reduce((s, b) => s + b.amount, 0);
 
@@ -441,8 +626,57 @@ function UtilitySplitter({
             <div className="font-display text-2xl font-bold">₾ {total.toFixed(2)}</div>
             <div className="mt-1 text-[11px] opacity-70">{mode === "movein" ? "Split by move-in days" : "Equal split"}</div>
           </div>
+
+          {/* Localized payment */}
+          <div className="mt-4 rounded-xl border border-border bg-card p-4">
+            <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              გადახდა · Proceed to Pay
+            </div>
+            {payStatus === "paid" ? (
+              <div className="mt-3 flex items-center gap-2 rounded-lg border border-emerald-500/60 bg-emerald-500/10 px-3 py-3 text-sm font-semibold text-emerald-600 shadow-[0_0_24px_rgba(16,185,129,0.45)] dark:text-emerald-400">
+                <CheckCircle2 className="h-5 w-5" />
+                <div className="flex-1">
+                  გადახდილია წარმატებით · Paid Successfully
+                  <div className="text-[11px] font-normal opacity-80">
+                    via {payBank === "TBC" ? "TBC Bank" : "Bank of Georgia"} · ₾{total.toFixed(2)}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => pay("TBC")}
+                  disabled={payStatus === "processing"}
+                  className="group relative flex flex-col items-center justify-center gap-1 rounded-lg border border-[#00669b]/40 bg-gradient-to-br from-[#00669b] to-[#004e7c] px-3 py-3 text-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg disabled:cursor-wait disabled:opacity-70"
+                >
+                  {payStatus === "processing" && payBank === "TBC" ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <span className="font-display text-base font-extrabold tracking-tight">TBC</span>
+                  )}
+                  <span className="text-[10px] uppercase opacity-90">TBC Bank</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => pay("BOG")}
+                  disabled={payStatus === "processing"}
+                  className="group relative flex flex-col items-center justify-center gap-1 rounded-lg border border-[#ff6f00]/40 bg-gradient-to-br from-[#ff6f00] to-[#cc4f00] px-3 py-3 text-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg disabled:cursor-wait disabled:opacity-70"
+                >
+                  {payStatus === "processing" && payBank === "BOG" ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <span className="font-display text-base font-extrabold tracking-tight">BOG</span>
+                  )}
+                  <span className="text-[10px] uppercase opacity-90">Bank of Georgia</span>
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
+
+
 
       {/* Per-person breakdown */}
       <div className="card-elevated p-5">
