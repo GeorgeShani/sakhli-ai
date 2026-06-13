@@ -11,6 +11,7 @@ export function AppHeader() {
   const { t } = useI18n();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { user, profile, signOut } = useAuth();
+  const { profile: studentProfile } = useProfile();
   const navigate = useNavigate();
 
   const navItem = (to: string, label: string) => {
