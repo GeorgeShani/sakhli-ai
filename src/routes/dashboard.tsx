@@ -12,7 +12,8 @@ import { flatmates, properties } from "@/lib/mock-data";
 import {
   Droplet,
   Flame,
-  MessageCircle,
+  Home,
+  MapPin,
   Plus,
   Send,
   ShieldCheck,
