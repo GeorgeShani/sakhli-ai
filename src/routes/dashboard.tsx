@@ -8,18 +8,33 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useI18n } from "@/lib/i18n";
 import { useMatches, useProfile } from "@/lib/student-store";
-import { flatmates, properties } from "@/lib/mock-data";
+import { flatmates, type Flatmate, properties } from "@/lib/mock-data";
 import {
+  CheckCircle2,
   Droplet,
   Flame,
+  Heart,
   Home,
+  Loader2,
+  Mail,
   MapPin,
+  Moon,
   Plus,
   Send,
   ShieldCheck,
+  Sparkles,
+  Sun,
   Trash2,
+  UserMinus,
   Users,
   Wallet,
   Wifi,
