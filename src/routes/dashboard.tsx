@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import { useI18n } from "@/lib/i18n";
 import { useMatches, useProfile } from "@/lib/student-store";
-import { flatmates, type Flatmate, properties } from "@/lib/mock-data";
+import { flatmates, type Flatmate, properties, type Property } from "@/lib/mock-data";
 import {
   CheckCircle2,
   Droplet,
