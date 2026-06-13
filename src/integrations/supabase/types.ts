@@ -14,7 +14,325 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      bookings: {
+        Row: {
+          booking_type: string
+          channel: string
+          check_in: string
+          check_out: string
+          created_at: string
+          guest_id: string | null
+          guest_name: string | null
+          guests_count: number | null
+          id: string
+          notes: string | null
+          property_id: string
+          status: string
+          total_price: number | null
+        }
+        Insert: {
+          booking_type?: string
+          channel?: string
+          check_in: string
+          check_out: string
+          created_at?: string
+          guest_id?: string | null
+          guest_name?: string | null
+          guests_count?: number | null
+          id?: string
+          notes?: string | null
+          property_id: string
+          status?: string
+          total_price?: number | null
+        }
+        Update: {
+          booking_type?: string
+          channel?: string
+          check_in?: string
+          check_out?: string
+          created_at?: string
+          guest_id?: string | null
+          guest_name?: string | null
+          guests_count?: number | null
+          id?: string
+          notes?: string | null
+          property_id?: string
+          status?: string
+          total_price?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_guest_id_fkey"
+            columns: ["guest_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      channel_sync: {
+        Row: {
+          channel: string
+          created_at: string
+          enabled: boolean
+          error_message: string | null
+          external_listing_id: string | null
+          id: string
+          last_synced_at: string | null
+          property_id: string
+          status: string
+        }
+        Insert: {
+          channel: string
+          created_at?: string
+          enabled?: boolean
+          error_message?: string | null
+          external_listing_id?: string | null
+          id?: string
+          last_synced_at?: string | null
+          property_id: string
+          status?: string
+        }
+        Update: {
+          channel?: string
+          created_at?: string
+          enabled?: boolean
+          error_message?: string | null
+          external_listing_id?: string | null
+          id?: string
+          last_synced_at?: string | null
+          property_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "channel_sync_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cleaning_tasks: {
+        Row: {
+          booking_id: string | null
+          cleaner_id: string | null
+          cleaner_name: string | null
+          cleaner_phone: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          notified_at: string | null
+          property_id: string
+          scheduled_for: string
+          status: string
+        }
+        Insert: {
+          booking_id?: string | null
+          cleaner_id?: string | null
+          cleaner_name?: string | null
+          cleaner_phone?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          notified_at?: string | null
+          property_id: string
+          scheduled_for: string
+          status?: string
+        }
+        Update: {
+          booking_id?: string | null
+          cleaner_id?: string | null
+          cleaner_name?: string | null
+          cleaner_phone?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          notified_at?: string | null
+          property_id?: string
+          scheduled_for?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cleaning_tasks_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cleaning_tasks_cleaner_id_fkey"
+            columns: ["cleaner_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cleaning_tasks_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      properties: {
+        Row: {
+          address: string | null
+          amenities: string[] | null
+          bathrooms: number | null
+          bedrooms: number | null
+          city: string | null
+          created_at: string
+          description: string | null
+          host_id: string | null
+          id: string
+          image_url: string | null
+          listing_type: string
+          price_per_month: number | null
+          price_per_night: number | null
+          title: string
+        }
+        Insert: {
+          address?: string | null
+          amenities?: string[] | null
+          bathrooms?: number | null
+          bedrooms?: number | null
+          city?: string | null
+          created_at?: string
+          description?: string | null
+          host_id?: string | null
+          id?: string
+          image_url?: string | null
+          listing_type?: string
+          price_per_month?: number | null
+          price_per_night?: number | null
+          title: string
+        }
+        Update: {
+          address?: string | null
+          amenities?: string[] | null
+          bathrooms?: number | null
+          bedrooms?: number | null
+          city?: string | null
+          created_at?: string
+          description?: string | null
+          host_id?: string | null
+          id?: string
+          image_url?: string | null
+          listing_type?: string
+          price_per_month?: number | null
+          price_per_night?: number | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "properties_host_id_fkey"
+            columns: ["host_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      student_profiles: {
+        Row: {
+          bio: string | null
+          budget_max: number | null
+          budget_min: number | null
+          city: string | null
+          cleanliness: number | null
+          created_at: string
+          display_name: string | null
+          id: string
+          languages: string[] | null
+          pets: boolean | null
+          sleep_schedule: string | null
+          smoking: boolean | null
+          university: string | null
+          user_id: string | null
+        }
+        Insert: {
+          bio?: string | null
+          budget_max?: number | null
+          budget_min?: number | null
+          city?: string | null
+          cleanliness?: number | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          languages?: string[] | null
+          pets?: boolean | null
+          sleep_schedule?: string | null
+          smoking?: boolean | null
+          university?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          bio?: string | null
+          budget_max?: number | null
+          budget_min?: number | null
+          city?: string | null
+          cleanliness?: number | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          languages?: string[] | null
+          pets?: boolean | null
+          sleep_schedule?: string | null
+          smoking?: boolean | null
+          university?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      users: {
+        Row: {
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          language: string
+          phone: string | null
+          role: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          language?: string
+          phone?: string | null
+          role?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          language?: string
+          phone?: string | null
+          role?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
