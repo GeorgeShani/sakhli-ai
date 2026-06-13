@@ -162,10 +162,23 @@ function DashboardPage() {
 
                   {likedPlaces.length > 0 && (
                     <section>
-                      <h2 className="mb-3 font-display text-lg font-semibold">{t("matches.tab.places")}</h2>
+                      <div className="mb-3 flex items-center justify-between gap-2">
+                        <h2 className="font-display text-lg font-semibold">{t("matches.tab.places")}</h2>
+                        <Button asChild size="sm" variant="outline">
+                          <Link to="/matches">
+                            <Plus className="mr-1 h-3.5 w-3.5" />
+                            ახალი ბინის დამატება / Add New Property
+                          </Link>
+                        </Button>
+                      </div>
                       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                        {likedPlaces.map((p) => p && (
-                          <div key={p.id} className="card-elevated overflow-hidden">
+                        {likedPlaces.map((p) => (
+                          <button
+                            key={p.id}
+                            type="button"
+                            onClick={() => setSelectedProperty(p)}
+                            className="card-elevated overflow-hidden text-left transition-all hover:-translate-y-0.5 hover:shadow-lg hover:ring-1 hover:ring-primary/40"
+                          >
                             <div className="h-28 bg-cover bg-center" style={{ backgroundImage: `url(${p.image})` }} />
                             <div className="p-3">
                               <div className="truncate font-medium">{p.title}</div>
@@ -174,7 +187,7 @@ function DashboardPage() {
                                 <span className="font-semibold text-foreground">₾{p.price}</span>
                               </div>
                             </div>
-                          </div>
+                          </button>
                         ))}
                       </div>
                     </section>
@@ -208,7 +221,101 @@ function DashboardPage() {
         onOpenChange={(open) => !open && setSelectedFlatmate(null)}
         onUnmatch={handleUnmatch}
       />
+      <PropertyDetailsDialog
+        property={selectedProperty}
+        university={profile?.university}
+        onOpenChange={(open) => !open && setSelectedProperty(null)}
+        onUnmatch={handleUnmatchProperty}
+      />
     </div>
+  );
+}
+
+/* -------- Property details dialog -------- */
+function PropertyDetailsDialog({
+  property,
+  university,
+  onOpenChange,
+  onUnmatch,
+}: {
+  property: Property | null;
+  university?: string;
+  onOpenChange: (open: boolean) => void;
+  onUnmatch: (id: string) => void;
+}) {
+  return (
+    <Dialog open={!!property} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+        {property && (
+          <>
+            <div
+              className="-mx-6 -mt-6 mb-3 h-44 bg-cover bg-center"
+              style={{ backgroundImage: `url(${property.image})` }}
+            />
+            <DialogHeader>
+              <DialogTitle className="font-display text-xl">{property.title}</DialogTitle>
+              <DialogDescription className="flex items-center gap-1 text-left">
+                <MapPin className="h-3.5 w-3.5" />
+                {property.address ?? property.district}
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="mt-2 flex items-center justify-between rounded-md border border-border bg-secondary/50 p-3">
+              <div>
+                <div className="text-[10px] uppercase text-muted-foreground">Monthly rent</div>
+                <div className="font-display text-2xl font-bold text-gradient">
+                  ₾ {property.price}
+                </div>
+              </div>
+              <div className="text-right text-xs text-muted-foreground">
+                <div>{property.bedrooms} BR · need {property.flatmatesNeeded}</div>
+                <div className="mt-0.5">{property.district}</div>
+              </div>
+            </div>
+
+            {property.description && (
+              <p className="mt-3 rounded-md bg-secondary/50 p-3 text-sm text-muted-foreground">
+                {property.description}
+              </p>
+            )}
+
+            <div className="mt-3">
+              <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                Amenities
+              </div>
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {property.amenities.map((a) => (
+                  <span
+                    key={a}
+                    className="rounded-full border border-border bg-secondary px-2 py-0.5 text-xs"
+                  >
+                    {a}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-3">
+              <CommuteWidget university={university} district={property.district} />
+            </div>
+
+            <div className="mt-5 flex gap-2">
+              <Button
+                variant="destructive"
+                className="flex-1"
+                onClick={() => onUnmatch(property.id)}
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                ბინის წაშლა / Remove Property
+              </Button>
+              <Button variant="outline" onClick={() => onOpenChange(false)}>
+                Close
+              </Button>
+            </div>
+          </>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }
 
