@@ -158,39 +158,37 @@ function DashboardPage() {
   );
 }
 
-/* -------- Profile card with financial info -------- */
+/* -------- Profile card (lifestyle only, no income) -------- */
 function ProfileCard({ profile }: { profile: ReturnType<typeof useProfile>["profile"] }) {
   if (!profile) return null;
-  const range = SALARY_RANGES[profile.salaryBracket];
-  const sources = profile.incomeSources && profile.incomeSources.length
-    ? profile.incomeSources
-    : [profile.incomeSource];
   return (
     <div className="card-elevated mt-6 grid gap-4 p-5 md:grid-cols-3">
       <div>
         <div className="text-xs uppercase tracking-wide text-muted-foreground">Profile</div>
-        <div className="mt-1 font-display text-lg font-semibold">
+        <div className="mt-1 flex items-center gap-2 font-display text-lg font-semibold">
           {profile.name || "Student"}
+          {profile.verified && (
+            <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/60 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-600 dark:text-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.4)]">
+              <ShieldCheck className="h-3 w-3" /> Verified
+            </span>
+          )}
         </div>
         <div className="text-sm text-muted-foreground">{profile.university || "—"}</div>
       </div>
       <div className="rounded-lg border border-border bg-card p-3">
         <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
-          <Wallet className="h-3.5 w-3.5" /> Monthly income
+          <Wallet className="h-3.5 w-3.5" /> Budget
         </div>
-        <div className="mt-1 font-display text-xl font-bold">{range.label}</div>
-        <div className="text-xs text-muted-foreground">{range.labelKa}</div>
+        <div className="mt-1 font-display text-xl font-bold">₾ {profile.budget}</div>
+        <div className="text-xs text-muted-foreground">monthly target</div>
       </div>
       <div className="rounded-lg border border-border bg-card p-3">
         <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
-          <Banknote className="h-3.5 w-3.5" /> Income source
+          <Users className="h-3.5 w-3.5" /> Lifestyle
         </div>
-        <div className="mt-2 flex flex-wrap gap-1.5">
-          {sources.map((s) => (
-            <Badge key={s} variant="secondary" className="font-normal">
-              {INCOME_SOURCE_LABEL_KA[s as IncomeSource]} · {INCOME_SOURCE_LABEL[s as IncomeSource]}
-            </Badge>
-          ))}
+        <div className="mt-1 text-sm">
+          {profile.sleep === "night_owl" ? "🌙 Night owl" : profile.sleep === "early_bird" ? "🌅 Early bird" : "🔄 Flexible"} ·
+          🧹 {profile.cleanliness}/5
         </div>
       </div>
     </div>
