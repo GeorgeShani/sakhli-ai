@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AppHeader } from "@/components/AppHeader";
 import { AuthGate } from "@/components/AuthGate";
 import { SwipeCard } from "@/components/SwipeCard";
@@ -206,7 +206,7 @@ function MatchesPage() {
               <p className="mt-2 text-sm text-muted-foreground">
                 განაახლეთ ტარიფი შეუზღუდავი მატჩებისთვის. · Upgrade to keep swiping unlimited matches.
               </p>
-              <div className="mt-6 flex justify-center gap-3">
+              <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
                 <Button
                   onClick={() => {
                     setPricingReason("swipe_limit");
@@ -215,6 +215,7 @@ function MatchesPage() {
                 >
                   <Crown className="mr-1.5 h-4 w-4" /> განაახლეთ ტარიფი / Switch Plans
                 </Button>
+                <FreeSwipeCountdown />
                 <Button asChild variant="outline">
                   <Link to="/dashboard">{t("nav.dashboard")}</Link>
                 </Button>
@@ -448,5 +449,29 @@ function Pill({ children }: { children: React.ReactNode }) {
     <span className="rounded-full border border-border bg-secondary px-2 py-0.5 text-xs">
       {children}
     </span>
+  );
+}
+
+function FreeSwipeCountdown() {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const id = window.setInterval(() => setNow(Date.now()), 60_000);
+    return () => window.clearInterval(id);
+  }, []);
+  const next = new Date();
+  next.setHours(24, 0, 0, 0);
+  const diff = Math.max(0, next.getTime() - now);
+  const h = Math.floor(diff / 3_600_000);
+  const m = Math.floor((diff % 3_600_000) / 60_000);
+  const fmt = `${String(h).padStart(2, "0")}h ${String(m).padStart(2, "0")}m`;
+  return (
+    <div className="inline-flex items-center gap-2 rounded-lg border border-border bg-secondary/60 px-3 py-2 font-mono text-xs">
+      <span className="relative flex h-2 w-2">
+        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75" />
+        <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-500" />
+      </span>
+      <span className="text-muted-foreground">შემდეგი უფასო სვაიპი · Next free swipe in:</span>
+      <span className="font-semibold text-foreground">{fmt}</span>
+    </div>
   );
 }

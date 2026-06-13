@@ -12,8 +12,8 @@ type Props = {
 
 const PLAN_FEATURES: Record<Plan, { en: string[]; ka: string[] }> = {
   free: {
-    en: ["Up to 5 swipes", "Browse public listings", "Basic profile"],
-    ka: ["5 სვაიპამდე", "საჯარო განცხადებები", "ძირითადი პროფილი"],
+    en: ["5 Daily Swipes (limit resets daily)", "Browse public listings", "Basic profile"],
+    ka: ["5 დღიური სვაიპი (ლიმიტი ახლდება ყოველდღიურად)", "საჯარო განცხადებები", "ძირითადი პროფილი"],
   },
   plus: {
     en: ["Unlimited swipes", "AI Best Fit filter", "Basic compatibility filters", "Verified student badge"],
@@ -86,7 +86,7 @@ export function PricingModal({ open, onOpenChange, reason = "manual" }: Props) {
           <DialogDescription>{headline.sub}</DialogDescription>
         </DialogHeader>
 
-        <div className="mt-2 grid gap-3 md:grid-cols-3">
+        <div className="mt-2 grid items-stretch gap-4 md:grid-cols-3">
           {(Object.keys(PLAN_DETAILS) as Plan[]).map((p) => {
             const d = PLAN_DETAILS[p];
             const Icon = ICONS[p];
@@ -96,7 +96,7 @@ export function PricingModal({ open, onOpenChange, reason = "manual" }: Props) {
               <div
                 key={p}
                 className={[
-                  "relative flex flex-col rounded-xl border p-5",
+                  "relative flex h-full min-w-0 flex-col rounded-xl border px-4 py-5 space-y-3",
                   isHighlight
                     ? "border-primary/60 bg-gradient-to-br from-primary/10 via-accent/10 to-transparent shadow-[0_0_24px_-8px_var(--primary)]"
                     : "border-border bg-card",
@@ -107,43 +107,43 @@ export function PricingModal({ open, onOpenChange, reason = "manual" }: Props) {
                     Popular
                   </span>
                 )}
-                <div className="flex items-center gap-2">
-                  <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/15 text-primary">
+                <div className="flex min-w-0 items-center gap-2">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-primary">
                     <Icon className="h-4 w-4" />
                   </span>
-                  <div>
-                    <div className="font-display text-base font-semibold">{d.name}</div>
-                    <div className="text-[11px] text-muted-foreground">{d.nameKa}</div>
+                  <div className="min-w-0">
+                    <div className="truncate font-display text-base font-semibold">{d.name}</div>
+                    <div className="truncate text-[11px] text-muted-foreground">{d.nameKa}</div>
                   </div>
                 </div>
-                <div className="mt-3">
-                  <span className="font-display text-3xl font-bold">{d.price}</span>
-                  <span className="ml-1 text-sm text-muted-foreground">GEL / mo</span>
+                <div className="flex items-baseline gap-1">
+                  <span className="font-display text-3xl font-bold leading-none">{d.price}</span>
+                  <span className="text-xs text-muted-foreground">GEL / mo</span>
                 </div>
-                <ul className="mt-3 flex-1 space-y-1.5 text-sm">
+                <ul className="flex-1 space-y-2 text-sm">
                   {PLAN_FEATURES[p].en.map((f, i) => (
                     <li key={i} className="flex items-start gap-2">
                       <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-500" />
-                      <span>
-                        {f}
-                        <span className="block text-[11px] text-muted-foreground">
+                      <div className="min-w-0 flex-1 break-words">
+                        <div className="leading-snug">{f}</div>
+                        <div className="text-[11px] leading-snug text-muted-foreground">
                           {PLAN_FEATURES[p].ka[i]}
-                        </span>
-                      </span>
+                        </div>
+                      </div>
                     </li>
                   ))}
                 </ul>
                 <Button
-                  className="mt-4 w-full"
+                  className="w-full whitespace-normal py-4 text-xs leading-tight h-auto"
                   variant={isCurrent ? "outline" : isHighlight ? "default" : "secondary"}
                   onClick={() => pick(p)}
                   disabled={isCurrent}
                 >
                   {isCurrent
-                    ? "მიმდინარე ტარიფი · Current plan"
+                    ? "მიმდინარე · Current"
                     : p === "free"
                       ? "Free-ზე გადასვლა · Switch to Free"
-                      : `განაახლეთ ტარიფი · Upgrade`}
+                      : "განაახლეთ ტარიფი · Upgrade"}
                 </Button>
               </div>
             );

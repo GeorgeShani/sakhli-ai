@@ -10,12 +10,12 @@ const TEMPLATES: Record<"en" | "ka", string[]> = {
   en: [
     "How can I reduce my winter gas utility bill?",
     "What is the safest student neighborhood in Tbilisi?",
-    "How does the SakliAI hybrid revenue model benefit me?",
+    "How does the SakhliAI hybrid revenue model benefit me?",
   ],
   ka: [
     "როგორ შევამცირო ზამთრის გაზის გადასახადი?",
     "რომელია ყველაზე უსაფრთხო სტუდენტური უბანი თბილისში?",
-    "როგორ მეხმარება SakliAI-ის ჰიბრიდული გაქირავების მოდელი?",
+    "როგორ მეხმარება SakhliAI-ის ჰიბრიდული გაქირავების მოდელი?",
   ],
 };
 
@@ -37,6 +37,18 @@ function contextGreeting(path: string, role?: string | null): string {
 
 function autoReply(q: string, path: string, role?: string | null): string {
   const s = q.toLowerCase();
+
+  // --- Hardcoded contextual answers for the 3 template questions ---
+  if (s.includes("winter gas") || s.includes("gas utility") || s.includes("გაზის გადასახ") || s.includes("ზამთრის გაზ"))
+    return "🔥 SakhliAI იყენებს ისტორიულ თბოიზოლაციის მონაცემებს და n8n-ის ჭკვიან გაფრთხილებებს, რომ შემოგთავაზოს ოპტიმალური თერმოსტატის გრაფიკი — ეს ამცირებს ზამთრის გაზის გადასახადს თანამცხოვრებლებზე 25%-მდე.\n\n🔥 SakhliAI uses historical insulation data per building and smart n8n alert triggers to recommend lower thermostat schedules during off-peak hours. Flatmates typically save up to 25% on winter gas utility bills without losing comfort.";
+
+  if (s.includes("safest student") || s.includes("safe student") || s.includes("neighborhood") || s.includes("უსაფრთხო სტუდენტურ") || s.includes("უბანი"))
+    return "🛡️ ყველაზე უსაფრთხო სტუდენტური უბნებია საბურთალო და ვაკე — უნივერსიტეტების მაღალი კონცენტრაცია, აქტიური საზოგადოებრივი ტრანსპორტი და განათების ინფრასტრუქტურა, რომელსაც ვაკონტროლებთ SakhliAI Safety Scorecard-ით.\n\n🛡️ The safest student neighborhoods in Tbilisi are Saburtalo and Vake — high university density, active public-transport links, and street-lighting infrastructure that we monitor via the SakhliAI safety scorecard.";
+
+  if (s.includes("hybrid revenue") || s.includes("hybrid") || s.includes("ჰიბრიდულ"))
+    return "💸 SakhliAI-ის ჰიბრიდული მოდელი: ზაფხულის აქტიურ თვეებში გრძელვადიანი სტუდენტური კონტრაქტები გადადის მოკლევადიან Airbnb რეჟიმში, რაც მასპინძლების შემოსავალს 2.5x ზრდის — ხოლო სტუდენტის ქირა ფიქსირებული და დაცულია სასწავლო წლის განმავლობაში.\n\n💸 SakhliAI's hybrid model shifts long-term student contracts into short-term Airbnb listings during active summer months. Hosts see ~2.5x yield uplift, while student rent stays fixed and protected throughout the academic year.";
+
+  // --- Older contextual heuristics ---
   if (s.includes("ფას") || s.includes("price") || s.includes("rent"))
     return path.startsWith("/host")
       ? "ვაკეში მსგავსი ბინების მედიანა არის ₾1,650. რეკომენდაცია: დააწესე ₾1,720 — მოთხოვნა მაღალია."
@@ -121,7 +133,7 @@ export function AiAssistantBubble() {
               <div key={i} className={m.role === "ai" ? "flex justify-start" : "flex justify-end"}>
                 <div
                   className={[
-                    "max-w-[85%] rounded-2xl px-3 py-2 text-sm",
+                    "max-w-[85%] whitespace-pre-line rounded-2xl px-3 py-2 text-sm leading-relaxed",
                     m.role === "ai"
                       ? "bg-secondary text-foreground rounded-bl-sm"
                       : "bg-primary text-primary-foreground rounded-br-sm",
