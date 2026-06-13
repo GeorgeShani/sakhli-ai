@@ -300,6 +300,49 @@ function StatCard({ label, value, icon }: { label: string; value: number | strin
   );
 }
 
+function HeroAnalytics({ occupancy, revenue }: { occupancy: number; revenue: number }) {
+  const tip =
+    occupancy >= 80
+      ? "Demand is high for June. Increase short-term weekend rates by 15%."
+      : occupancy >= 50
+        ? "Occupancy is healthy — bundle a 7-night stay discount to lift weekday demand."
+        : "Low occupancy. Run a 10% Booking.com promo and reduce minimum-stay to 1 night.";
+  return (
+    <div className="mb-4 grid gap-4 md:grid-cols-3">
+      <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+        <CardContent className="p-5">
+          <div className="text-xs uppercase tracking-wide text-muted-foreground">
+            Occupancy Rate · დაკავებულობა
+          </div>
+          <div className="mt-1 font-display text-3xl font-bold text-gradient">{occupancy}%</div>
+          <div className="mt-2 h-1.5 w-full rounded-full bg-secondary">
+            <div className="h-full rounded-full bg-primary" style={{ width: `${occupancy}%` }} />
+          </div>
+        </CardContent>
+      </Card>
+      <Card className="border-primary/20">
+        <CardContent className="p-5">
+          <div className="text-xs uppercase tracking-wide text-muted-foreground">
+            Monthly Revenue · ყოველთვიური შემოსავალი
+          </div>
+          <div className="mt-1 font-display text-3xl font-bold">
+            {revenue.toLocaleString("en-US", { maximumFractionDigits: 0 })} GEL
+          </div>
+          <div className="mt-2 text-xs text-muted-foreground">across all channels</div>
+        </CardContent>
+      </Card>
+      <Card className="border-accent/30 bg-gradient-to-br from-accent/10 to-transparent">
+        <CardContent className="p-5">
+          <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
+            <Sparkles className="h-3.5 w-3.5 text-accent" /> AI Optimization · რჩევა
+          </div>
+          <div className="mt-1 text-sm font-medium leading-snug">{tip}</div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
 // -------------------- CALENDAR --------------------
 function CalendarView({
   properties,
