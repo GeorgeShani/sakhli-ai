@@ -376,3 +376,131 @@ function buildSummary(tier: FitScore["tier"], top: string[]): string {
           : "Risky fit";
   return top.length ? `${prefix}: ${top.join(" + ").toLowerCase()}.` : `${prefix}.`;
 }
+
+/* ---------- SakhliAI Assistant — Georgian bullet explanations ---------- */
+
+const SLEEP_KA: Record<SleepSchedule, string> = {
+  early_bird: "დილის ფრინველი",
+  night_owl: "ღამის ბუ",
+  flexible: "მოქნილი რეჟიმის",
+};
+
+const UNI_SHORT_KA: Record<string, string> = {
+  TSU: "თსუ-ში",
+  "Tbilisi State University": "თსუ-ში",
+  "Ilia State University": "ილიაუნი-ში",
+  "Free University of Tbilisi": "თავისუფალ უნივერსიტეტში",
+  GAU: "GAU-ში",
+  "Caucasus University": "კავკასიის უნივერსიტეტში",
+};
+
+function uniKa(u: string) {
+  return UNI_SHORT_KA[u] ?? `${u}-ში`;
+}
+
+export type AssistantBullet = {
+  icon: "match" | "money" | "habit" | "schedule" | "warning";
+  text: string;
+};
+
+/** Bilingual-Georgian bullets shown inside the "SakhliAI ასისტენტი" card. */
+export function aiAssistantBullets(profile: StudentProfile, f: Flatmate): AssistantBullet[] {
+  const bullets: AssistantBullet[] = [];
+
+  const sameUni =
+    !!profile.university &&
+    !!f.university &&
+    profile.university.trim().toLowerCase() === f.university.trim().toLowerCase();
+  const sameSleep = profile.sleep === f.sleep;
+  const closeClean = Math.abs(profile.cleanliness - f.cleanliness) <= 1;
+
+  if (sameUni && sameSleep && closeClean) {
+    bullets.push({
+      icon: "match",
+      text: `ორივე სწავლობთ ${uniKa(f.university)}, ხართ ${SLEEP_KA[f.sleep]} და გაქვთ სისუფთავის იდენტური მოთხოვნები.`,
+    });
+  } else {
+    if (sameUni)
+      bullets.push({ icon: "match", text: `ორივე სწავლობთ ${uniKa(f.university)} — გზაზე და გრაფიკზე იოლი თანხვედრა.` });
+    if (sameSleep)
+      bullets.push({ icon: "schedule", text: `ორივე ${SLEEP_KA[f.sleep]} ხართ — ძილის რეჟიმი ემთხვევა.` });
+    if (closeClean)
+      bullets.push({
+        icon: "habit",
+        text: `სისუფთავის სტანდარტი თითქმის იდენტურია (${profile.cleanliness}/5 ↔ ${f.cleanliness}/5).`,
+      });
+  }
+
+  const combined = profile.budget + f.budget;
+  const targetRent = 1600;
+  if (combined >= targetRent) {
+    bullets.push({
+      icon: "money",
+      text: `თქვენი ბიუჯეტების ჯამი (₾${combined}) სრულად ფარავს ბინის ქირას, რაც ფინანსურად სტაბილურს ხდის თანაცხოვრებას.`,
+    });
+  } else {
+    bullets.push({
+      icon: "warning",
+      text: `ჯამური ბიუჯეტი (₾${combined}) ოდნავ ჩამორჩება საშუალო ქირას ₾${targetRent} — განიხილეთ ცენტრს გარეთ ვარიანტი.`,
+    });
+  }
+
+  const habitDiffs: string[] = [];
+  if (profile.smoking !== f.smoking) habitDiffs.push("მოწევა");
+  if (profile.pets !== f.pets) habitDiffs.push("შინაური ცხოველი");
+  if (profile.parties !== f.parties) habitDiffs.push("წვეულებები");
+  if (profile.quiet !== f.quiet) habitDiffs.push("მშვიდი საათები");
+  if (habitDiffs.length === 0) {
+    bullets.push({ icon: "habit", text: "ცხოვრების სტილის ჩვევები სრულად ემთხვევა — სახლის წესები ერთნაირია." });
+  } else if (habitDiffs.length <= 2) {
+    bullets.push({ icon: "habit", text: `მცირე განსხვავება მხოლოდ: ${habitDiffs.join(", ")}. შეთანხმება ადვილია.` });
+  } else {
+    bullets.push({ icon: "warning", text: `ჩვევებში განსხვავება: ${habitDiffs.join(", ")} — საჭიროა ღია საუბარი.` });
+  }
+
+  return bullets;
+}
+
+/* ---------- Host-side AI tenant screening ---------- */
+
+export type TenantScreening = {
+  verdict: "ideal" | "good" | "review";
+  summary: string;
+  churnRisk: "დაბალი" | "საშუალო" | "მაღალი";
+  score: number;
+};
+
+type ApplicantLike = {
+  display_name: string | null;
+  university: string | null;
+  salary_bracket: string | null;
+  income_source: string | null;
+  sleep_schedule: string | null;
+  smoking: boolean | null;
+  cleanliness: number | null;
+  budget_min: number | null;
+  budget_max: number | null;
+};
+
+export function screenApplicant(a: ApplicantLike, propertyPrice = 1600): TenantScreening {
+  let score = 60;
+  const uni = a.university ?? "";
+  if (/TSU|Ilia|Free|GAU|Caucasus|university|უნი/i.test(uni)) score += 12;
+  if (a.smoking === false) score += 8;
+  if ((a.cleanliness ?? 3) >= 4) score += 8;
+  if (a.income_source === "job" || a.income_source === "mixed") score += 10;
+  if (a.salary_bracket === "1000_2000" || a.salary_bracket === "2000_plus") score += 8;
+  const budgetMid = ((a.budget_min ?? 0) + (a.budget_max ?? 0)) / 2;
+  if (budgetMid >= propertyPrice * 0.5) score += 6;
+  score = Math.min(100, score);
+
+  const verdict: TenantScreening["verdict"] = score >= 85 ? "ideal" : score >= 70 ? "good" : "review";
+  const churnRisk: TenantScreening["churnRisk"] = score >= 85 ? "დაბალი" : score >= 70 ? "საშუალო" : "მაღალი";
+  const uniKaName = uniKa(uni || "უნივერსიტეტი");
+  const smokeKa = a.smoking ? "ეწევა" : "არ ეწევა";
+  const verdictKa =
+    verdict === "ideal" ? "იდეალური მდგმური" : verdict === "good" ? "ვარგისი მდგმური" : "საჭიროებს გადახედვას";
+  const summary = `AI შეფასება: ${verdictKa}. სწავლობს ${uniKaName}, ${smokeKa}, და ბინის მდებარეობა მისთვის იდეალურია აკადემიური თვალსაზრისით. Churn Risk: ${churnRisk}.`;
+  return { verdict, summary, churnRisk, score };
+}
+
