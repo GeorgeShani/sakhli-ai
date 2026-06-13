@@ -412,11 +412,11 @@ function UtilitySplitter({
   const [roommates, setRoommates] = useState<Roommate[]>(() => {
     const base: Roommate[] = [{ id: "me", name: "You", moveInDay: 1 }];
     flatmateNames.slice(0, 2).forEach((n, i) =>
-      base.push({ id: `r${i}`, name: n, moveInDay: 1 }),
+      base.push({ id: `r${i}`, name: n, moveInDay: i === 0 ? 8 : 15 }),
     );
     if (base.length === 1) {
-      base.push({ id: "r0", name: "Nino", moveInDay: 1 });
-      base.push({ id: "r1", name: "Giorgi", moveInDay: 10 });
+      base.push({ id: "r0", name: "Nino", moveInDay: 8 });
+      base.push({ id: "r1", name: "Giorgi", moveInDay: 15 });
     }
     return base;
   });
