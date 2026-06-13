@@ -132,11 +132,22 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <I18nProvider>
         <AuthProvider>
-          {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-          <Outlet />
-          <Toaster richColors position="top-right" />
+          <LocaleBodyWrapper>
+            {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+            <Outlet />
+            <Toaster richColors position="top-right" />
+          </LocaleBodyWrapper>
         </AuthProvider>
       </I18nProvider>
     </QueryClientProvider>
+  );
+}
+
+function LocaleBodyWrapper({ children }: { children: ReactNode }) {
+  const { locale } = useI18n();
+  return (
+    <div data-locale={locale} className="min-h-screen">
+      {children}
+    </div>
   );
 }
