@@ -55,9 +55,12 @@ function MatchesPage() {
   const { t } = useI18n();
   const { profile, loaded } = useProfile();
   const { matches, record, reset } = useMatches();
+  const { isPaid, bumpSwipes, swipeBlocked, swipesLeft, resetSwipes } = useSubscription();
   const [tab, setTab] = useState<Tab>("people");
   const [index, setIndex] = useState({ people: 0, places: 0 });
   const [aiBestFit, setAiBestFit] = useState(false);
+  const [pricingOpen, setPricingOpen] = useState(false);
+  const [pricingReason, setPricingReason] = useState<"swipe_limit" | "ai_best_fit" | "manual">("manual");
 
   const effectiveProfile: StudentProfile = profile ?? defaultProfile;
 
@@ -65,19 +68,24 @@ function MatchesPage() {
     const ranked = flatmates
       .map((f) => ({ f, fit: fitScoreForFlatmate(effectiveProfile, f) }))
       .sort((a, b) => b.fit.score - a.fit.score);
-    return aiBestFit ? ranked.filter((r) => r.fit.score >= 85) : ranked;
-  }, [effectiveProfile, aiBestFit]);
+    return aiBestFit && isPaid ? ranked.filter((r) => r.fit.score >= 85) : ranked;
+  }, [effectiveProfile, aiBestFit, isPaid]);
 
   const placeStack = useMemo(() => {
     const ranked = properties
       .map((p) => ({ p, fit: fitScoreForProperty(effectiveProfile, p) }))
       .sort((a, b) => b.fit.score - a.fit.score);
-    return aiBestFit ? ranked.filter((r) => r.fit.score >= 85) : ranked;
-  }, [effectiveProfile, aiBestFit]);
+    return aiBestFit && isPaid ? ranked.filter((r) => r.fit.score >= 85) : ranked;
+  }, [effectiveProfile, aiBestFit, isPaid]);
 
   if (!loaded) return null;
 
   const handleSwipe = (liked: boolean) => {
+    if (swipeBlocked) {
+      setPricingReason("swipe_limit");
+      setPricingOpen(true);
+      return;
+    }
     if (tab === "people") {
       const current = peopleStack[index.people];
       if (current) record("person", current.f.id, liked);
@@ -87,11 +95,22 @@ function MatchesPage() {
       if (current) record("place", current.p.id, liked);
       setIndex((i) => ({ ...i, places: i.places + 1 }));
     }
+    if (!isPaid) bumpSwipes();
+  };
+
+  const handleAiToggle = (checked: boolean) => {
+    if (checked && !isPaid) {
+      setPricingReason("ai_best_fit");
+      setPricingOpen(true);
+      return;
+    }
+    setAiBestFit(checked);
   };
 
   const stackDone =
     (tab === "people" && index.people >= peopleStack.length) ||
     (tab === "places" && index.places >= placeStack.length);
+
 
   const tabBtn = (v: Tab, label: string) => (
     <button
