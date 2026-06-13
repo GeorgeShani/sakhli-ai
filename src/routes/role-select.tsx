@@ -144,28 +144,30 @@ function RoleSelectPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="flex h-screen max-h-screen flex-col overflow-hidden bg-background">
       <AppHeader />
-      <main className="mx-auto max-w-5xl px-4 py-10">
-        {!selected && (
-          <RoleCards
-            onPick={pick}
-            currentRole={profile?.role ?? null}
-            onBackHome={goBackToHome}
-            err={err}
-          />
-        )}
+      <main className="flex flex-1 items-center justify-center overflow-hidden px-4 py-6">
+        <div className="w-full max-w-5xl">
+          {!selected && (
+            <RoleCards
+              onPick={pick}
+              currentRole={profile?.role ?? null}
+              onBackHome={goBackToHome}
+              err={err}
+            />
+          )}
 
-        {selected && (
-          <AuthStep
-            card={selected}
-            user={!!user}
-            applying={applying}
-            err={err}
-            onBackToCards={goBackToCards}
-            onBackHome={goBackToHome}
-          />
-        )}
+          {selected && (
+            <AuthStep
+              card={selected}
+              user={!!user}
+              applying={applying}
+              err={err}
+              onBackToCards={goBackToCards}
+              onBackHome={goBackToHome}
+            />
+          )}
+        </div>
       </main>
     </div>
   );
