@@ -286,6 +286,9 @@ function HostPage() {
         {/* AI Smart Rent Predictor */}
         <SmartRentPredictor />
 
+        {/* Airbnb Priority — tourist-season pricing/optimization toggle */}
+        <AirbnbPriorityToggle />
+
         {/* Interactive Demand Map */}
         <div className="mb-6">
           <DemandMap />
