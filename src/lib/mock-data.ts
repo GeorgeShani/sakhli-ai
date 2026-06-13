@@ -24,17 +24,23 @@ export type Flatmate = {
   salaryBracket: SalaryBracket;
   incomeSource: IncomeSource;
   verified: boolean;
+  /** When set, fitScoreForFlatmate returns this exact AI-curated score. */
+  aiPremiumScore?: number;
 };
 
 export type Property = {
   id: string;
   title: string;
   district: string;
+  address?: string;
+  description?: string;
   price: number;
   bedrooms: number;
   flatmatesNeeded: number;
   amenities: string[];
   image: string;
+  /** When set, fitScoreForProperty returns this exact AI-curated score. */
+  aiPremiumScore?: number;
 };
 
 const avatars = (seed: string) =>
@@ -149,6 +155,82 @@ export const flatmates: Flatmate[] = [
     incomeSource: "family",
     verified: true,
   },
+  {
+    id: "f7",
+    name: "Tamta L.",
+    age: 22,
+    university: "Tbilisi State University",
+    budget: 1100,
+    sleep: "flexible",
+    cleanliness: 4,
+    smoking: false,
+    pets: false,
+    parties: false,
+    quiet: true,
+    bio: "AI-curated top pick. Architecture MA student, very tidy, splits utilities fairly.",
+    avatar: avatars("tamta-premium"),
+    salaryBracket: "2000_plus",
+    incomeSource: "job",
+    verified: true,
+    aiPremiumScore: 88,
+  },
+  {
+    id: "f8",
+    name: "Davit Ch.",
+    age: 23,
+    university: "Free University of Tbilisi",
+    budget: 1200,
+    sleep: "flexible",
+    cleanliness: 4,
+    smoking: false,
+    pets: false,
+    parties: false,
+    quiet: true,
+    bio: "AI Premium match. CS grad, remote SWE, calm flat, great splitter.",
+    avatar: avatars("davit-premium"),
+    salaryBracket: "2000_plus",
+    incomeSource: "job",
+    verified: true,
+    aiPremiumScore: 91,
+  },
+  {
+    id: "f9",
+    name: "Salome G.",
+    age: 21,
+    university: "Ilia State University",
+    budget: 1150,
+    sleep: "flexible",
+    cleanliness: 5,
+    smoking: false,
+    pets: false,
+    parties: false,
+    quiet: true,
+    bio: "AI top pick. Psychology MA, scholarship + part-time, lifelong tidy roommate energy.",
+    avatar: avatars("salome-premium"),
+    salaryBracket: "1000_2000",
+    incomeSource: "mixed",
+    verified: true,
+    aiPremiumScore: 94,
+  },
+  {
+    id: "f10",
+    name: "Beka N.",
+    age: 24,
+    university: "GAU",
+    budget: 1250,
+    sleep: "flexible",
+    cleanliness: 5,
+    smoking: false,
+    pets: false,
+    parties: false,
+    quiet: true,
+    bio: "AI Premium pick. Finance grad, stable income, near-perfect lifestyle alignment.",
+    avatar: avatars("beka-premium"),
+    salaryBracket: "2000_plus",
+    incomeSource: "job",
+    verified: true,
+    aiPremiumScore: 96,
+  },
 ];
 
 const propImg = (seed: string) =>
@@ -204,6 +286,48 @@ export const properties: Property[] = [
     flatmatesNeeded: 1,
     amenities: ["Wi-Fi", "Sea view", "AC"],
     image: propImg("1493809842364-78817add7ffb"),
+  },
+  {
+    id: "p6",
+    title: "AI Pick · Premium 2BR near TSU",
+    district: "Vake, Tbilisi",
+    address: "12 Chavchavadze Ave, Vake, Tbilisi 0179",
+    description:
+      "Renovated 2-bedroom flat steps from TSU. Bright south-facing living room, full kitchen, in-unit laundry. Curated by SakhliAI as a top student-host hybrid listing.",
+    price: 1800,
+    bedrooms: 2,
+    flatmatesNeeded: 1,
+    amenities: ["Wi-Fi", "Washer", "Dishwasher", "Heating", "AC", "Balcony"],
+    image: propImg("1505691938895-1758d7feb511"),
+    aiPremiumScore: 88,
+  },
+  {
+    id: "p7",
+    title: "AI Pick · Quiet Saburtalo Studio Hybrid",
+    district: "Saburtalo, Tbilisi",
+    address: "47 Pekini St, Saburtalo, Tbilisi 0160",
+    description:
+      "Studio + sleeping nook, perfect for two compatible students. 6-min metro to GAU and Iliauni. Pre-vetted by SakhliAI for safe long-term + tourist hybrid use.",
+    price: 1500,
+    bedrooms: 2,
+    flatmatesNeeded: 1,
+    amenities: ["Wi-Fi", "Elevator", "Workspace", "Heating", "AC"],
+    image: propImg("1554995207-c18c203602cb"),
+    aiPremiumScore: 91,
+  },
+  {
+    id: "p8",
+    title: "AI Pick · Sololaki Loft, Verified Hybrid",
+    district: "Sololaki, Tbilisi",
+    address: "8 Asatiani St, Sololaki, Tbilisi 0105",
+    description:
+      "Historic loft, fully refurbished. Pet-friendly, secure entrance, smart locks. Top SakhliAI fit score for students seeking premium long-term housing with weekend tourist sublet option.",
+    price: 1650,
+    bedrooms: 2,
+    flatmatesNeeded: 1,
+    amenities: ["Wi-Fi", "Pet friendly", "Smart lock", "Heating", "Workspace", "Balcony"],
+    image: propImg("1493809842364-78817add7ffb"),
+    aiPremiumScore: 94,
   },
 ];
 
@@ -274,6 +398,16 @@ export function fitScoreForProperty(
   p: Property,
   sharers = Math.max(1, p.flatmatesNeeded + 1),
 ): FitScore {
+  if (typeof p.aiPremiumScore === "number") {
+    const score = Math.max(0, Math.min(100, Math.round(p.aiPremiumScore)));
+    return {
+      score,
+      tier: score >= 85 ? "excellent" : score >= 70 ? "good" : score >= 50 ? "fair" : "risky",
+      reasons: ["AI Premium curated listing", "Top SakhliAI hybrid pick"],
+      summary: "AI Premium pick — top SakhliAI hybrid listing.",
+      financialSafe: true,
+    };
+  }
   const reasons: string[] = [];
   const perPerson = p.price / sharers;
   const income = bracketMid(profile.salaryBracket);
@@ -311,6 +445,16 @@ export function fitScoreForProperty(
 }
 
 export function fitScoreForFlatmate(profile: StudentProfile, f: Flatmate): FitScore {
+  if (typeof f.aiPremiumScore === "number") {
+    const score = Math.max(0, Math.min(100, Math.round(f.aiPremiumScore)));
+    return {
+      score,
+      tier: score >= 85 ? "excellent" : score >= 70 ? "good" : score >= 50 ? "fair" : "risky",
+      reasons: ["AI Premium curated match", "Top SakhliAI ranked profile"],
+      summary: "AI Premium pick — top SakhliAI ranking.",
+      financialSafe: true,
+    };
+  }
   const reasons: string[] = [];
   let score = 0;
 
