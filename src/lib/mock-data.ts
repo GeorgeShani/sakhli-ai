@@ -287,6 +287,48 @@ export const properties: Property[] = [
     amenities: ["Wi-Fi", "Sea view", "AC"],
     image: propImg("1493809842364-78817add7ffb"),
   },
+  {
+    id: "p6",
+    title: "AI Pick · Premium 2BR near TSU",
+    district: "Vake, Tbilisi",
+    address: "12 Chavchavadze Ave, Vake, Tbilisi 0179",
+    description:
+      "Renovated 2-bedroom flat steps from TSU. Bright south-facing living room, full kitchen, in-unit laundry. Curated by SakhliAI as a top student-host hybrid listing.",
+    price: 1800,
+    bedrooms: 2,
+    flatmatesNeeded: 1,
+    amenities: ["Wi-Fi", "Washer", "Dishwasher", "Heating", "AC", "Balcony"],
+    image: propImg("1505691938895-1758d7feb511"),
+    aiPremiumScore: 88,
+  },
+  {
+    id: "p7",
+    title: "AI Pick · Quiet Saburtalo Studio Hybrid",
+    district: "Saburtalo, Tbilisi",
+    address: "47 Pekini St, Saburtalo, Tbilisi 0160",
+    description:
+      "Studio + sleeping nook, perfect for two compatible students. 6-min metro to GAU and Iliauni. Pre-vetted by SakhliAI for safe long-term + tourist hybrid use.",
+    price: 1500,
+    bedrooms: 2,
+    flatmatesNeeded: 1,
+    amenities: ["Wi-Fi", "Elevator", "Workspace", "Heating", "AC"],
+    image: propImg("1554995207-c18c203602cb"),
+    aiPremiumScore: 91,
+  },
+  {
+    id: "p8",
+    title: "AI Pick · Sololaki Loft, Verified Hybrid",
+    district: "Sololaki, Tbilisi",
+    address: "8 Asatiani St, Sololaki, Tbilisi 0105",
+    description:
+      "Historic loft, fully refurbished. Pet-friendly, secure entrance, smart locks. Top SakhliAI fit score for students seeking premium long-term housing with weekend tourist sublet option.",
+    price: 1650,
+    bedrooms: 2,
+    flatmatesNeeded: 1,
+    amenities: ["Wi-Fi", "Pet friendly", "Smart lock", "Heating", "Workspace", "Balcony"],
+    image: propImg("1493809842364-78817add7ffb"),
+    aiPremiumScore: 94,
+  },
 ];
 
 /* ---------- Legacy raw scores (kept for back-compat) ---------- */
