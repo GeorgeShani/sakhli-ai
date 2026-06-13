@@ -277,6 +277,7 @@ function HostPage() {
             <OpsView
               properties={properties}
               tasks={tasks}
+              bookings={filteredBookings}
               filteredPropId={selectedProp === "all" ? null : selectedProp}
             />
           </TabsContent>
