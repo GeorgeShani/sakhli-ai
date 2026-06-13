@@ -2,6 +2,7 @@ import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import { Home, LogOut, User as UserIcon } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { LanguageToggle } from "./LanguageToggle";
+import { ThemeToggle } from "./ThemeToggle";
 import { Button } from "@/components/ui/button";
 import { useAuth, type AppRole } from "@/lib/auth";
 
@@ -54,6 +55,7 @@ export function AppHeader() {
         </nav>
 
         <div className="flex items-center gap-2">
+          <ThemeToggle />
           <LanguageToggle />
           {user ? (
             <>
