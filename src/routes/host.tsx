@@ -11,7 +11,9 @@ import {
   AlertCircle,
   Phone,
   MapPin,
+  GraduationCap,
 } from "lucide-react";
+import { screenApplicant } from "@/lib/mock-data";
 import { supabase } from "@/integrations/supabase/client";
 import { AppHeader } from "@/components/AppHeader";
 import { AuthGate } from "@/components/AuthGate";
@@ -267,6 +269,9 @@ function HostPage() {
             <TabsTrigger value="channels">
               <Radio className="mr-2 h-4 w-4" /> Channels
             </TabsTrigger>
+            <TabsTrigger value="applicants">
+              <Sparkles className="mr-2 h-4 w-4" /> Applicants
+            </TabsTrigger>
             <TabsTrigger value="ops">
               <Sparkles className="mr-2 h-4 w-4" /> Operations
             </TabsTrigger>
@@ -282,6 +287,12 @@ function HostPage() {
 
           <TabsContent value="channels" className="mt-4">
             <ChannelsView properties={properties} syncs={syncs} />
+          </TabsContent>
+
+          <TabsContent value="applicants" className="mt-4">
+            <TenantScreeningView
+              properties={selectedProp === "all" ? properties : properties.filter((p) => p.id === selectedProp)}
+            />
           </TabsContent>
 
           <TabsContent value="ops" className="mt-4">
@@ -1152,5 +1163,138 @@ function SmartRentPredictor() {
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+// -------------------- TENANT SCREENING --------------------
+type Applicant = {
+  id: string;
+  display_name: string | null;
+  university: string | null;
+  salary_bracket: string | null;
+  income_source: string | null;
+  sleep_schedule: string | null;
+  smoking: boolean | null;
+  pets: boolean | null;
+  cleanliness: number | null;
+  budget_min: number | null;
+  budget_max: number | null;
+  bio: string | null;
+  city: string | null;
+  created_at: string;
+};
+
+function TenantScreeningView({ properties }: { properties: Property[] }) {
+  const [applicants, setApplicants] = useState<Applicant[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      const { data, error } = await supabase
+        .from("student_profiles")
+        .select(
+          "id, display_name, university, salary_bracket, income_source, sleep_schedule, smoking, pets, cleanliness, budget_min, budget_max, bio, city, created_at",
+        )
+        .order("created_at", { ascending: false });
+      if (error) console.error("[TenantScreening] fetch error:", error.message);
+      if (data) setApplicants(data as Applicant[]);
+      setLoading(false);
+    })();
+
+    const ch = supabase
+      .channel("applicants-realtime")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "student_profiles" }, (payload) => {
+        setApplicants((prev) => [payload.new as Applicant, ...prev]);
+        toast.success("New tenant application received");
+      })
+      .subscribe();
+    return () => {
+      supabase.removeChannel(ch);
+    };
+  }, []);
+
+  const refPrice = properties[0]?.price_per_night ? Number(properties[0].price_per_night) * 30 : 1600;
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Sparkles className="h-4 w-4 text-accent" /> Tenant Screening · მდგმურის შემოწმება
+        </CardTitle>
+        <CardDescription>
+          Live applicant pool from <code>student_profiles</code>. Each card carries an AI risk / fit analysis.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {loading && <div className="text-sm text-muted-foreground">Loading applicants…</div>}
+        {!loading && applicants.length === 0 && (
+          <div className="rounded-md border border-dashed p-6 text-center text-sm text-muted-foreground">
+            No applications yet. New student profiles appear here in real-time.
+          </div>
+        )}
+        {applicants.map((a) => (
+          <ApplicantRow key={a.id} a={a} refPrice={refPrice} />
+        ))}
+      </CardContent>
+    </Card>
+  );
+}
+
+function ApplicantRow({ a, refPrice }: { a: Applicant; refPrice: number }) {
+  const screening = screenApplicant(a, refPrice);
+  const verdictClasses =
+    screening.verdict === "ideal"
+      ? "border-emerald-500/40 bg-emerald-500/5"
+      : screening.verdict === "good"
+        ? "border-primary/30 bg-primary/5"
+        : "border-amber-500/40 bg-amber-500/5";
+  const churnClasses =
+    screening.churnRisk === "დაბალი"
+      ? "text-emerald-600 dark:text-emerald-400"
+      : screening.churnRisk === "საშუალო"
+        ? "text-amber-600 dark:text-amber-400"
+        : "text-destructive";
+
+  return (
+    <div className={`grid gap-3 rounded-xl border p-4 sm:grid-cols-[1fr_1.4fr] ${verdictClasses}`}>
+      <div className="space-y-1.5">
+        <div className="flex items-center gap-2">
+          <div className="font-display text-lg font-bold">{a.display_name ?? "Anonymous"}</div>
+          <Badge variant="secondary" className="text-[10px] uppercase">
+            {screening.verdict === "ideal" ? "Ideal" : screening.verdict === "good" ? "Good" : "Review"}
+          </Badge>
+        </div>
+        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+          <GraduationCap className="h-3.5 w-3.5" /> {a.university ?? "—"}
+        </div>
+        <div className="flex flex-wrap gap-1 text-[11px]">
+          <span className="rounded-full bg-card px-2 py-0.5">
+            ₾{a.budget_min ?? 0}–{a.budget_max ?? 0}
+          </span>
+          <span className="rounded-full bg-card px-2 py-0.5">{a.income_source ?? "—"}</span>
+          <span className="rounded-full bg-card px-2 py-0.5">
+            🧹 {a.cleanliness ?? 3}/5
+          </span>
+          <span className="rounded-full bg-card px-2 py-0.5">
+            {a.smoking ? "🚬 ეწევა" : "🚭 არ ეწევა"}
+          </span>
+        </div>
+      </div>
+      <div className="rounded-lg border border-border bg-card p-3 text-sm">
+        <div className="mb-1 flex items-center justify-between">
+          <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide">
+            <Sparkles className="h-3.5 w-3.5 text-accent" /> AI Risk / Fit Analysis
+          </div>
+          <div className="font-display text-lg font-bold">{screening.score}%</div>
+        </div>
+        <p className="leading-snug text-foreground">{screening.summary}</p>
+        <div className="mt-2 flex items-center justify-between text-[11px]">
+          <span className="text-muted-foreground">Churn Risk</span>
+          <span className={`font-semibold uppercase tracking-wide ${churnClasses}`}>
+            {screening.churnRisk}
+          </span>
+        </div>
+      </div>
+    </div>
   );
 }
