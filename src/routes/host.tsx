@@ -454,22 +454,62 @@ function CalendarView({
                   const meta = CHANNEL_META[b.channel] ?? CHANNEL_META.direct;
                   const isPulse = pulse === b.id;
                   return (
-                    <div
-                      key={b.id}
-                      title={`${b.guest_name} • ${b.check_in} → ${b.check_out} • ${meta.label}`}
-                      className={`absolute top-2 z-10 flex h-10 items-center gap-1 overflow-hidden rounded-md px-2 text-xs font-medium text-white shadow-sm ${meta.color} ${
-                        isPulse ? "ring-2 ring-offset-2 ring-primary animate-pulse" : ""
-                      }`}
-                      style={{
-                        left: `calc(200px + (100% - 200px) * ${startIdx} / ${days.length})`,
-                        width: `calc((100% - 200px) * ${span} / ${days.length} - 4px)`,
-                      }}
-                    >
-                      <span className="truncate">{b.guest_name ?? "Guest"}</span>
-                      <Badge variant="secondary" className="ml-auto h-4 px-1 text-[10px] text-foreground">
-                        {meta.label}
-                      </Badge>
-                    </div>
+                    <HoverCard key={b.id} openDelay={80}>
+                      <HoverCardTrigger asChild>
+                        <div
+                          className={`absolute top-2 z-10 flex h-10 cursor-pointer items-center gap-1.5 overflow-hidden rounded-md px-2 text-xs font-medium text-white shadow-sm ${meta.color} ${
+                            isPulse ? "ring-2 ring-offset-2 ring-primary animate-pulse" : ""
+                          }`}
+                          style={{
+                            left: `calc(200px + (100% - 200px) * ${startIdx} / ${days.length})`,
+                            width: `calc((100% - 200px) * ${span} / ${days.length} - 4px)`,
+                          }}
+                        >
+                          <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded bg-white text-[10px] font-bold ${meta.logoColor}`}>
+                            {meta.logo}
+                          </span>
+                          <span className="truncate">{b.guest_name ?? "Guest"}</span>
+                        </div>
+                      </HoverCardTrigger>
+                      <HoverCardContent className="w-72" align="start">
+                        <div className="flex items-center gap-2">
+                          <span className={`flex h-7 w-7 items-center justify-center rounded ${meta.color} text-xs font-bold text-white`}>
+                            {meta.logo}
+                          </span>
+                          <div className="min-w-0">
+                            <div className="truncate text-sm font-semibold">{b.guest_name ?? "Guest"}</div>
+                            <div className="text-xs text-muted-foreground">via {meta.label}</div>
+                          </div>
+                          <Badge variant="secondary" className="ml-auto text-[10px] capitalize">
+                            {b.status}
+                          </Badge>
+                        </div>
+                        <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
+                          <div>
+                            <div className="text-muted-foreground">Check-in</div>
+                            <div className="font-medium">{b.check_in}</div>
+                          </div>
+                          <div>
+                            <div className="text-muted-foreground">Check-out</div>
+                            <div className="font-medium">{b.check_out}</div>
+                          </div>
+                          <div>
+                            <div className="text-muted-foreground">Guests</div>
+                            <div className="font-medium">{b.guests_count ?? 1}</div>
+                          </div>
+                          <div>
+                            <div className="text-muted-foreground">Payment</div>
+                            <div className="font-medium">
+                              {b.total_price ? `₾ ${Number(b.total_price).toLocaleString()} · Paid` : "Pending"}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="mt-3 flex items-center gap-1.5 rounded-md bg-accent/10 px-2 py-1.5 text-[11px] text-accent-foreground">
+                          <Sparkles className="h-3 w-3 text-accent" />
+                          Synchronized instantly via n8n backend
+                        </div>
+                      </HoverCardContent>
+                    </HoverCard>
                   );
                 })}
               </div>
