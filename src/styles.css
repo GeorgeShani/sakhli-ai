@@ -192,6 +192,25 @@
   }
 }
 
+/* Georgian locale: premium Google Sans aesthetic via Outfit + Noto Sans Georgian */
+[data-locale="ka"] {
+  font-family: var(--font-georgian);
+}
+
+[data-locale="ka"] h1,
+[data-locale="ka"] h2,
+[data-locale="ka"] h3,
+[data-locale="ka"] h4,
+[data-locale="ka"] h5,
+[data-locale="ka"] .font-display {
+  font-family: var(--font-georgian);
+  letter-spacing: -0.01em;
+}
+
+[data-locale="ka"] .text-gradient {
+  letter-spacing: -0.01em;
+}
+
 @utility gradient-hero {
   background: radial-gradient(
       ellipse at top,
