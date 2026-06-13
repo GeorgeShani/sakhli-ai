@@ -398,6 +398,16 @@ export function fitScoreForProperty(
   p: Property,
   sharers = Math.max(1, p.flatmatesNeeded + 1),
 ): FitScore {
+  if (typeof p.aiPremiumScore === "number") {
+    const score = Math.max(0, Math.min(100, Math.round(p.aiPremiumScore)));
+    return {
+      score,
+      tier: score >= 85 ? "excellent" : score >= 70 ? "good" : score >= 50 ? "fair" : "risky",
+      reasons: ["AI Premium curated listing", "Top SakhliAI hybrid pick"],
+      summary: "AI Premium pick — top SakhliAI hybrid listing.",
+      financialSafe: true,
+    };
+  }
   const reasons: string[] = [];
   const perPerson = p.price / sharers;
   const income = bracketMid(profile.salaryBracket);
