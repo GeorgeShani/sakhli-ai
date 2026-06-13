@@ -7,10 +7,9 @@ import { useAuth, type AppRole } from "@/lib/auth";
 import {
   GraduationCap,
   Building2,
-  Sparkles,
-  ShieldCheck,
   Loader2,
   ArrowRight,
+  ArrowLeft,
 } from "lucide-react";
 
 export const Route = createFileRoute("/role-select")({
