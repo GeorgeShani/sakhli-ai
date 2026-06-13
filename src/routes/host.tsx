@@ -87,7 +87,7 @@ type CleaningTask = {
 const CHANNEL_META: Record<string, { label: string; color: string }> = {
   airbnb: { label: "Airbnb", color: "bg-rose-500" },
   booking: { label: "Booking.com", color: "bg-blue-500" },
-  sakliai: { label: "SakliAI", color: "bg-primary" },
+  sakliai: { label: "SakhliAI", color: "bg-primary" },
   student: { label: "Student", color: "bg-emerald-500" },
   direct: { label: "Direct", color: "bg-amber-500" },
 };
@@ -220,6 +220,14 @@ function HostPage() {
           </div>
         </div>
 
+        {/* Hero analytics: Occupancy / Revenue / AI Tip */}
+        <HeroAnalytics
+          occupancy={occupancyRate}
+          revenue={bookings
+            .filter((b) => b.status !== "cancelled" && b.total_price)
+            .reduce((s, b) => s + Number(b.total_price ?? 0), 0)}
+        />
+
         {/* Stats */}
         <div className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-4">
           <StatCard label="Properties" value={properties.length} icon={<MapPin className="h-4 w-4" />} />
@@ -269,6 +277,7 @@ function HostPage() {
             <OpsView
               properties={properties}
               tasks={tasks}
+              bookings={filteredBookings}
               filteredPropId={selectedProp === "all" ? null : selectedProp}
             />
           </TabsContent>
@@ -289,6 +298,49 @@ function StatCard({ label, value, icon }: { label: string; value: number | strin
         <div className="rounded-md bg-primary/10 p-2 text-primary">{icon}</div>
       </CardContent>
     </Card>
+  );
+}
+
+function HeroAnalytics({ occupancy, revenue }: { occupancy: number; revenue: number }) {
+  const tip =
+    occupancy >= 80
+      ? "Demand is high for June. Increase short-term weekend rates by 15%."
+      : occupancy >= 50
+        ? "Occupancy is healthy — bundle a 7-night stay discount to lift weekday demand."
+        : "Low occupancy. Run a 10% Booking.com promo and reduce minimum-stay to 1 night.";
+  return (
+    <div className="mb-4 grid gap-4 md:grid-cols-3">
+      <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+        <CardContent className="p-5">
+          <div className="text-xs uppercase tracking-wide text-muted-foreground">
+            Occupancy Rate · დაკავებულობა
+          </div>
+          <div className="mt-1 font-display text-3xl font-bold text-gradient">{occupancy}%</div>
+          <div className="mt-2 h-1.5 w-full rounded-full bg-secondary">
+            <div className="h-full rounded-full bg-primary" style={{ width: `${occupancy}%` }} />
+          </div>
+        </CardContent>
+      </Card>
+      <Card className="border-primary/20">
+        <CardContent className="p-5">
+          <div className="text-xs uppercase tracking-wide text-muted-foreground">
+            Monthly Revenue · ყოველთვიური შემოსავალი
+          </div>
+          <div className="mt-1 font-display text-3xl font-bold">
+            {revenue.toLocaleString("en-US", { maximumFractionDigits: 0 })} GEL
+          </div>
+          <div className="mt-2 text-xs text-muted-foreground">across all channels</div>
+        </CardContent>
+      </Card>
+      <Card className="border-accent/30 bg-gradient-to-br from-accent/10 to-transparent">
+        <CardContent className="p-5">
+          <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
+            <Sparkles className="h-3.5 w-3.5 text-accent" /> AI Optimization · რჩევა
+          </div>
+          <div className="mt-1 text-sm font-medium leading-snug">{tip}</div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
 
@@ -535,10 +587,12 @@ function StatusDot({ status }: { status: string }) {
 function OpsView({
   properties,
   tasks,
+  bookings,
   filteredPropId,
 }: {
   properties: Property[];
   tasks: CleaningTask[];
+  bookings: Booking[];
   filteredPropId: string | null;
 }) {
   const list = filteredPropId ? tasks.filter((t) => t.property_id === filteredPropId) : tasks;
@@ -554,59 +608,163 @@ function OpsView({
   };
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <div>
-          <CardTitle>Cleaning operations hub</CardTitle>
-          <CardDescription>
-            Auto-created on checkout. n8n dispatches SMS / WhatsApp to the assigned cleaner.
-          </CardDescription>
-        </div>
-        <NewTaskDialog properties={properties} defaultProp={filteredPropId} />
-      </CardHeader>
-      <CardContent className="space-y-2">
-        {list.length === 0 && (
-          <div className="rounded-md border border-dashed p-6 text-center text-sm text-muted-foreground">
-            No cleaning tasks yet. They appear automatically when a booking ends.
+    <div className="space-y-4">
+      <SmartAccess properties={properties} bookings={bookings} filteredPropId={filteredPropId} />
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>Cleaning operations hub</CardTitle>
+            <CardDescription>
+              Auto-created on checkout. n8n dispatches SMS / WhatsApp to the assigned cleaner.
+            </CardDescription>
           </div>
-        )}
-        {list.map((t) => {
-          const prop = properties.find((p) => p.id === t.property_id);
-          return (
-            <div key={t.id} className="flex flex-wrap items-center gap-3 rounded-md border p-3">
-              <StatusBadge status={t.status} />
-              <div className="min-w-[160px]">
-                <div className="text-sm font-medium">{prop?.title ?? "Property"}</div>
-                <div className="text-xs text-muted-foreground">
-                  {new Date(t.scheduled_for).toLocaleString("en", {
-                    weekday: "short",
-                    month: "short",
-                    day: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
+          <NewTaskDialog properties={properties} defaultProp={filteredPropId} />
+        </CardHeader>
+        <CardContent className="space-y-2">
+          {list.length === 0 && (
+            <div className="rounded-md border border-dashed p-6 text-center text-sm text-muted-foreground">
+              No cleaning tasks yet. They appear automatically when a booking ends.
+            </div>
+          )}
+          {list.map((t) => {
+            const prop = properties.find((p) => p.id === t.property_id);
+            return (
+              <div key={t.id} className="flex flex-wrap items-center gap-3 rounded-md border p-3">
+                <StatusBadge status={t.status} />
+                <div className="min-w-[160px]">
+                  <div className="text-sm font-medium">{prop?.title ?? "Property"}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {new Date(t.scheduled_for).toLocaleString("en", {
+                      weekday: "short",
+                      month: "short",
+                      day: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <Sparkles className="h-3.5 w-3.5 text-muted-foreground" />
+                  {t.cleaner_name ?? "Unassigned"}
+                  {t.cleaner_phone && (
+                    <a href={`tel:${t.cleaner_phone}`} className="flex items-center gap-1 text-xs text-primary">
+                      <Phone className="h-3 w-3" /> {t.cleaner_phone}
+                    </a>
+                  )}
+                </div>
+                {t.notes && <div className="text-xs text-muted-foreground">{t.notes}</div>}
+                <div className="ml-auto">
+                  {t.status !== "completed" && (
+                    <Button size="sm" variant="outline" onClick={() => advance(t)}>
+                      Mark {t.status === "pending" ? "assigned" : t.status === "assigned" ? "in progress" : "complete"}
+                    </Button>
+                  )}
                 </div>
               </div>
-              <div className="flex items-center gap-2 text-sm">
-                <Sparkles className="h-3.5 w-3.5 text-muted-foreground" />
-                {t.cleaner_name ?? "Unassigned"}
-                {t.cleaner_phone && (
-                  <a href={`tel:${t.cleaner_phone}`} className="flex items-center gap-1 text-xs text-primary">
-                    <Phone className="h-3 w-3" /> {t.cleaner_phone}
-                  </a>
-                )}
+            );
+          })}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+function SmartAccess({
+  properties,
+  bookings,
+  filteredPropId,
+}: {
+  properties: Property[];
+  bookings: Booking[];
+  filteredPropId: string | null;
+}) {
+  const todayMs = Date.now();
+  const active = useMemo(
+    () =>
+      bookings
+        .filter((b) => b.status !== "cancelled")
+        .filter((b) => {
+          const inMs = new Date(b.check_in).getTime();
+          const outMs = new Date(b.check_out).getTime();
+          // active or upcoming within 48h
+          return outMs >= todayMs && inMs <= todayMs + 2 * 86400000;
+        })
+        .filter((b) => (filteredPropId ? b.property_id === filteredPropId : true))
+        .sort((a, b) => a.check_in.localeCompare(b.check_in))[0] ?? null,
+    [bookings, filteredPropId, todayMs],
+  );
+
+  const property = active ? properties.find((p) => p.id === active.property_id) : null;
+
+  const [code, setCode] = useState(() => genCode());
+  const [regenAt, setRegenAt] = useState<Date>(() => new Date());
+
+  function genCode() {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+  }
+
+  const regenerate = () => {
+    setCode(genCode());
+    setRegenAt(new Date());
+    toast.success("Smart lock code regenerated — n8n would now SMS it to the guest.");
+  };
+
+  const payload = active
+    ? `SAKHLIAI|${active.id.slice(0, 8)}|${property?.title ?? "Unit"}|CODE:${code}|CI:${active.check_in}`
+    : `SAKHLIAI|DEMO|CODE:${code}`;
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&margin=8&data=${encodeURIComponent(payload)}`;
+
+  return (
+    <Card className="border-accent/30">
+      <CardHeader className="flex flex-row items-start justify-between gap-4">
+        <div>
+          <CardTitle className="flex items-center gap-2">
+            <Sparkles className="h-4 w-4 text-accent" />
+            Smart Access · ჭკვიანი საკეტი
+          </CardTitle>
+          <CardDescription>
+            Dynamic QR + lockbox code for the active booking. n8n rotates this at 03:00 for late-night check-ins.
+          </CardDescription>
+        </div>
+        <Button size="sm" variant="outline" onClick={regenerate}>
+          <RefreshCw className="mr-1.5 h-3.5 w-3.5" />
+          Regenerate Code
+        </Button>
+      </CardHeader>
+      <CardContent>
+        {active ? (
+          <div className="grid items-center gap-5 md:grid-cols-[180px_1fr]">
+            <div className="flex justify-center rounded-lg border border-border bg-white p-3">
+              <img src={qrUrl} alt="Smart access QR" width={180} height={180} />
+            </div>
+            <div className="space-y-3">
+              <div>
+                <div className="text-xs uppercase tracking-wide text-muted-foreground">Guest</div>
+                <div className="font-medium">{active.guest_name ?? "Guest"} · {property?.title}</div>
+                <div className="text-xs text-muted-foreground">
+                  {active.check_in} → {active.check_out}
+                </div>
               </div>
-              {t.notes && <div className="text-xs text-muted-foreground">{t.notes}</div>}
-              <div className="ml-auto">
-                {t.status !== "completed" && (
-                  <Button size="sm" variant="outline" onClick={() => advance(t)}>
-                    Mark {t.status === "pending" ? "assigned" : t.status === "assigned" ? "in progress" : "complete"}
-                  </Button>
-                )}
+              <div className="rounded-lg bg-gradient-to-r from-primary/10 to-accent/10 p-4">
+                <div className="text-xs uppercase tracking-wide text-muted-foreground">Lockbox code</div>
+                <div className="font-display text-4xl font-bold tracking-[0.3em] text-gradient">
+                  {code}
+                </div>
+                <div className="mt-1 text-xs text-muted-foreground">
+                  Generated {regenAt.toLocaleTimeString()} · auto-expires at next check-out
+                </div>
+              </div>
+              <div className="text-xs text-muted-foreground">
+                Tip: n8n cron at 03:00 calls <code>/api/public/n8n/booking</code> to refresh codes for arrivals.
               </div>
             </div>
-          );
-        })}
+          </div>
+        ) : (
+          <div className="rounded-md border border-dashed p-6 text-center text-sm text-muted-foreground">
+            No active booking. A code will be generated automatically when a guest is within 48 hours of check-in.
+          </div>
+        )}
       </CardContent>
     </Card>
   );

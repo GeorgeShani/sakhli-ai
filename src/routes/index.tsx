@@ -7,13 +7,13 @@ import { ArrowRight, Sparkles, Users, Wallet } from "lucide-react";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "SakliAI — Smart rentals for Georgia" },
+      { title: "SakhliAI — Smart rentals for Georgia" },
       {
         name: "description",
         content:
           "Behavior-based flatmate matching and long-term rentals for students in Georgia.",
       },
-      { property: "og:title", content: "SakliAI — Smart rentals for Georgia" },
+      { property: "og:title", content: "SakhliAI — Smart rentals for Georgia" },
       {
         property: "og:description",
         content: "Match with compatible flatmates and long-term homes in Tbilisi, Batumi and beyond.",

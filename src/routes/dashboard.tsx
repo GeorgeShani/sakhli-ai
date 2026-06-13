@@ -1,18 +1,39 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { AppHeader } from "@/components/AppHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import { useI18n } from "@/lib/i18n";
-import { useMatches, useProfile } from "@/lib/student-store";
+import {
+  useMatches,
+  useProfile,
+  SALARY_RANGES,
+  INCOME_SOURCE_LABEL,
+  INCOME_SOURCE_LABEL_KA,
+  type IncomeSource,
+} from "@/lib/student-store";
 import { flatmates, properties } from "@/lib/mock-data";
-import { MessageCircle, Plus, Trash2, Users } from "lucide-react";
+import {
+  Banknote,
+  Droplet,
+  Flame,
+  MessageCircle,
+  Plus,
+  Send,
+  ShieldCheck,
+  Trash2,
+  Users,
+  Wallet,
+  Wifi,
+  Zap,
+} from "lucide-react";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
     meta: [
-      { title: "Dashboard — SakliAI" },
+      { title: "Dashboard — SakhliAI" },
       { name: "description", content: "Your matches, utility splits, and chats." },
     ],
   }),
@@ -61,6 +82,9 @@ function DashboardPage() {
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">{t("dashboard.subtitle")}</p>
         </div>
+
+        {/* Profile / financial summary */}
+        {profile && <ProfileCard profile={profile} />}
 
         <div className="mt-6 flex rounded-lg border border-border bg-secondary p-1">
           {tabBtn("matches", t("dashboard.tab.matches"))}
@@ -121,7 +145,7 @@ function DashboardPage() {
             </div>
           )}
 
-          {tab === "utilities" && <UtilitySplitter />}
+          {tab === "utilities" && <UtilitySplitter flatmateNames={likedPeople.map((f) => f!.name)} />}
           {tab === "chat" && <ChatPanel matchedNames={likedPeople.map((f) => f!.name)} />}
         </div>
       </div>
@@ -129,86 +153,290 @@ function DashboardPage() {
   );
 }
 
-type Bill = { id: string; name: string; amount: number };
+/* -------- Profile card with financial info -------- */
+function ProfileCard({ profile }: { profile: ReturnType<typeof useProfile>["profile"] }) {
+  if (!profile) return null;
+  const range = SALARY_RANGES[profile.salaryBracket];
+  const sources = profile.incomeSources && profile.incomeSources.length
+    ? profile.incomeSources
+    : [profile.incomeSource];
+  return (
+    <div className="card-elevated mt-6 grid gap-4 p-5 md:grid-cols-3">
+      <div>
+        <div className="text-xs uppercase tracking-wide text-muted-foreground">Profile</div>
+        <div className="mt-1 font-display text-lg font-semibold">
+          {profile.name || "Student"}
+        </div>
+        <div className="text-sm text-muted-foreground">{profile.university || "—"}</div>
+      </div>
+      <div className="rounded-lg border border-border bg-card p-3">
+        <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
+          <Wallet className="h-3.5 w-3.5" /> Monthly income
+        </div>
+        <div className="mt-1 font-display text-xl font-bold">{range.label}</div>
+        <div className="text-xs text-muted-foreground">{range.labelKa}</div>
+      </div>
+      <div className="rounded-lg border border-border bg-card p-3">
+        <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
+          <Banknote className="h-3.5 w-3.5" /> Income source
+        </div>
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {sources.map((s) => (
+            <Badge key={s} variant="secondary" className="font-normal">
+              {INCOME_SOURCE_LABEL_KA[s as IncomeSource]} · {INCOME_SOURCE_LABEL[s as IncomeSource]}
+            </Badge>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 
-function UtilitySplitter() {
+/* -------- AI Utility Bill Splitter -------- */
+type Bill = { id: string; category: string; icon: typeof Zap; amount: number };
+
+const CATEGORY_ICONS: Record<string, typeof Zap> = {
+  Electricity: Zap,
+  Water: Droplet,
+  Gas: Flame,
+  Internet: Wifi,
+};
+
+type Roommate = { id: string; name: string; moveInDay: number };
+
+function UtilitySplitter({ flatmateNames }: { flatmateNames: string[] }) {
   const { t } = useI18n();
   const [bills, setBills] = useState<Bill[]>([
-    { id: "1", name: "Rent", amount: 2100 },
-    { id: "2", name: "Internet", amount: 80 },
-    { id: "3", name: "Electricity", amount: 140 },
+    { id: "1", category: "Electricity", icon: Zap, amount: 140 },
+    { id: "2", category: "Water", icon: Droplet, amount: 40 },
+    { id: "3", category: "Gas", icon: Flame, amount: 95 },
+    { id: "4", category: "Internet", icon: Wifi, amount: 60 },
   ]);
-  const [people, setPeople] = useState(3);
-  const [name, setName] = useState("");
+  const [roommates, setRoommates] = useState<Roommate[]>(() => {
+    const base: Roommate[] = [{ id: "me", name: "You", moveInDay: 1 }];
+    flatmateNames.slice(0, 2).forEach((n, i) =>
+      base.push({ id: `r${i}`, name: n, moveInDay: 1 }),
+    );
+    if (base.length === 1) {
+      base.push({ id: "r0", name: "Nino", moveInDay: 1 });
+      base.push({ id: "r1", name: "Giorgi", moveInDay: 10 });
+    }
+    return base;
+  });
+  const [mode, setMode] = useState<"equal" | "movein">("movein");
+  const [category, setCategory] = useState("Electricity");
   const [amount, setAmount] = useState("");
+  const monthDays = 30;
 
   const total = bills.reduce((s, b) => s + b.amount, 0);
-  const perPerson = people > 0 ? total / people : 0;
+
+  const splits = useMemo(() => {
+    if (mode === "equal" || roommates.length === 0) {
+      const per = roommates.length ? total / roommates.length : 0;
+      return roommates.map((r) => ({ ...r, owes: per, days: monthDays }));
+    }
+    // Move-in date weighted: each person owes proportional to days occupied
+    const occ = roommates.map((r) => ({ ...r, days: Math.max(1, monthDays - r.moveInDay + 1) }));
+    const totalDays = occ.reduce((s, o) => s + o.days, 0);
+    return occ.map((o) => ({ ...o, owes: total * (o.days / totalDays) }));
+  }, [bills, roommates, mode, total]);
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
-      <div className="card-elevated p-6">
-        <h2 className="font-display text-lg font-semibold">{t("utilities.title")}</h2>
-        <p className="mt-1 text-sm text-muted-foreground">{t("utilities.desc")}</p>
+    <div className="space-y-6">
+      <div className="card-elevated p-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="font-display text-lg font-semibold">
+              AI Utility Bill Splitter · სტუდენტური კომუნალურების გამყოფი
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              Track monthly utilities and split fairly by move-in dates or equally.
+            </p>
+          </div>
+          <div className="flex rounded-md border border-border bg-secondary p-1 text-xs">
+            <button
+              onClick={() => setMode("movein")}
+              className={`rounded px-3 py-1.5 ${mode === "movein" ? "bg-card font-medium shadow-sm" : "text-muted-foreground"}`}
+            >
+              By move-in dates
+            </button>
+            <button
+              onClick={() => setMode("equal")}
+              className={`rounded px-3 py-1.5 ${mode === "equal" ? "bg-card font-medium shadow-sm" : "text-muted-foreground"}`}
+            >
+              Equal split
+            </button>
+          </div>
+        </div>
+      </div>
 
-        <div className="mt-5 space-y-2">
-          {bills.map((b) => (
-            <div key={b.id} className="flex items-center gap-2 rounded-lg border border-border bg-card p-3">
-              <div className="flex-1 truncate font-medium">{b.name}</div>
-              <div className="font-semibold">₾{b.amount.toFixed(2)}</div>
+      <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
+        {/* Bills */}
+        <div className="card-elevated p-5">
+          <h3 className="font-display text-base font-semibold">Monthly bills</h3>
+          <div className="mt-4 grid gap-2 sm:grid-cols-2">
+            {bills.map((b) => {
+              const Icon = CATEGORY_ICONS[b.category] ?? Zap;
+              return (
+                <div key={b.id} className="flex items-center gap-3 rounded-lg border border-border bg-card p-3">
+                  <div className="rounded-md bg-primary/10 p-2 text-primary">
+                    <Icon className="h-4 w-4" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-sm font-medium">{b.category}</div>
+                    <div className="text-xs text-muted-foreground">monthly</div>
+                  </div>
+                  <Input
+                    type="number"
+                    className="h-8 w-20"
+                    value={b.amount}
+                    onChange={(e) =>
+                      setBills((bs) =>
+                        bs.map((x) => (x.id === b.id ? { ...x, amount: Number(e.target.value) || 0 } : x)),
+                      )
+                    }
+                  />
+                  <span className="text-xs text-muted-foreground">GEL</span>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => setBills((bs) => bs.filter((x) => x.id !== b.id))}
+                  >
+                    <Trash2 className="h-4 w-4 text-muted-foreground" />
+                  </Button>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="mt-4 grid gap-2 sm:grid-cols-[1fr_120px_auto]">
+            <select
+              className="h-9 rounded-md border border-input bg-background px-2 text-sm"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+            >
+              {Object.keys(CATEGORY_ICONS).map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+            <Input
+              type="number"
+              placeholder="Amount"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+            />
+            <Button
+              onClick={() => {
+                const a = parseFloat(amount);
+                if (!Number.isFinite(a) || a <= 0) return;
+                setBills((bs) => [
+                  ...bs,
+                  { id: crypto.randomUUID(), category, icon: CATEGORY_ICONS[category] ?? Zap, amount: a },
+                ]);
+                setAmount("");
+              }}
+            >
+              <Plus className="mr-1 h-4 w-4" /> Add
+            </Button>
+          </div>
+        </div>
+
+        {/* Roommates & splits */}
+        <div className="card-elevated h-fit p-5">
+          <h3 className="font-display text-base font-semibold">Flatmates</h3>
+          <div className="mt-3 space-y-2">
+            {roommates.map((r, i) => (
+              <div key={r.id} className="flex items-center gap-2 rounded-md border border-border bg-card p-2">
+                <Input
+                  value={r.name}
+                  onChange={(e) =>
+                    setRoommates((rs) => rs.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)))
+                  }
+                  className="h-8 flex-1"
+                />
+                <div className="flex items-center gap-1">
+                  <Label className="text-[10px] uppercase tracking-wide text-muted-foreground">Day</Label>
+                  <Input
+                    type="number"
+                    min={1}
+                    max={30}
+                    className="h-8 w-14"
+                    value={r.moveInDay}
+                    onChange={(e) =>
+                      setRoommates((rs) =>
+                        rs.map((x, j) => (j === i ? { ...x, moveInDay: Math.max(1, Math.min(30, Number(e.target.value) || 1)) } : x)),
+                      )
+                    }
+                  />
+                </div>
+                {roommates.length > 1 && (
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => setRoommates((rs) => rs.filter((_, j) => j !== i))}
+                  >
+                    <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
+                  </Button>
+                )}
+              </div>
+            ))}
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            className="mt-3 w-full"
+            onClick={() =>
+              setRoommates((rs) => [...rs, { id: crypto.randomUUID(), name: `Flatmate ${rs.length + 1}`, moveInDay: 1 }])
+            }
+          >
+            <Plus className="mr-1 h-4 w-4" /> Add flatmate
+          </Button>
+
+          <div className="mt-5 rounded-xl bg-gradient-to-br from-primary/90 to-primary p-4 text-primary-foreground">
+            <div className="text-xs opacity-70">Monthly total</div>
+            <div className="font-display text-2xl font-bold">₾ {total.toFixed(2)}</div>
+            <div className="mt-1 text-[11px] opacity-70">{mode === "movein" ? "Split by move-in days" : "Equal split"}</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Per-person breakdown */}
+      <div className="card-elevated p-5">
+        <h3 className="font-display text-base font-semibold">Who pays what</h3>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {splits.map((s) => (
+            <div key={s.id} className="rounded-xl border border-border bg-card p-4">
+              <div className="flex items-center justify-between">
+                <div className="font-medium">{s.name}</div>
+                {mode === "movein" && (
+                  <Badge variant="secondary" className="text-[10px]">{s.days} days</Badge>
+                )}
+              </div>
+              <div className="mt-2 font-display text-2xl font-bold text-gradient">
+                ₾ {s.owes.toFixed(2)}
+              </div>
               <Button
-                size="icon"
-                variant="ghost"
-                onClick={() => setBills((bs) => bs.filter((x) => x.id !== b.id))}
-                aria-label={t("utilities.remove")}
+                size="sm"
+                className="mt-3 w-full"
+                disabled={s.id === "me"}
+                onClick={() => alert(`Mock: requesting ₾${s.owes.toFixed(2)} from ${s.name}`)}
               >
-                <Trash2 className="h-4 w-4 text-muted-foreground" />
+                <Send className="mr-1.5 h-3.5 w-3.5" />
+                {s.id === "me" ? "Your share" : "Pay to roommate"}
               </Button>
             </div>
           ))}
         </div>
-
-        <div className="mt-5 grid gap-2 sm:grid-cols-[1fr_140px_auto]">
-          <Input placeholder={t("utilities.bill")} value={name} onChange={(e) => setName(e.target.value)} />
-          <Input
-            type="number"
-            placeholder={t("utilities.amount")}
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-          />
-          <Button
-            onClick={() => {
-              const n = name.trim();
-              const a = parseFloat(amount);
-              if (!n || !Number.isFinite(a) || a <= 0) return;
-              setBills((bs) => [...bs, { id: crypto.randomUUID(), name: n, amount: a }]);
-              setName("");
-              setAmount("");
-            }}
-          >
-            <Plus className="mr-1 h-4 w-4" />
-            {t("utilities.add")}
-          </Button>
+        <div className="mt-4 flex items-start gap-2 rounded-md border border-accent/30 bg-accent/5 p-3 text-xs text-muted-foreground">
+          <ShieldCheck className="mt-0.5 h-4 w-4 text-accent" />
+          <div>
+            <strong className="text-foreground">AI fairness check:</strong> totals reconcile to ₾{total.toFixed(2)}.
+            Payments are mocked — connect a Georgian PSP (TBC Pay / BoG) to enable real transfers.
+          </div>
         </div>
       </div>
-
-      <div className="card-elevated h-fit p-6">
-        <Label className="text-xs uppercase tracking-wide text-muted-foreground">
-          {t("utilities.people")}
-        </Label>
-        <div className="mt-2 flex items-center gap-2">
-          <Button variant="outline" size="icon" onClick={() => setPeople((n) => Math.max(1, n - 1))}>−</Button>
-          <div className="flex-1 text-center font-display text-2xl font-bold">{people}</div>
-          <Button variant="outline" size="icon" onClick={() => setPeople((n) => n + 1)}>+</Button>
-        </div>
-
-        <div className="mt-6 rounded-xl bg-gradient-to-br from-primary/90 to-primary p-5 text-primary-foreground">
-          <div className="text-xs opacity-70">{t("utilities.total")}</div>
-          <div className="font-display text-2xl font-bold">₾ {total.toFixed(2)}</div>
-          <div className="mt-4 text-xs opacity-70">{t("utilities.perPerson")}</div>
-          <div className="font-display text-3xl font-extrabold">₾ {perPerson.toFixed(2)}</div>
-        </div>
-      </div>
+      {/* hidden text helper for i18n keys referenced elsewhere */}
+      <span className="sr-only">{t("utilities.total")}</span>
     </div>
   );
 }

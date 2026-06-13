@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 /**
- * n8n → SakliAI booking receiver
+ * n8n → SakhliAI booking receiver
  * POST /api/public/n8n/booking
  * Headers: x-n8n-secret: <N8N_WEBHOOK_SECRET>  (optional but recommended)
  * Body (Workflow A — guest screening / new booking):
