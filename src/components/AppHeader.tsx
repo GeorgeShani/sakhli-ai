@@ -37,6 +37,7 @@ export function AppHeader() {
           {navItem("/", t("nav.home"))}
           {navItem("/matches", t("nav.matches"))}
           {navItem("/dashboard", t("nav.dashboard"))}
+          {navItem("/host", "Host")}
         </nav>
 
         <div className="flex items-center gap-2">

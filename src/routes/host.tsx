@@ -1,0 +1,829 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { useEffect, useMemo, useState } from "react";
+import {
+  CalendarDays,
+  Radio,
+  Sparkles,
+  Plus,
+  RefreshCw,
+  CheckCircle2,
+  Clock,
+  AlertCircle,
+  Phone,
+  MapPin,
+} from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { AppHeader } from "@/components/AppHeader";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { toast } from "sonner";
+
+export const Route = createFileRoute("/host")({
+  component: HostPage,
+  errorComponent: ({ error }) => (
+    <div className="p-8 text-center text-destructive">Failed to load: {error.message}</div>
+  ),
+  notFoundComponent: () => <div className="p-8">Not found</div>,
+});
+
+type Property = {
+  id: string;
+  title: string;
+  city: string | null;
+  address: string | null;
+  image_url: string | null;
+  listing_type: string;
+  price_per_night: number | null;
+};
+
+type Booking = {
+  id: string;
+  property_id: string;
+  guest_name: string | null;
+  channel: string;
+  booking_type: string;
+  check_in: string;
+  check_out: string;
+  status: string;
+  total_price: number | null;
+  guests_count: number | null;
+  created_at: string;
+};
+
+type ChannelSync = {
+  id: string;
+  property_id: string;
+  channel: string;
+  enabled: boolean;
+  status: string;
+  last_synced_at: string | null;
+};
+
+type CleaningTask = {
+  id: string;
+  property_id: string;
+  cleaner_name: string | null;
+  cleaner_phone: string | null;
+  scheduled_for: string;
+  status: string;
+  notes: string | null;
+};
+
+const CHANNEL_META: Record<string, { label: string; color: string }> = {
+  airbnb: { label: "Airbnb", color: "bg-rose-500" },
+  booking: { label: "Booking.com", color: "bg-blue-500" },
+  sakliai: { label: "SakliAI", color: "bg-primary" },
+  student: { label: "Student", color: "bg-emerald-500" },
+  direct: { label: "Direct", color: "bg-amber-500" },
+};
+
+function HostPage() {
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [syncs, setSyncs] = useState<ChannelSync[]>([]);
+  const [tasks, setTasks] = useState<CleaningTask[]>([]);
+  const [selectedProp, setSelectedProp] = useState<string>("all");
+  const [pulse, setPulse] = useState<string | null>(null);
+
+  // initial load
+  useEffect(() => {
+    (async () => {
+      const [p, b, s, t] = await Promise.all([
+        supabase.from("properties").select("*").order("created_at"),
+        supabase.from("bookings").select("*").order("check_in"),
+        supabase.from("channel_sync").select("*"),
+        supabase.from("cleaning_tasks").select("*").order("scheduled_for"),
+      ]);
+      if (p.data) setProperties(p.data as Property[]);
+      if (b.data) setBookings(b.data as Booking[]);
+      if (s.data) setSyncs(s.data as ChannelSync[]);
+      if (t.data) setTasks(t.data as CleaningTask[]);
+    })();
+  }, []);
+
+  // realtime
+  useEffect(() => {
+    const channel = supabase
+      .channel("host-realtime")
+      .on("postgres_changes", { event: "*", schema: "public", table: "bookings" }, (payload) => {
+        if (payload.eventType === "INSERT") {
+          const nb = payload.new as Booking;
+          setBookings((prev) => [...prev, nb].sort((a, b) => a.check_in.localeCompare(b.check_in)));
+          setPulse(nb.id);
+          setTimeout(() => setPulse(null), 2500);
+          toast.success(`New booking: ${nb.guest_name ?? "Guest"} via ${CHANNEL_META[nb.channel]?.label ?? nb.channel}`);
+        } else if (payload.eventType === "UPDATE") {
+          const nb = payload.new as Booking;
+          setBookings((prev) => prev.map((x) => (x.id === nb.id ? nb : x)));
+        } else if (payload.eventType === "DELETE") {
+          const old = payload.old as Booking;
+          setBookings((prev) => prev.filter((x) => x.id !== old.id));
+        }
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "channel_sync" }, (payload) => {
+        if (payload.eventType === "UPDATE") {
+          const n = payload.new as ChannelSync;
+          setSyncs((prev) => prev.map((s) => (s.id === n.id ? n : s)));
+        } else if (payload.eventType === "INSERT") {
+          setSyncs((prev) => [...prev, payload.new as ChannelSync]);
+        }
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "cleaning_tasks" }, (payload) => {
+        if (payload.eventType === "INSERT") {
+          setTasks((prev) =>
+            [...prev, payload.new as CleaningTask].sort((a, b) =>
+              a.scheduled_for.localeCompare(b.scheduled_for),
+            ),
+          );
+          toast.success("New cleaning task scheduled");
+        } else if (payload.eventType === "UPDATE") {
+          const n = payload.new as CleaningTask;
+          setTasks((prev) => prev.map((t) => (t.id === n.id ? n : t)));
+        } else if (payload.eventType === "DELETE") {
+          const o = payload.old as CleaningTask;
+          setTasks((prev) => prev.filter((t) => t.id !== o.id));
+        }
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  const filteredBookings = useMemo(
+    () =>
+      selectedProp === "all" ? bookings : bookings.filter((b) => b.property_id === selectedProp),
+    [bookings, selectedProp],
+  );
+
+  const upcomingBookings = filteredBookings.filter(
+    (b) => new Date(b.check_out) >= new Date(new Date().toDateString()),
+  );
+
+  const occupancyRate = useMemo(() => {
+    if (properties.length === 0) return 0;
+    const next30 = 30 * properties.length;
+    let nights = 0;
+    const now = Date.now();
+    const horizon = now + 30 * 86400000;
+    for (const b of bookings) {
+      if (b.status === "cancelled") continue;
+      const ci = Math.max(new Date(b.check_in).getTime(), now);
+      const co = Math.min(new Date(b.check_out).getTime(), horizon);
+      if (co > ci) nights += Math.ceil((co - ci) / 86400000);
+    }
+    return Math.min(100, Math.round((nights / next30) * 100));
+  }, [bookings, properties]);
+
+  return (
+    <div className="min-h-screen bg-background">
+      <AppHeader />
+      <main className="mx-auto max-w-6xl px-4 py-8">
+        <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h1 className="font-display text-3xl font-bold tracking-tight">Host control center</h1>
+            <p className="text-muted-foreground">
+              Unified calendar, channel sync, and cleaning ops — all live.
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Select value={selectedProp} onValueChange={setSelectedProp}>
+              <SelectTrigger className="w-[220px]">
+                <SelectValue placeholder="All properties" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All properties</SelectItem>
+                {properties.map((p) => (
+                  <SelectItem key={p.id} value={p.id}>
+                    {p.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <NewBookingDialog properties={properties} defaultProp={selectedProp} />
+          </div>
+        </div>
+
+        {/* Stats */}
+        <div className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-4">
+          <StatCard label="Properties" value={properties.length} icon={<MapPin className="h-4 w-4" />} />
+          <StatCard
+            label="Active bookings"
+            value={upcomingBookings.length}
+            icon={<CalendarDays className="h-4 w-4" />}
+          />
+          <StatCard
+            label="Occupancy (30d)"
+            value={`${occupancyRate}%`}
+            icon={<Radio className="h-4 w-4" />}
+          />
+          <StatCard
+            label="Cleaning queue"
+            value={tasks.filter((t) => t.status !== "completed").length}
+            icon={<Sparkles className="h-4 w-4" />}
+          />
+        </div>
+
+        <Tabs defaultValue="calendar" className="w-full">
+          <TabsList>
+            <TabsTrigger value="calendar">
+              <CalendarDays className="mr-2 h-4 w-4" /> Calendar
+            </TabsTrigger>
+            <TabsTrigger value="channels">
+              <Radio className="mr-2 h-4 w-4" /> Channels
+            </TabsTrigger>
+            <TabsTrigger value="ops">
+              <Sparkles className="mr-2 h-4 w-4" /> Operations
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="calendar" className="mt-4">
+            <CalendarView
+              properties={selectedProp === "all" ? properties : properties.filter((p) => p.id === selectedProp)}
+              bookings={filteredBookings}
+              pulse={pulse}
+            />
+          </TabsContent>
+
+          <TabsContent value="channels" className="mt-4">
+            <ChannelsView properties={properties} syncs={syncs} />
+          </TabsContent>
+
+          <TabsContent value="ops" className="mt-4">
+            <OpsView
+              properties={properties}
+              tasks={tasks}
+              filteredPropId={selectedProp === "all" ? null : selectedProp}
+            />
+          </TabsContent>
+        </Tabs>
+      </main>
+    </div>
+  );
+}
+
+function StatCard({ label, value, icon }: { label: string; value: number | string; icon: React.ReactNode }) {
+  return (
+    <Card>
+      <CardContent className="flex items-center justify-between p-4">
+        <div>
+          <div className="text-xs uppercase tracking-wide text-muted-foreground">{label}</div>
+          <div className="font-display text-2xl font-bold">{value}</div>
+        </div>
+        <div className="rounded-md bg-primary/10 p-2 text-primary">{icon}</div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// -------------------- CALENDAR --------------------
+function CalendarView({
+  properties,
+  bookings,
+  pulse,
+}: {
+  properties: Property[];
+  bookings: Booking[];
+  pulse: string | null;
+}) {
+  // 30-day horizon starting today
+  const days = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return Array.from({ length: 30 }, (_, i) => {
+      const d = new Date(today);
+      d.setDate(d.getDate() + i);
+      return d;
+    });
+  }, []);
+
+  if (properties.length === 0) {
+    return <Card><CardContent className="p-8 text-center text-muted-foreground">No properties yet.</CardContent></Card>;
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Unified live calendar</CardTitle>
+        <CardDescription>
+          Bookings from every channel, in one view. Updates the moment a new reservation lands.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="overflow-x-auto">
+        <div className="min-w-[900px]">
+          {/* header */}
+          <div
+            className="grid gap-px border-b text-xs"
+            style={{ gridTemplateColumns: `200px repeat(${days.length}, minmax(28px,1fr))` }}
+          >
+            <div className="px-2 py-2 font-medium">Property</div>
+            {days.map((d) => (
+              <div
+                key={d.toISOString()}
+                className={`px-1 py-2 text-center ${
+                  d.getDay() === 0 || d.getDay() === 6 ? "text-muted-foreground" : ""
+                }`}
+              >
+                <div className="font-semibold">{d.getDate()}</div>
+                <div className="text-[10px] uppercase opacity-60">
+                  {d.toLocaleDateString("en", { month: "short" })}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {properties.map((p) => {
+            const propBookings = bookings.filter((b) => b.property_id === p.id);
+            return (
+              <div
+                key={p.id}
+                className="relative grid gap-px border-b last:border-b-0"
+                style={{ gridTemplateColumns: `200px repeat(${days.length}, minmax(28px,1fr))` }}
+              >
+                <div className="flex items-center gap-2 px-2 py-3">
+                  <div
+                    className="h-8 w-8 shrink-0 rounded bg-cover bg-center bg-muted"
+                    style={{ backgroundImage: p.image_url ? `url(${p.image_url})` : undefined }}
+                  />
+                  <div className="min-w-0">
+                    <div className="truncate text-sm font-medium">{p.title}</div>
+                    <div className="truncate text-xs text-muted-foreground">{p.city}</div>
+                  </div>
+                </div>
+                {days.map((d) => (
+                  <div
+                    key={d.toISOString()}
+                    className={`relative h-14 border-l border-border/40 ${
+                      d.getDay() === 0 || d.getDay() === 6 ? "bg-muted/30" : ""
+                    }`}
+                  />
+                ))}
+
+                {/* booking bars */}
+                {propBookings.map((b) => {
+                  const start = new Date(b.check_in);
+                  const end = new Date(b.check_out);
+                  start.setHours(0, 0, 0, 0);
+                  end.setHours(0, 0, 0, 0);
+                  const first = days[0];
+                  const last = days[days.length - 1];
+                  if (end < first || start > last) return null;
+                  const startIdx = Math.max(0, Math.round((+start - +first) / 86400000));
+                  const endIdx = Math.min(days.length - 1, Math.round((+end - +first) / 86400000));
+                  const span = endIdx - startIdx;
+                  if (span <= 0) return null;
+                  const meta = CHANNEL_META[b.channel] ?? CHANNEL_META.direct;
+                  const isPulse = pulse === b.id;
+                  return (
+                    <div
+                      key={b.id}
+                      title={`${b.guest_name} • ${b.check_in} → ${b.check_out} • ${meta.label}`}
+                      className={`absolute top-2 z-10 flex h-10 items-center gap-1 overflow-hidden rounded-md px-2 text-xs font-medium text-white shadow-sm ${meta.color} ${
+                        isPulse ? "ring-2 ring-offset-2 ring-primary animate-pulse" : ""
+                      }`}
+                      style={{
+                        left: `calc(200px + (100% - 200px) * ${startIdx} / ${days.length})`,
+                        width: `calc((100% - 200px) * ${span} / ${days.length} - 4px)`,
+                      }}
+                    >
+                      <span className="truncate">{b.guest_name ?? "Guest"}</span>
+                      <Badge variant="secondary" className="ml-auto h-4 px-1 text-[10px] text-foreground">
+                        {meta.label}
+                      </Badge>
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="mt-4 flex flex-wrap items-center gap-3 text-xs">
+          {Object.entries(CHANNEL_META).map(([k, m]) => (
+            <div key={k} className="flex items-center gap-1.5">
+              <span className={`h-3 w-3 rounded ${m.color}`} />
+              {m.label}
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// -------------------- CHANNELS --------------------
+function ChannelsView({ properties, syncs }: { properties: Property[]; syncs: ChannelSync[] }) {
+  const channels = ["airbnb", "booking", "sakliai", "student"] as const;
+
+  const toggle = async (propertyId: string, channel: string, current?: ChannelSync) => {
+    if (current) {
+      await supabase
+        .from("channel_sync")
+        .update({ enabled: !current.enabled, status: !current.enabled ? "syncing" : "idle" })
+        .eq("id", current.id);
+      if (!current.enabled) {
+        // simulate sync completion
+        setTimeout(async () => {
+          await supabase
+            .from("channel_sync")
+            .update({ status: "synced", last_synced_at: new Date().toISOString() })
+            .eq("id", current.id);
+        }, 1200);
+      }
+    } else {
+      const { data } = await supabase
+        .from("channel_sync")
+        .insert({ property_id: propertyId, channel, enabled: true, status: "syncing" })
+        .select()
+        .single();
+      if (data) {
+        setTimeout(async () => {
+          await supabase
+            .from("channel_sync")
+            .update({ status: "synced", last_synced_at: new Date().toISOString() })
+            .eq("id", data.id);
+        }, 1200);
+      }
+    }
+  };
+
+  const resync = async (s: ChannelSync) => {
+    await supabase.from("channel_sync").update({ status: "syncing" }).eq("id", s.id);
+    setTimeout(async () => {
+      await supabase
+        .from("channel_sync")
+        .update({ status: "synced", last_synced_at: new Date().toISOString() })
+        .eq("id", s.id);
+    }, 1000);
+  };
+
+  return (
+    <div className="grid gap-4">
+      {properties.map((p) => (
+        <Card key={p.id}>
+          <CardHeader>
+            <CardTitle className="text-base">{p.title}</CardTitle>
+            <CardDescription>{p.city}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {channels.map((ch) => {
+                const s = syncs.find((x) => x.property_id === p.id && x.channel === ch);
+                const meta = CHANNEL_META[ch];
+                return (
+                  <div key={ch} className="flex items-center justify-between rounded-md border p-3">
+                    <div className="flex items-center gap-3">
+                      <span className={`h-8 w-8 rounded ${meta.color}`} />
+                      <div>
+                        <div className="text-sm font-medium">{meta.label}</div>
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <StatusDot status={s?.status ?? "idle"} />
+                          {s?.last_synced_at
+                            ? `Synced ${timeAgo(s.last_synced_at)}`
+                            : "Not connected"}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {s?.enabled && s.status === "synced" && (
+                        <Button size="sm" variant="ghost" onClick={() => resync(s)}>
+                          <RefreshCw className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
+                      <Switch checked={!!s?.enabled} onCheckedChange={() => toggle(p.id, ch, s)} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+function StatusDot({ status }: { status: string }) {
+  const color =
+    status === "synced"
+      ? "bg-emerald-500"
+      : status === "syncing"
+        ? "bg-amber-500 animate-pulse"
+        : status === "error"
+          ? "bg-destructive"
+          : "bg-muted-foreground/40";
+  return <span className={`inline-block h-2 w-2 rounded-full ${color}`} />;
+}
+
+// -------------------- OPS --------------------
+function OpsView({
+  properties,
+  tasks,
+  filteredPropId,
+}: {
+  properties: Property[];
+  tasks: CleaningTask[];
+  filteredPropId: string | null;
+}) {
+  const list = filteredPropId ? tasks.filter((t) => t.property_id === filteredPropId) : tasks;
+
+  const advance = async (t: CleaningTask) => {
+    const next: Record<string, string> = {
+      pending: "assigned",
+      assigned: "in_progress",
+      in_progress: "completed",
+      completed: "completed",
+    };
+    await supabase.from("cleaning_tasks").update({ status: next[t.status] ?? "completed" }).eq("id", t.id);
+  };
+
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <div>
+          <CardTitle>Cleaning operations hub</CardTitle>
+          <CardDescription>
+            Auto-created on checkout. n8n dispatches SMS / WhatsApp to the assigned cleaner.
+          </CardDescription>
+        </div>
+        <NewTaskDialog properties={properties} defaultProp={filteredPropId} />
+      </CardHeader>
+      <CardContent className="space-y-2">
+        {list.length === 0 && (
+          <div className="rounded-md border border-dashed p-6 text-center text-sm text-muted-foreground">
+            No cleaning tasks yet. They appear automatically when a booking ends.
+          </div>
+        )}
+        {list.map((t) => {
+          const prop = properties.find((p) => p.id === t.property_id);
+          return (
+            <div key={t.id} className="flex flex-wrap items-center gap-3 rounded-md border p-3">
+              <StatusBadge status={t.status} />
+              <div className="min-w-[160px]">
+                <div className="text-sm font-medium">{prop?.title ?? "Property"}</div>
+                <div className="text-xs text-muted-foreground">
+                  {new Date(t.scheduled_for).toLocaleString("en", {
+                    weekday: "short",
+                    month: "short",
+                    day: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </div>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <Sparkles className="h-3.5 w-3.5 text-muted-foreground" />
+                {t.cleaner_name ?? "Unassigned"}
+                {t.cleaner_phone && (
+                  <a href={`tel:${t.cleaner_phone}`} className="flex items-center gap-1 text-xs text-primary">
+                    <Phone className="h-3 w-3" /> {t.cleaner_phone}
+                  </a>
+                )}
+              </div>
+              {t.notes && <div className="text-xs text-muted-foreground">{t.notes}</div>}
+              <div className="ml-auto">
+                {t.status !== "completed" && (
+                  <Button size="sm" variant="outline" onClick={() => advance(t)}>
+                    Mark {t.status === "pending" ? "assigned" : t.status === "assigned" ? "in progress" : "complete"}
+                  </Button>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </CardContent>
+    </Card>
+  );
+}
+
+function StatusBadge({ status }: { status: string }) {
+  const map: Record<string, { label: string; icon: React.ReactNode; cls: string }> = {
+    pending: { label: "Pending", icon: <Clock className="h-3 w-3" />, cls: "bg-muted text-foreground" },
+    assigned: { label: "Assigned", icon: <Clock className="h-3 w-3" />, cls: "bg-amber-500/15 text-amber-700 dark:text-amber-300" },
+    in_progress: { label: "In progress", icon: <RefreshCw className="h-3 w-3" />, cls: "bg-primary/15 text-primary" },
+    completed: { label: "Done", icon: <CheckCircle2 className="h-3 w-3" />, cls: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300" },
+    cancelled: { label: "Cancelled", icon: <AlertCircle className="h-3 w-3" />, cls: "bg-destructive/15 text-destructive" },
+  };
+  const m = map[status] ?? map.pending;
+  return (
+    <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${m.cls}`}>
+      {m.icon}
+      {m.label}
+    </span>
+  );
+}
+
+// -------------------- DIALOGS --------------------
+function NewBookingDialog({ properties, defaultProp }: { properties: Property[]; defaultProp: string }) {
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState({
+    property_id: defaultProp !== "all" ? defaultProp : "",
+    guest_name: "",
+    channel: "direct",
+    check_in: "",
+    check_out: "",
+    total_price: "",
+  });
+
+  useEffect(() => {
+    if (defaultProp !== "all") setForm((f) => ({ ...f, property_id: defaultProp }));
+  }, [defaultProp]);
+
+  const submit = async () => {
+    if (!form.property_id || !form.check_in || !form.check_out) {
+      toast.error("Property and dates are required");
+      return;
+    }
+    const { error } = await supabase.from("bookings").insert({
+      property_id: form.property_id,
+      guest_name: form.guest_name || "Guest",
+      channel: form.channel,
+      booking_type: form.channel === "student" ? "student" : "short_term",
+      check_in: form.check_in,
+      check_out: form.check_out,
+      total_price: form.total_price ? Number(form.total_price) : null,
+      status: "confirmed",
+    });
+    if (error) toast.error(error.message);
+    else {
+      setOpen(false);
+      setForm({ ...form, guest_name: "", check_in: "", check_out: "", total_price: "" });
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button size="sm">
+          <Plus className="mr-1 h-4 w-4" /> New booking
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Add booking</DialogTitle>
+          <DialogDescription>
+            Insert a booking — the calendar updates in real-time across every open session.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-3">
+          <div>
+            <Label>Property</Label>
+            <Select value={form.property_id} onValueChange={(v) => setForm({ ...form, property_id: v })}>
+              <SelectTrigger><SelectValue placeholder="Choose property" /></SelectTrigger>
+              <SelectContent>
+                {properties.map((p) => (
+                  <SelectItem key={p.id} value={p.id}>{p.title}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label>Guest name</Label>
+              <Input value={form.guest_name} onChange={(e) => setForm({ ...form, guest_name: e.target.value })} />
+            </div>
+            <div>
+              <Label>Channel</Label>
+              <Select value={form.channel} onValueChange={(v) => setForm({ ...form, channel: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {Object.entries(CHANNEL_META).map(([k, m]) => (
+                    <SelectItem key={k} value={k}>{m.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label>Check-in</Label>
+              <Input type="date" value={form.check_in} onChange={(e) => setForm({ ...form, check_in: e.target.value })} />
+            </div>
+            <div>
+              <Label>Check-out</Label>
+              <Input type="date" value={form.check_out} onChange={(e) => setForm({ ...form, check_out: e.target.value })} />
+            </div>
+          </div>
+          <div>
+            <Label>Total price (GEL)</Label>
+            <Input type="number" value={form.total_price} onChange={(e) => setForm({ ...form, total_price: e.target.value })} />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+          <Button onClick={submit}>Save</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function NewTaskDialog({ properties, defaultProp }: { properties: Property[]; defaultProp: string | null }) {
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState({
+    property_id: defaultProp ?? "",
+    cleaner_name: "",
+    cleaner_phone: "",
+    scheduled_for: "",
+    notes: "",
+  });
+
+  useEffect(() => {
+    if (defaultProp) setForm((f) => ({ ...f, property_id: defaultProp }));
+  }, [defaultProp]);
+
+  const submit = async () => {
+    if (!form.property_id || !form.scheduled_for) {
+      toast.error("Property and time required");
+      return;
+    }
+    const { error } = await supabase.from("cleaning_tasks").insert({
+      property_id: form.property_id,
+      cleaner_name: form.cleaner_name || null,
+      cleaner_phone: form.cleaner_phone || null,
+      scheduled_for: form.scheduled_for,
+      notes: form.notes || null,
+      status: form.cleaner_name ? "assigned" : "pending",
+    });
+    if (error) toast.error(error.message);
+    else {
+      setOpen(false);
+      setForm({ ...form, cleaner_name: "", cleaner_phone: "", scheduled_for: "", notes: "" });
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button size="sm" variant="outline">
+          <Plus className="mr-1 h-4 w-4" /> Task
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>New cleaning task</DialogTitle>
+          <DialogDescription>Assign a cleaner. n8n will send the SMS.</DialogDescription>
+        </DialogHeader>
+        <div className="space-y-3">
+          <div>
+            <Label>Property</Label>
+            <Select value={form.property_id} onValueChange={(v) => setForm({ ...form, property_id: v })}>
+              <SelectTrigger><SelectValue placeholder="Property" /></SelectTrigger>
+              <SelectContent>
+                {properties.map((p) => (<SelectItem key={p.id} value={p.id}>{p.title}</SelectItem>))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label>Cleaner name</Label>
+              <Input value={form.cleaner_name} onChange={(e) => setForm({ ...form, cleaner_name: e.target.value })} />
+            </div>
+            <div>
+              <Label>Phone</Label>
+              <Input value={form.cleaner_phone} onChange={(e) => setForm({ ...form, cleaner_phone: e.target.value })} />
+            </div>
+          </div>
+          <div>
+            <Label>When</Label>
+            <Input type="datetime-local" value={form.scheduled_for} onChange={(e) => setForm({ ...form, scheduled_for: e.target.value })} />
+          </div>
+          <div>
+            <Label>Notes</Label>
+            <Input value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+          <Button onClick={submit}>Save</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function timeAgo(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  const m = Math.floor(diff / 60000);
+  if (m < 1) return "just now";
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  return `${Math.floor(h / 24)}d ago`;
+}
