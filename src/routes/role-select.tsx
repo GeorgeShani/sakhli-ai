@@ -85,22 +85,45 @@ function RoleSelectPage() {
   useEffect(() => {
     if (loading || !user || !selected || applying) return;
     let cancelled = false;
-    (async () => {
-      setApplying(true);
-      const res = await setRole(selected.role);
+    setApplying(true);
+
+    // Hard fallback: never let "Setting up..." spin longer than 1.5s.
+    // If the role write hasn't returned yet, proceed optimistically — the
+    // destination route's own AuthGate will re-check the session.
+    const fallback = window.setTimeout(() => {
       if (cancelled) return;
-      if (res.error) {
-        setErr(res.error);
-        setApplying(false);
-        return;
-      }
       window.localStorage.removeItem(PENDING_ROLE_KEY);
       navigate({ to: selected.to });
+    }, 1500);
+
+    (async () => {
+      try {
+        const res = await setRole(selected.role);
+        if (cancelled) return;
+        window.clearTimeout(fallback);
+        if (res.error) {
+          // Role-change trigger or transient RLS race — surface but still continue.
+          setErr(res.error);
+          setApplying(false);
+          return;
+        }
+        window.localStorage.removeItem(PENDING_ROLE_KEY);
+        navigate({ to: selected.to });
+      } catch (e) {
+        if (cancelled) return;
+        window.clearTimeout(fallback);
+        setErr((e as Error).message);
+        setApplying(false);
+      }
     })();
+
     return () => {
       cancelled = true;
+      window.clearTimeout(fallback);
     };
-  }, [user, selected, loading, applying, setRole, navigate]);
+    // setRole / navigate are stable enough; keep deps minimal to avoid retrigger loops.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, selected, loading]);
 
   const pick = (c: Card) => {
     setErr(null);
