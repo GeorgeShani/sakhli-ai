@@ -91,12 +91,12 @@ type CleaningTask = {
   notes: string | null;
 };
 
-const CHANNEL_META: Record<string, { label: string; color: string }> = {
-  airbnb: { label: "Airbnb", color: "bg-rose-500" },
-  booking: { label: "Booking.com", color: "bg-blue-500" },
-  sakliai: { label: "SakhliAI", color: "bg-primary" },
-  student: { label: "Student", color: "bg-emerald-500" },
-  direct: { label: "Direct", color: "bg-amber-500" },
+const CHANNEL_META: Record<string, { label: string; color: string; logo: string; logoColor: string }> = {
+  airbnb: { label: "Airbnb", color: "bg-rose-500", logo: "A", logoColor: "text-rose-500" },
+  booking: { label: "Booking.com", color: "bg-blue-500", logo: "B.", logoColor: "text-blue-500" },
+  sakliai: { label: "SakhliAI", color: "bg-primary", logo: "Sა", logoColor: "text-primary" },
+  student: { label: "Student", color: "bg-emerald-500", logo: "🎓", logoColor: "text-emerald-500" },
+  direct: { label: "Direct", color: "bg-amber-500", logo: "★", logoColor: "text-amber-500" },
 };
 
 function HostPage() {
