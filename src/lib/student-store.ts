@@ -41,6 +41,7 @@ export const defaultProfile: StudentProfile = {
   quiet: true,
   cleanliness: 3,
   bio: "",
+  verified: false,
   salaryBracket: "500_1000",
   incomeSource: "family",
   incomeSources: ["family"],
