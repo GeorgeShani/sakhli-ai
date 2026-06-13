@@ -80,6 +80,25 @@ function SettingsPage() {
     toast.success("ავატარი შენახულია · Avatar saved");
   };
 
+  const fileRef = useRef<HTMLInputElement>(null);
+  const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("გთხოვთ აირჩიოთ სურათი · Please select an image");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const url = String(reader.result);
+      save({ ...activeProfile, avatar: url });
+      setShowAvatars(false);
+      toast.success("ფოტო ატვირთულია · Photo uploaded");
+    };
+    reader.readAsDataURL(file);
+    e.target.value = "";
+  };
+
   const planDetails = PLAN_DETAILS[plan];
 
   return (
