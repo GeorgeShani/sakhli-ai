@@ -4,9 +4,17 @@ import { AppHeader } from "@/components/AppHeader";
 import { SwipeCard } from "@/components/SwipeCard";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n";
-import { useMatches, useProfile, type StudentProfile } from "@/lib/student-store";
-import { flatmates, properties, scoreFlatmate, scoreProperty, type Flatmate, type Property } from "@/lib/mock-data";
-import { Bed, MapPin, GraduationCap, BedDouble } from "lucide-react";
+import { useMatches, useProfile, defaultProfile, type StudentProfile } from "@/lib/student-store";
+import {
+  flatmates,
+  properties,
+  fitScoreForFlatmate,
+  fitScoreForProperty,
+  type Flatmate,
+  type Property,
+  type FitScore,
+} from "@/lib/mock-data";
+import { Bed, MapPin, GraduationCap, BedDouble, Sparkles, ShieldCheck } from "lucide-react";
 
 export const Route = createFileRoute("/matches")({
   head: () => ({
@@ -27,32 +35,20 @@ function MatchesPage() {
   const [tab, setTab] = useState<Tab>("people");
   const [index, setIndex] = useState({ people: 0, places: 0 });
 
-  // Fallback profile so users can play without onboarding
-  const effectiveProfile: StudentProfile = profile ?? {
-    name: "Guest",
-    university: "",
-    budget: 1200,
-    sleep: "flexible",
-    smoking: false,
-    pets: false,
-    parties: false,
-    quiet: true,
-    cleanliness: 3,
-    bio: "",
-  };
+  const effectiveProfile: StudentProfile = profile ?? defaultProfile;
 
   const peopleStack = useMemo(
     () =>
       flatmates
-        .map((f) => ({ f, s: scoreFlatmate(effectiveProfile, f) }))
-        .sort((a, b) => b.s - a.s),
+        .map((f) => ({ f, fit: fitScoreForFlatmate(effectiveProfile, f) }))
+        .sort((a, b) => b.fit.score - a.fit.score),
     [effectiveProfile],
   );
   const placeStack = useMemo(
     () =>
       properties
-        .map((p) => ({ p, s: scoreProperty(effectiveProfile, p) }))
-        .sort((a, b) => b.s - a.s),
+        .map((p) => ({ p, fit: fitScoreForProperty(effectiveProfile, p) }))
+        .sort((a, b) => b.fit.score - a.fit.score),
     [effectiveProfile],
   );
 
@@ -100,7 +96,7 @@ function MatchesPage() {
           <div className="mt-4 rounded-lg border border-accent/40 bg-accent/10 p-3 text-center text-xs text-foreground">
             Browsing as guest.{" "}
             <Link to="/onboarding" className="font-semibold underline">Build your profile</Link>{" "}
-            for personalized scores.
+            for personalized SakliAI Fit Scores.
           </div>
         )}
 
@@ -148,9 +144,35 @@ function MatchesPage() {
   );
 }
 
-function PersonCard({ data }: { data: { f: Flatmate; s: number } }) {
-  const { t } = useI18n();
-  const { f, s } = data;
+function FitBadge({ fit }: { fit: FitScore }) {
+  const color =
+    fit.tier === "excellent"
+      ? "from-emerald-500/15 to-emerald-500/5 border-emerald-500/40 text-emerald-700 dark:text-emerald-300"
+      : fit.tier === "good"
+        ? "from-primary/15 to-primary/5 border-primary/40 text-primary"
+        : fit.tier === "fair"
+          ? "from-amber-500/15 to-amber-500/5 border-amber-500/40 text-amber-700 dark:text-amber-300"
+          : "from-destructive/15 to-destructive/5 border-destructive/40 text-destructive";
+  return (
+    <div className={`rounded-xl border bg-gradient-to-br ${color} p-3`}>
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide">
+          <Sparkles className="h-3.5 w-3.5" /> SakliAI Fit Score
+        </div>
+        <div className="font-display text-2xl font-bold leading-none">{fit.score}%</div>
+      </div>
+      <p className="mt-1.5 text-xs leading-snug opacity-90">{fit.summary}</p>
+      {fit.financialSafe && (
+        <div className="mt-2 inline-flex items-center gap-1 text-[10px] font-medium uppercase tracking-wide opacity-80">
+          <ShieldCheck className="h-3 w-3" /> Financially safe
+        </div>
+      )}
+    </div>
+  );
+}
+
+function PersonCard({ data }: { data: { f: Flatmate; fit: FitScore } }) {
+  const { f, fit } = data;
   return (
     <div>
       <div className="flex items-start gap-4 bg-gradient-to-br from-accent/15 to-primary/5 p-6">
@@ -168,18 +190,13 @@ function PersonCard({ data }: { data: { f: Flatmate; s: number } }) {
             <GraduationCap className="h-3.5 w-3.5" />
             {f.university}
           </div>
-          <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-card px-2.5 py-1 text-xs font-semibold">
-            <span className={s > 70 ? "text-success" : s > 50 ? "text-accent-foreground" : "text-muted-foreground"}>
-              ●
-            </span>
-            {t("matches.compat")}: {s}%
-          </div>
         </div>
       </div>
       <div className="space-y-3 p-6">
+        <FitBadge fit={fit} />
         <p className="text-sm leading-relaxed">{f.bio}</p>
         <div className="flex flex-wrap gap-1.5">
-          <Pill>{t("matches.budget")}: ₾{f.budget}</Pill>
+          <Pill>Budget: ₾{f.budget}</Pill>
           <Pill>
             {f.sleep === "night_owl" ? "🌙 night owl" : f.sleep === "early_bird" ? "🌅 early bird" : "🔄 flexible"}
           </Pill>
@@ -194,9 +211,8 @@ function PersonCard({ data }: { data: { f: Flatmate; s: number } }) {
   );
 }
 
-function PlaceCard({ data }: { data: { p: Property; s: number } }) {
-  const { t } = useI18n();
-  const { p, s } = data;
+function PlaceCard({ data }: { data: { p: Property; fit: FitScore } }) {
+  const { p, fit } = data;
   return (
     <div>
       <div
@@ -216,6 +232,7 @@ function PlaceCard({ data }: { data: { p: Property; s: number } }) {
             <div className="text-xs text-muted-foreground">/ month</div>
           </div>
         </div>
+        <FitBadge fit={fit} />
         <div className="flex items-center gap-4 text-sm text-muted-foreground">
           <span className="inline-flex items-center gap-1"><Bed className="h-4 w-4" /> {p.bedrooms} BR</span>
           <span className="inline-flex items-center gap-1"><BedDouble className="h-4 w-4" /> Need {p.flatmatesNeeded}</span>
@@ -224,10 +241,6 @@ function PlaceCard({ data }: { data: { p: Property; s: number } }) {
           {p.amenities.map((a) => (
             <Pill key={a}>{a}</Pill>
           ))}
-        </div>
-        <div className="inline-flex items-center gap-2 rounded-full bg-secondary px-2.5 py-1 text-xs font-semibold">
-          <span className={s > 70 ? "text-success" : "text-accent-foreground"}>●</span>
-          {t("matches.compat")}: {s}%
         </div>
       </div>
     </div>
