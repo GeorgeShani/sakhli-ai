@@ -35,7 +35,11 @@ import {
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/host")({
-  component: HostPage,
+  component: () => (
+    <AuthGate>
+      <HostPage />
+    </AuthGate>
+  ),
   errorComponent: ({ error }) => (
     <div className="p-8 text-center text-destructive">Failed to load: {error.message}</div>
   ),
