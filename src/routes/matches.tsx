@@ -24,7 +24,11 @@ export const Route = createFileRoute("/matches")({
       { name: "description", content: "Swipe through compatible flatmates and homes." },
     ],
   }),
-  component: MatchesPage,
+  component: () => (
+    <AuthGate>
+      <MatchesPage />
+    </AuthGate>
+  ),
 });
 
 type Tab = "people" | "places";
