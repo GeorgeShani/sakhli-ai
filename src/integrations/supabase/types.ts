@@ -254,8 +254,10 @@ export type Database = {
           created_at: string
           display_name: string | null
           id: string
+          income_source: string | null
           languages: string[] | null
           pets: boolean | null
+          salary_bracket: string | null
           sleep_schedule: string | null
           smoking: boolean | null
           university: string | null
@@ -270,8 +272,10 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           id?: string
+          income_source?: string | null
           languages?: string[] | null
           pets?: boolean | null
+          salary_bracket?: string | null
           sleep_schedule?: string | null
           smoking?: boolean | null
           university?: string | null
@@ -286,8 +290,10 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           id?: string
+          income_source?: string | null
           languages?: string[] | null
           pets?: boolean | null
+          salary_bracket?: string | null
           sleep_schedule?: string | null
           smoking?: boolean | null
           university?: string | null
