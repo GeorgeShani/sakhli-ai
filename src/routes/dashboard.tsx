@@ -7,20 +7,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useI18n } from "@/lib/i18n";
-import {
-  useMatches,
-  useProfile,
-  SALARY_RANGES,
-  INCOME_SOURCE_LABEL,
-  INCOME_SOURCE_LABEL_KA,
-  type IncomeSource,
-} from "@/lib/student-store";
+import { useMatches, useProfile } from "@/lib/student-store";
 import { flatmates, properties } from "@/lib/mock-data";
 import {
-  Banknote,
   Droplet,
   Flame,
-  MessageCircle,
   Plus,
   Send,
   ShieldCheck,
