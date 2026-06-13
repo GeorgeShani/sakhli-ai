@@ -4,11 +4,7 @@ import { useI18n } from "@/lib/i18n";
 import { LanguageToggle } from "./LanguageToggle";
 import { ThemeToggle } from "./ThemeToggle";
 import { Button } from "@/components/ui/button";
-import { useAuth, type AppRole } from "@/lib/auth";
-
-// Avatar always opens user settings — role label still derived from profile.
-const _UNUSED: AppRole = "student";
-void _UNUSED;
+import { useAuth } from "@/lib/auth";
 
 export function AppHeader() {
   const { t } = useI18n();
