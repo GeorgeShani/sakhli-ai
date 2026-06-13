@@ -248,14 +248,41 @@ function UtilitySplitter({
 
   return (
     <div className="space-y-6">
-      <div className="card-elevated p-5">
-        <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="card-elevated overflow-hidden">
+        {activeProperty ? (
+          <div className="flex flex-col gap-4 border-b border-border bg-gradient-to-r from-primary/10 via-accent/10 to-primary/5 p-5 sm:flex-row sm:items-center">
+            <div
+              className="h-20 w-28 shrink-0 rounded-lg bg-cover bg-center shadow-sm"
+              style={{ backgroundImage: `url(${activeProperty.image})` }}
+            />
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-primary">
+                <Home className="h-3.5 w-3.5" /> კომუნალურების დაყოფა · Splitting bills for
+              </div>
+              <div className="mt-0.5 truncate font-display text-lg font-semibold">
+                {activeProperty.title}
+              </div>
+              <div className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
+                <MapPin className="h-3.5 w-3.5" /> {activeProperty.district} · ₾{activeProperty.price}/mo
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 border-b border-dashed border-border bg-muted/40 p-4 text-xs text-muted-foreground">
+            <Home className="h-4 w-4" />
+            აირჩიეთ ან მონიშნეთ ბინა Matches გვერდზე, რომ კალკულატორი დაუკავშირდეს კონკრეტულ ბინას.
+          </div>
+        )}
+
+        <div className="flex flex-wrap items-center justify-between gap-3 p-5">
           <div>
             <h2 className="font-display text-lg font-semibold">
               AI Utility Bill Splitter · სტუდენტური კომუნალურების გამყოფი
             </h2>
             <p className="text-sm text-muted-foreground">
-              Track monthly utilities and split fairly by move-in dates or equally.
+              {activeProperty
+                ? `მონაცემები ეხება: ${activeProperty.title}`
+                : "Track monthly utilities and split fairly by move-in dates or equally."}
             </p>
           </div>
           <div className="flex rounded-md border border-border bg-secondary p-1 text-xs">
