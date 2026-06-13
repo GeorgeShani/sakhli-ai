@@ -237,7 +237,7 @@ export function scoreProperty(profile: StudentProfile, p: Property, sharers = 2)
   return Math.min(100, Math.round(budgetScore + sizeBonus + amenityBonus));
 }
 
-/* ---------- SakliAI Fit Score (advanced AI logic) ---------- */
+/* ---------- SakhliAI Fit Score (advanced AI logic) ---------- */
 
 export type FitScore = {
   score: number; // 0-100
@@ -361,7 +361,7 @@ export function fitScoreForFlatmate(profile: StudentProfile, f: Flatmate): FitSc
 function buildSummary(tier: FitScore["tier"], top: string[]): string {
   const prefix =
     tier === "excellent"
-      ? "Excellent SakliAI fit"
+      ? "Excellent SakhliAI fit"
       : tier === "good"
         ? "Strong fit"
         : tier === "fair"

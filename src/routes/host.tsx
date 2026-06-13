@@ -87,7 +87,7 @@ type CleaningTask = {
 const CHANNEL_META: Record<string, { label: string; color: string }> = {
   airbnb: { label: "Airbnb", color: "bg-rose-500" },
   booking: { label: "Booking.com", color: "bg-blue-500" },
-  sakliai: { label: "SakliAI", color: "bg-primary" },
+  sakliai: { label: "SakhliAI", color: "bg-primary" },
   student: { label: "Student", color: "bg-emerald-500" },
   direct: { label: "Direct", color: "bg-amber-500" },
 };

@@ -23,7 +23,7 @@ import { ArrowLeft, ArrowRight, Check, Wallet } from "lucide-react";
 export const Route = createFileRoute("/onboarding")({
   head: () => ({
     meta: [
-      { title: "Onboarding — SakliAI" },
+      { title: "Onboarding — SakhliAI" },
       { name: "description", content: "Build your student profile in 2 minutes." },
     ],
   }),
@@ -213,7 +213,7 @@ function OnboardingPage() {
                   <Wallet className="h-5 w-5 text-primary" /> Financial range
                 </h2>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Used by SakliAI to calculate a safe rent-to-income ratio. Private — never shown to hosts.
+                  Used by SakhliAI to calculate a safe rent-to-income ratio. Private — never shown to hosts.
                 </p>
               </div>
 

@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 /**
- * n8n → SakliAI cleaning dispatch receiver
+ * n8n → SakhliAI cleaning dispatch receiver
  * POST /api/public/n8n/cleaning
  * Headers: x-n8n-secret: <N8N_WEBHOOK_SECRET>  (optional but recommended)
  * Body (Workflow C — auto turn-over):

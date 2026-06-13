@@ -19,7 +19,7 @@ import { Bed, MapPin, GraduationCap, BedDouble, Sparkles, ShieldCheck } from "lu
 export const Route = createFileRoute("/matches")({
   head: () => ({
     meta: [
-      { title: "Matches — SakliAI" },
+      { title: "Matches — SakhliAI" },
       { name: "description", content: "Swipe through compatible flatmates and homes." },
     ],
   }),
@@ -96,7 +96,7 @@ function MatchesPage() {
           <div className="mt-4 rounded-lg border border-accent/40 bg-accent/10 p-3 text-center text-xs text-foreground">
             Browsing as guest.{" "}
             <Link to="/onboarding" className="font-semibold underline">Build your profile</Link>{" "}
-            for personalized SakliAI Fit Scores.
+            for personalized SakhliAI Fit Scores.
           </div>
         )}
 
@@ -157,7 +157,7 @@ function FitBadge({ fit }: { fit: FitScore }) {
     <div className={`rounded-xl border bg-gradient-to-br ${color} p-3`}>
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide">
-          <Sparkles className="h-3.5 w-3.5" /> SakliAI Fit Score
+          <Sparkles className="h-3.5 w-3.5" /> SakhliAI Fit Score
         </div>
         <div className="font-display text-2xl font-bold leading-none">{fit.score}%</div>
       </div>

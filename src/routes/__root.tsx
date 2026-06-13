@@ -78,14 +78,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "SakliAI — Smart rentals for Georgia" },
+      { title: "SakhliAI — Smart rentals for Georgia" },
       {
         name: "description",
         content:
           "Match with compatible flatmates and long-term homes in Georgia. Behavior-based matching, in-app chat, and utility splitting for students.",
       },
-      { name: "author", content: "SakliAI" },
-      { property: "og:title", content: "SakliAI — Smart rentals for Georgia" },
+      { name: "author", content: "SakhliAI" },
+      { property: "og:title", content: "SakhliAI — Smart rentals for Georgia" },
       {
         property: "og:description",
         content: "Match with compatible flatmates and long-term homes in Georgia.",

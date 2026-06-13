@@ -12,7 +12,7 @@ import { MessageCircle, Plus, Trash2, Users } from "lucide-react";
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
     meta: [
-      { title: "Dashboard — SakliAI" },
+      { title: "Dashboard — SakhliAI" },
       { name: "description", content: "Your matches, utility splits, and chats." },
     ],
   }),
