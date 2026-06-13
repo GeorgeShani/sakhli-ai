@@ -8,8 +8,6 @@ import { useAuth, type AppRole } from "@/lib/auth";
 const ROLE_HOME: Record<AppRole, string> = {
   student: "/matches",
   host: "/host",
-  cleaner: "/cleaner",
-  parent: "/parent",
 };
 
 export function AppHeader() {
