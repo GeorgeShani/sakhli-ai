@@ -105,7 +105,7 @@ export const flatmates: Flatmate[] = [
     id: "f4",
     name: "Luka T.",
     age: 22,
-    university: "GAU",
+    university: "Georgian American University",
     budget: 850,
     sleep: "night_owl",
     cleanliness: 2,
@@ -118,24 +118,6 @@ export const flatmates: Flatmate[] = [
     salaryBracket: "1000_2000",
     incomeSource: "mixed",
     verified: false,
-  },
-  {
-    id: "f5",
-    name: "Mariam J.",
-    age: 24,
-    university: "TSU",
-    budget: 1100,
-    sleep: "early_bird",
-    cleanliness: 4,
-    smoking: false,
-    pets: false,
-    parties: false,
-    quiet: true,
-    bio: "Law grad student. Yoga, runs, very independent. Long-term tenant.",
-    avatar: avatars("mariam"),
-    salaryBracket: "2000_plus",
-    incomeSource: "job",
-    verified: true,
   },
   {
     id: "f6",
@@ -153,6 +135,24 @@ export const flatmates: Flatmate[] = [
     avatar: avatars("saba"),
     salaryBracket: "under_500",
     incomeSource: "family",
+    verified: true,
+  },
+  {
+    id: "f5",
+    name: "Mariam J.",
+    age: 24,
+    university: "Tbilisi State University",
+    budget: 1100,
+    sleep: "early_bird",
+    cleanliness: 4,
+    smoking: false,
+    pets: false,
+    parties: false,
+    quiet: true,
+    bio: "Law grad student. Yoga, runs, very independent. Long-term tenant.",
+    avatar: avatars("mariam"),
+    salaryBracket: "2000_plus",
+    incomeSource: "job",
     verified: true,
   },
   {
@@ -216,7 +216,7 @@ export const flatmates: Flatmate[] = [
     id: "f10",
     name: "Beka N.",
     age: 24,
-    university: "GAU",
+    university: "Georgian American University",
     budget: 1250,
     sleep: "flexible",
     cleanliness: 5,
@@ -615,15 +615,14 @@ export type TenantScreening = {
 };
 
 type ApplicantLike = {
-  display_name: string | null;
+  name: string | null;
   university: string | null;
   salary_bracket: string | null;
   income_source: string | null;
-  sleep_schedule: string | null;
+  sleep: string | null;
   smoking: boolean | null;
   cleanliness: number | null;
-  budget_min: number | null;
-  budget_max: number | null;
+  budget: number | null;
 };
 
 export function screenApplicant(a: ApplicantLike, propertyPrice = 1600): TenantScreening {
@@ -634,7 +633,7 @@ export function screenApplicant(a: ApplicantLike, propertyPrice = 1600): TenantS
   if ((a.cleanliness ?? 3) >= 4) score += 8;
   if (a.income_source === "job" || a.income_source === "mixed") score += 10;
   if (a.salary_bracket === "1000_2000" || a.salary_bracket === "2000_plus") score += 8;
-  const budgetMid = ((a.budget_min ?? 0) + (a.budget_max ?? 0)) / 2;
+  const budgetMid = a.budget ?? 0;
   if (budgetMid >= propertyPrice * 0.5) score += 6;
   score = Math.min(100, score);
 

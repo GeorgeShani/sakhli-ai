@@ -282,6 +282,19 @@ const en: Dict = {
   "util.reason.most": "Here from day {d} — full {days}/30 days, pays the most",
   "util.reason.less": "Moved in day {d} → only {days}/30 days, pays less",
 
+  /* ---------- Checkout ---------- */
+  "checkout.title": "Checkout",
+  "checkout.back": "Back to settings",
+  "checkout.plan": "Plan",
+  "checkout.billed": "Billed monthly · cancel anytime",
+  "checkout.method": "Payment method",
+  "checkout.pay": "Pay",
+  "checkout.processing": "Processing payment…",
+  "checkout.success": "Payment successful",
+  "checkout.activated": "is now active",
+  "checkout.sim": "Simulated payment for the demo — no real charge is made.",
+  "checkout.permonth": "/mo",
+
   /* ---------- Dashboard ---------- */
   "dashboard.addMatch": "Add New Match",
   "dashboard.addProperty": "Add New Property",
@@ -596,6 +609,19 @@ const ka: Dict = {
   "util.reason.equal": "თანაბარი წილი {n} თანამცხოვრებზე",
   "util.reason.most": "დღე {d}-დან — სრული {days}/30 დღე, ყველაზე მეტს იხდის",
   "util.reason.less": "შემოვიდა დღე {d}-ში → მხოლოდ {days}/30 დღე, ნაკლებს იხდის",
+
+  /* ---------- Checkout ---------- */
+  "checkout.title": "გადახდა",
+  "checkout.back": "უკან პარამეტრებში",
+  "checkout.plan": "ტარიფი",
+  "checkout.billed": "ყოველთვიური გადახდა · გააუქმე ნებისმიერ დროს",
+  "checkout.method": "გადახდის მეთოდი",
+  "checkout.pay": "გადახდა",
+  "checkout.processing": "მიმდინარეობს გადახდა…",
+  "checkout.success": "გადახდა წარმატებულია",
+  "checkout.activated": "გააქტიურდა",
+  "checkout.sim": "სიმულირებული გადახდა დემოსთვის — რეალური ჩამოჭრის გარეშე.",
+  "checkout.permonth": "/თვე",
 
   /* ---------- Dashboard ---------- */
   "dashboard.addMatch": "ახალი თანამცხოვრებლის დამატება",

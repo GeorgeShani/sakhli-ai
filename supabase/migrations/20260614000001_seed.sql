@@ -6,14 +6,34 @@
 
 INSERT INTO auth.users (id, email, raw_user_meta_data)
 VALUES
-  ('c3c72b22-1d54-47c4-be9e-05a8d9a24cf5', 'nino.kobakhidze.1@student.tsu.edu.ge', '{"full_name": "Nino Kobakhidze"}'),
+  ('c3c72b22-1d54-47c4-be9e-05a8d9a24cf5', 'nino.kobakhidze.186@ens.tsu.edu.ge', '{"full_name": "Nino Kobakhidze"}'),
   ('8f07d242-4f30-4e36-a36c-2f928e3b09de', 'g.meladze@freeuni.edu.ge', '{"full_name": "Giorgi Meladze"}'),
   ('e7bda306-03f8-47bc-87bd-d922a1b9f71c', 'ana.baramidze.2@iliauni.edu.ge', '{"full_name": "Ana Baramidze"}'),
   ('a7d8c366-2675-4d7a-8533-3176d65427bf', 'g.margvelashvili@gmail.com', '{"full_name": "Giorgi Margvelashvili"}'),
   ('5c34e622-0941-4cf1-8302-60126788220d', 'salome.gelashvili@yahoo.com', '{"full_name": "Salome Gelashvili"}')
 ON CONFLICT (id) DO NOTHING;
 
--- Map roles & plans
+-- Explicitly seed public.users to prevent foreign key issues if auth.users already existed and trigger did not fire
+INSERT INTO public.users (id, full_name, email, role, plan)
+VALUES
+  ('c3c72b22-1d54-47c4-be9e-05a8d9a24cf5', 'Nino Kobakhidze', 'nino.kobakhidze.1@student.tsu.edu.ge', 'student', 'free'),
+  ('8f07d242-4f30-4e36-a36c-2f928e3b09de', 'Giorgi Meladze', 'g.meladze@freeuni.edu.ge', 'student', 'free'),
+  ('e7bda306-03f8-47bc-87bd-d922a1b9f71c', 'Ana Baramidze', 'ana.baramidze.2@iliauni.edu.ge', 'student', 'free'),
+  ('a7d8c366-2675-4d7a-8533-3176d65427bf', 'Giorgi Margvelashvili', 'g.margvelashvili@gmail.com', 'host', 'plus'),
+  ('5c34e622-0941-4cf1-8302-60126788220d', 'Salome Gelashvili', 'salome.gelashvili@yahoo.com', 'host', 'plus')
+ON CONFLICT (id) DO NOTHING;
+
+-- Explicitly seed public.profiles to prevent foreign key issues if auth.users already existed and trigger did not fire
+INSERT INTO public.profiles (id, full_name, role)
+VALUES
+  ('c3c72b22-1d54-47c4-be9e-05a8d9a24cf5', 'Nino Kobakhidze', 'student'),
+  ('8f07d242-4f30-4e36-a36c-2f928e3b09de', 'Giorgi Meladze', 'student'),
+  ('e7bda306-03f8-47bc-87bd-d922a1b9f71c', 'Ana Baramidze', 'student'),
+  ('a7d8c366-2675-4d7a-8533-3176d65427bf', 'Giorgi Margvelashvili', 'host'),
+  ('5c34e622-0941-4cf1-8302-60126788220d', 'Salome Gelashvili', 'host')
+ON CONFLICT (id) DO NOTHING;
+
+-- Update roles & plans to ensure correct states
 UPDATE public.users SET role = 'student', plan = 'free' WHERE id IN ('c3c72b22-1d54-47c4-be9e-05a8d9a24cf5', '8f07d242-4f30-4e36-a36c-2f928e3b09de', 'e7bda306-03f8-47bc-87bd-d922a1b9f71c');
 UPDATE public.users SET role = 'host', plan = 'plus' WHERE id IN ('a7d8c366-2675-4d7a-8533-3176d65427bf', '5c34e622-0941-4cf1-8302-60126788220d');
 
@@ -77,53 +97,53 @@ VALUES
   )
 ON CONFLICT (id) DO NOTHING;
 
--- 3) Seed Student Profiles
-INSERT INTO public.student_profiles (id, user_id, display_name, university, budget_min, budget_max, sleep_schedule, cleanliness, smoking, pets, bio, city, languages, salary_bracket, income_source)
+-- 3) Seed Student Profiles (Perfect 1-to-1 alignment with React structures)
+INSERT INTO public.student_profiles (id, user_id, name, university, budget, sleep, cleanliness, smoking, pets, parties, quiet, bio, verified, salary_bracket, income_source, avatar)
 VALUES
   (
     '2a9b4d8c-4731-4e92-be20-10927df80301',
     'c3c72b22-1d54-47c4-be9e-05a8d9a24cf5',
     'Nino Kobakhidze',
     'Tbilisi State University',
-    500, 800,
+    750,
     'night_owl',
     4,
-    false, true,
+    false, true, false, true,
     'Literature major, tea addict, very tidy. Looking for a calm, quiet flat in Vake near TSU to read and foster matching flatmates.',
-    'Tbilisi',
-    ARRAY['Georgian', 'English'],
+    true,
     '500_1000',
-    'family'
+    'family',
+    'https://api.dicebear.com/7.x/avataaars/svg?seed=Nino%20Kobakhidze&backgroundColor=b6e3f4,c0aede,d1d4f9'
   ),
   (
     'fa7311d9-7622-4ccb-8bf1-e23ef8200302',
     '8f07d242-4f30-4e36-a36c-2f928e3b09de',
     'Giorgi Meladze',
     'Free University of Tbilisi',
-    700, 1000,
+    900,
     'early_bird',
     3,
-    false, false,
+    false, false, true, false,
     'CS student & part-time barista. I cook a lot and occasionally host study groups or friends on weekend afternoons.',
-    'Tbilisi',
-    ARRAY['Georgian', 'English', 'German'],
+    true,
     '1000_2000',
-    'job'
+    'job',
+    'https://api.dicebear.com/7.x/avataaars/svg?seed=Giorgi%20Meladze&backgroundColor=b6e3f4,c0aede,d1d4f9'
   ),
   (
     'cd2d69f3-8b77-4401-b3b4-e2b2787c0303',
     'e7bda306-03f8-47bc-87bd-d922a1b9f71c',
     'Ana Baramidze',
     'Ilia State University',
-    500, 700,
+    650,
     'flexible',
     5,
-    false, false,
+    false, false, false, true,
     'Med student. Quiet, highly organized, allergic to cats. Prefers Saburtalo flats near metro stations.',
-    'Tbilisi',
-    ARRAY['Georgian', 'English', 'Russian'],
+    true,
     '500_1000',
-    'scholarship'
+    'scholarship',
+    'https://api.dicebear.com/7.x/avataaars/svg?seed=Ana%20Baramidze&backgroundColor=b6e3f4,c0aede,d1d4f9'
   )
 ON CONFLICT (id) DO NOTHING;
 

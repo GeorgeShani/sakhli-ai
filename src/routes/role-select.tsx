@@ -338,6 +338,12 @@ function InlineAuthCard({
         : await signUp(email, password, name || undefined);
     setBusy(false);
     if (res.error) setError(res.error);
+    else if ("needsConfirmation" in res && res.needsConfirmation) {
+      setError(
+        "Account created, but email confirmation is required. Check your inbox, or disable “Confirm email” in Supabase → Authentication → Providers → Email.",
+      );
+      setMode("signin");
+    }
   };
 
   return (

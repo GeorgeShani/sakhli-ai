@@ -270,64 +270,73 @@ export type Database = {
       }
       student_profiles: {
         Row: {
+          avatar: string | null
           bio: string | null
-          budget_max: number | null
-          budget_min: number | null
+          budget: number
           city: string | null
-          cleanliness: number | null
+          cleanliness: number
           created_at: string
-          display_name: string | null
           id: string
           income_source: string | null
           languages: string[] | null
-          pets: boolean | null
+          name: string | null
+          parties: boolean
+          pets: boolean
+          quiet: boolean
           salary_bracket: string | null
-          sleep_schedule: string | null
-          smoking: boolean | null
+          sleep: string
+          smoking: boolean
           university: string | null
           user_id: string | null
+          verified: boolean
         }
         Insert: {
+          avatar?: string | null
           bio?: string | null
-          budget_max?: number | null
-          budget_min?: number | null
+          budget?: number
           city?: string | null
-          cleanliness?: number | null
+          cleanliness?: number
           created_at?: string
-          display_name?: string | null
           id?: string
           income_source?: string | null
           languages?: string[] | null
-          pets?: boolean | null
+          name?: string | null
+          parties?: boolean
+          pets?: boolean
+          quiet?: boolean
           salary_bracket?: string | null
-          sleep_schedule?: string | null
-          smoking?: boolean | null
+          sleep?: string
+          smoking?: boolean
           university?: string | null
           user_id?: string | null
+          verified?: boolean
         }
         Update: {
+          avatar?: string | null
           bio?: string | null
-          budget_max?: number | null
-          budget_min?: number | null
+          budget?: number
           city?: string | null
-          cleanliness?: number | null
+          cleanliness?: number
           created_at?: string
-          display_name?: string | null
           id?: string
           income_source?: string | null
           languages?: string[] | null
-          pets?: boolean | null
+          name?: string | null
+          parties?: boolean
+          pets?: boolean
+          quiet?: boolean
           salary_bracket?: string | null
-          sleep_schedule?: string | null
-          smoking?: boolean | null
+          sleep?: string
+          smoking?: boolean
           university?: string | null
           user_id?: string | null
+          verified?: boolean
         }
         Relationships: [
           {
             foreignKeyName: "student_profiles_user_id_fkey"
             columns: ["user_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
@@ -341,6 +350,7 @@ export type Database = {
           id: string
           language: string
           phone: string | null
+          plan: string
           role: string
         }
         Insert: {
@@ -350,6 +360,7 @@ export type Database = {
           id?: string
           language?: string
           phone?: string | null
+          plan?: string
           role?: string
         }
         Update: {
@@ -359,9 +370,78 @@ export type Database = {
           id?: string
           language?: string
           phone?: string | null
+          plan?: string
           role?: string
         }
         Relationships: []
+      }
+      agent_events: {
+        Row: {
+          created_at: string
+          detail_en: string
+          detail_ka: string
+          id: string
+          kind: string
+          source: string
+          title_en: string
+          title_ka: string
+        }
+        Insert: {
+          created_at?: string
+          detail_en: string
+          detail_ka: string
+          id?: string
+          kind: string
+          source?: string
+          title_en: string
+          title_ka: string
+        }
+        Update: {
+          created_at?: string
+          detail_en?: string
+          detail_ka?: string
+          id?: string
+          kind?: string
+          source?: string
+          title_en?: string
+          title_ka?: string
+        }
+        Relationships: []
+      }
+      applicant_screenings: {
+        Row: {
+          created_at: string
+          id: string
+          risk_analysis: string | null
+          score: number | null
+          student_profile_id: string | null
+          verdict: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          risk_analysis?: string | null
+          score?: number | null
+          student_profile_id?: string | null
+          verdict?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          risk_analysis?: string | null
+          score?: number | null
+          student_profile_id?: string | null
+          verdict?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "applicant_screenings_student_profile_id_fkey"
+            columns: ["student_profile_id"]
+            isOneToOne: false
+            referencedRelation: "student_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

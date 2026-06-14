@@ -17,6 +17,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useI18n } from "@/lib/i18n";
+import { useAuth } from "@/lib/auth";
+import { supabase } from "@/integrations/supabase/client";
 import {
   defaultProfile,
   useProfile,
@@ -24,6 +26,7 @@ import {
   type StudentProfile,
 } from "@/lib/student-store";
 import { ArrowLeft, ArrowRight, Check, Loader2, Mail, ShieldCheck } from "lucide-react";
+import { toast } from "sonner";
 
 const GE_UNIVERSITIES: { value: string; label: string }[] = [
   { value: "თბილისის სახელმწიფო უნივერსიტეტი (TSU)", label: "თბილისის სახელმწიფო უნივერსიტეტი (TSU)" },
@@ -58,6 +61,7 @@ function OnboardingPage() {
 
 function OnboardingInner() {
   const { t } = useI18n();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const { save } = useProfile();
   const [step, setStep] = useState(0);
@@ -67,10 +71,48 @@ function OnboardingInner() {
   const update = <K extends keyof StudentProfile>(k: K, v: StudentProfile[K]) =>
     setProfile((p) => ({ ...p, [k]: v }));
 
-  const next = () => {
+  const next = async () => {
     if (step < TOTAL - 1) setStep(step + 1);
     else {
       save(profile);
+
+      if (user) {
+        try {
+          // Guarantee the public.users row exists — student_profiles.user_id FKs to it.
+          await supabase
+            .from("users")
+            .upsert({ id: user.id, email: user.email ?? null }, { onConflict: "id" });
+
+          const { error } = await supabase
+            .from("student_profiles")
+            .upsert({
+              user_id: user.id,
+              name: profile.name,
+              university: profile.university,
+              budget: profile.budget,
+              sleep: profile.sleep,
+              smoking: profile.smoking,
+              pets: profile.pets,
+              parties: profile.parties,
+              quiet: profile.quiet,
+              cleanliness: profile.cleanliness,
+              bio: profile.bio,
+              verified: profile.verified,
+              salary_bracket: profile.salaryBracket,
+              income_source: profile.incomeSource,
+              avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(profile.name || "student")}&backgroundColor=b6e3f4,c0aede,d1d4f9`
+            }, { onConflict: "user_id" });
+
+          if (error) {
+            console.error("Error saving onboarding profile to Supabase:", error.message);
+            toast.error(`Couldn't save your profile to the server: ${error.message}`);
+          }
+        } catch (err) {
+          console.error("Failed to connect to Supabase to save onboarding:", err);
+          toast.error("Couldn't reach the server to save your profile. Saved locally for now.");
+        }
+      }
+
       setDone(true);
     }
   };

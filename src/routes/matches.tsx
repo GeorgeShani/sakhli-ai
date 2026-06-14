@@ -60,10 +60,9 @@ type Tab = "people" | "places";
 function MatchesPage() {
   const { t } = useI18n();
   const { profile, loaded } = useProfile();
-  const { matches, record, reset } = useMatches();
+  const { matches, record, remove, reset } = useMatches();
   const { isPaid, bumpSwipes, swipeBlocked, swipesLeft, resetSwipes } = useSubscription();
   const [tab, setTab] = useState<Tab>("people");
-  const [index, setIndex] = useState({ people: 0, places: 0 });
   const [aiBestFit, setAiBestFit] = useState(false);
   const [pricingOpen, setPricingOpen] = useState(false);
   const [pricingReason, setPricingReason] = useState<"swipe_limit" | "ai_best_fit" | "manual">("manual");
@@ -81,21 +80,21 @@ function MatchesPage() {
         if (profilesData && !profilesErr) {
           const mappedFlatmates = profilesData.map((sp: any) => ({
             id: sp.id,
-            name: sp.display_name || "Student",
+            name: sp.name || "Student",
             age: 20,
             university: sp.university || "Tbilisi State University",
-            budget: sp.budget_max || 700,
-            sleep: sp.sleep_schedule || "flexible",
+            budget: sp.budget || 700,
+            sleep: sp.sleep || "flexible",
             cleanliness: sp.cleanliness || 3,
             smoking: sp.smoking || false,
             pets: sp.pets || false,
-            parties: false,
-            quiet: true,
+            parties: sp.parties || false,
+            quiet: sp.quiet ?? true,
             bio: sp.bio || "",
-            avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(sp.display_name || "student")}&backgroundColor=b6e3f4,c0aede,d1d4f9`,
+            avatar: sp.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(sp.name || "student")}&backgroundColor=b6e3f4,c0aede,d1d4f9`,
             salaryBracket: sp.salary_bracket || "under_500",
             incomeSource: sp.income_source || "job",
-            verified: true,
+            verified: sp.verified ?? true,
           }));
           setDbFlatmates(mappedFlatmates);
         }
@@ -128,47 +127,59 @@ function MatchesPage() {
 
   const effectiveProfile: StudentProfile = profile ?? defaultProfile;
 
+  // Ids the user has already swiped on (liked OR passed) — never show them again.
+  const decidedPeople = useMemo(
+    () => new Set(matches.filter((m) => m.kind === "person").map((m) => m.id)),
+    [matches],
+  );
+  const decidedPlaces = useMemo(
+    () => new Set(matches.filter((m) => m.kind === "place").map((m) => m.id)),
+    [matches],
+  );
+
   const peopleStack = useMemo(() => {
     const list = dbFlatmates.length > 0 ? dbFlatmates : flatmates;
     const ranked = list
+      .filter((f) => !decidedPeople.has(f.id))
       .map((f) => ({ f, fit: fitScoreForFlatmate(effectiveProfile, f) }))
       .sort((a, b) => b.fit.score - a.fit.score);
     return aiBestFit && isPaid ? ranked.filter((r) => r.fit.score >= 85) : ranked;
-  }, [dbFlatmates, effectiveProfile, aiBestFit, isPaid]);
+  }, [dbFlatmates, decidedPeople, effectiveProfile, aiBestFit, isPaid]);
 
   const placeStack = useMemo(() => {
     const list = dbProperties.length > 0 ? dbProperties : properties;
     const ranked = list
+      .filter((p) => !decidedPlaces.has(p.id))
       .map((p) => ({ p, fit: fitScoreForProperty(effectiveProfile, p) }))
       .sort((a, b) => b.fit.score - a.fit.score);
     return aiBestFit && isPaid ? ranked.filter((r) => r.fit.score >= 85) : ranked;
-  }, [dbProperties, effectiveProfile, aiBestFit, isPaid]);
+  }, [dbProperties, decidedPlaces, effectiveProfile, aiBestFit, isPaid]);
 
   if (!loaded) return null;
 
+  // Always act on the top of the stack; recording a decision removes the card
+  // from the (filtered) stack, so the next one slides up automatically.
   const handleSwipe = (liked: boolean) => {
     if (tab === "people") {
-      const current = peopleStack[index.people];
+      const current = peopleStack[0];
       if (current) {
         record("person", current.f.id, liked);
         setLastAction({ tab: "people", kind: "person", id: current.f.id });
       }
-      setIndex((i) => ({ ...i, people: i.people + 1 }));
     } else {
-      const current = placeStack[index.places];
+      const current = placeStack[0];
       if (current) {
         record("place", current.p.id, liked);
         setLastAction({ tab: "places", kind: "place", id: current.p.id });
       }
-      setIndex((i) => ({ ...i, places: i.places + 1 }));
     }
     if (!isPaid) bumpSwipes();
   };
 
   const undo = () => {
     if (!lastAction) return;
-    record(lastAction.kind, lastAction.id, false);
-    setIndex((i) => ({ ...i, [lastAction.tab]: Math.max(0, i[lastAction.tab] - 1) }));
+    // Remove the decision entirely so the person/place can resurface.
+    remove(lastAction.kind, lastAction.id);
     setLastAction(null);
   };
 
@@ -182,8 +193,8 @@ function MatchesPage() {
   };
 
   const stackDone =
-    (tab === "people" && index.people >= peopleStack.length) ||
-    (tab === "places" && index.places >= placeStack.length);
+    (tab === "people" && peopleStack.length === 0) ||
+    (tab === "places" && placeStack.length === 0);
 
 
   const tabBtn = (v: Tab, label: string) => (
@@ -299,7 +310,6 @@ function MatchesPage() {
                   onClick={() => {
                     reset();
                     resetSwipes();
-                    setIndex({ people: 0, places: 0 });
                   }}
                 >
                   {t("matches.empty.reset")}
@@ -310,12 +320,12 @@ function MatchesPage() {
               </div>
             </div>
           ) : tab === "people" ? (
-            <SwipeCard key={`p${index.people}`} onSwipe={handleSwipe}>
-              <PersonCard data={peopleStack[index.people]} />
+            <SwipeCard key={peopleStack[0].f.id} onSwipe={handleSwipe}>
+              <PersonCard data={peopleStack[0]} />
             </SwipeCard>
           ) : (
-            <SwipeCard key={`pl${index.places}`} onSwipe={handleSwipe}>
-              <PlaceCard data={placeStack[index.places]} />
+            <SwipeCard key={placeStack[0].p.id} onSwipe={handleSwipe}>
+              <PlaceCard data={placeStack[0]} />
             </SwipeCard>
           )}
         </div>

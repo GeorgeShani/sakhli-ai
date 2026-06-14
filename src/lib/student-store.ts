@@ -113,10 +113,18 @@ export function useMatches() {
     });
   };
 
+  const remove = (kind: Match["kind"], id: string) => {
+    setMatches((prev) => {
+      const next = prev.filter((m) => !(m.kind === kind && m.id === id));
+      if (typeof window !== "undefined") localStorage.setItem(MATCHES_KEY, JSON.stringify(next));
+      return next;
+    });
+  };
+
   const reset = () => {
     setMatches([]);
     if (typeof window !== "undefined") localStorage.removeItem(MATCHES_KEY);
   };
 
-  return { matches, record, reset };
+  return { matches, record, remove, reset };
 }

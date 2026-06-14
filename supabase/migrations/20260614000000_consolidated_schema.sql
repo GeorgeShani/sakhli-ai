@@ -82,23 +82,26 @@ CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
--- 5) STUDENT PROFILES Table (behavior-based matching attributes)
+-- 5) STUDENT PROFILES Table (100% aligned with React types & Onboarding fields)
 CREATE TABLE public.student_profiles (
   id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id UUID REFERENCES public.users(id) ON DELETE CASCADE UNIQUE, -- ensure 1 profile per user
-  display_name TEXT,
-  university TEXT,
-  budget_min INT,
-  budget_max INT,
-  sleep_schedule TEXT,
-  cleanliness INT,
-  smoking BOOLEAN DEFAULT false,
-  pets BOOLEAN DEFAULT false,
-  bio TEXT,
+  user_id UUID REFERENCES public.users(id) ON DELETE CASCADE UNIQUE, -- exactly 1 profile per user
+  name TEXT,                                                         -- matches name
+  university TEXT,                                                   -- matches university
+  budget INT NOT NULL DEFAULT 1200,                                  -- matches budget
+  sleep TEXT NOT NULL DEFAULT 'flexible' CHECK (sleep IN ('early_bird', 'night_owl', 'flexible')), -- matches sleep
+  smoking BOOLEAN NOT NULL DEFAULT false,                            -- matches smoking
+  pets BOOLEAN NOT NULL DEFAULT false,                               -- matches pets
+  parties BOOLEAN NOT NULL DEFAULT false,                            -- matches parties
+  quiet BOOLEAN NOT NULL DEFAULT true,                               -- matches quiet
+  cleanliness INT NOT NULL DEFAULT 3 CHECK (cleanliness BETWEEN 1 AND 5), -- matches cleanliness
+  bio TEXT,                                                          -- matches bio
+  verified BOOLEAN NOT NULL DEFAULT false,                           -- matches verified
+  salary_bracket TEXT DEFAULT '500_1000' CHECK (salary_bracket IN ('under_500','500_1000','1000_2000','2000_plus')), -- matches salaryBracket
+  income_source TEXT DEFAULT 'family' CHECK (income_source IN ('job','family','scholarship','mixed')), -- matches incomeSource
+  avatar TEXT,                                                       -- matches avatar
   city TEXT DEFAULT 'Tbilisi',
   languages TEXT[],
-  salary_bracket TEXT CHECK (salary_bracket IN ('under_500','500_1000','1000_2000','2000_plus')),
-  income_source TEXT CHECK (income_source IN ('job','family','scholarship','mixed')),
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 

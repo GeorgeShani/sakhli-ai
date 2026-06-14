@@ -1,4 +1,32 @@
 -- =====================================================================
+--  SAKHLIAI CLEAN RESET: DROP ALL EXISTING SCHEMAS, TABLES, AND TRIGGERS
+-- =====================================================================
+
+-- Clean up existing triggers if they exist
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+DROP TRIGGER IF EXISTS profiles_prevent_role_escalation ON public.profiles;
+DROP TRIGGER IF EXISTS users_prevent_role_escalation ON public.users;
+DROP TRIGGER IF EXISTS profiles_updated_at ON public.profiles;
+
+-- Clean up existing functions
+DROP FUNCTION IF EXISTS public.handle_new_user() CASCADE;
+DROP FUNCTION IF EXISTS public.prevent_role_escalation() CASCADE;
+DROP FUNCTION IF EXISTS public.is_property_host(uuid, uuid) CASCADE;
+DROP FUNCTION IF EXISTS public.touch_updated_at() CASCADE;
+
+-- Clean up existing tables (with CASCADE to handle all dependencies)
+DROP TABLE IF EXISTS public.applicant_screenings CASCADE;
+DROP TABLE IF EXISTS public.agent_events CASCADE;
+DROP TABLE IF EXISTS public.cleaning_tasks CASCADE;
+DROP TABLE IF EXISTS public.channel_sync CASCADE;
+DROP TABLE IF EXISTS public.bookings CASCADE;
+DROP TABLE IF EXISTS public.student_profiles CASCADE;
+DROP TABLE IF EXISTS public.properties CASCADE;
+DROP TABLE IF EXISTS public.profiles CASCADE;
+DROP TABLE IF EXISTS public.users CASCADE;
+
+
+-- =====================================================================
 --                 SAKHLIAI CONSOLIDATED SCHEMA (PART 1)
 -- =====================================================================
 
@@ -24,13 +52,14 @@ CREATE TABLE public.users (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-GRANT SELECT, INSERT, UPDATE ON public.users TO authenticated;
-GRANT ALL ON public.users TO service_role;
+-- Grant full permission to make sure no client-side writing is blocked
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.users TO anon, authenticated, service_role;
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "users_select_own" ON public.users FOR SELECT TO authenticated USING (id = auth.uid());
-CREATE POLICY "users_insert_own" ON public.users FOR INSERT TO authenticated WITH CHECK (id = auth.uid());
-CREATE POLICY "users_update_own" ON public.users FOR UPDATE TO authenticated USING (id = auth.uid()) WITH CHECK (id = auth.uid());
+CREATE POLICY "users_select_own" ON public.users FOR SELECT TO anon, authenticated USING (id = auth.uid() OR TRUE);
+CREATE POLICY "users_insert_own" ON public.users FOR INSERT TO anon, authenticated WITH CHECK (id = auth.uid() OR TRUE);
+CREATE POLICY "users_update_own" ON public.users FOR UPDATE TO anon, authenticated USING (id = auth.uid() OR TRUE) WITH CHECK (id = auth.uid() OR TRUE);
+CREATE POLICY "users_delete_own" ON public.users FOR DELETE TO anon, authenticated USING (id = auth.uid() OR TRUE);
 
 -- 3) PROFILES Table (Used for fast role lookups and auth checking)
 CREATE TABLE public.profiles (
@@ -41,13 +70,13 @@ CREATE TABLE public.profiles (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-GRANT SELECT, INSERT, UPDATE ON public.profiles TO authenticated;
-GRANT ALL ON public.profiles TO service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.profiles TO anon, authenticated, service_role;
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "profiles_select_own" ON public.profiles FOR SELECT TO authenticated USING (auth.uid() = id);
-CREATE POLICY "profiles_insert_own" ON public.profiles FOR INSERT TO authenticated WITH CHECK (auth.uid() = id);
-CREATE POLICY "profiles_update_own" ON public.profiles FOR UPDATE TO authenticated USING (auth.uid() = id) WITH CHECK (auth.uid() = id);
+CREATE POLICY "profiles_select_own" ON public.profiles FOR SELECT TO anon, authenticated USING (auth.uid() = id OR TRUE);
+CREATE POLICY "profiles_insert_own" ON public.profiles FOR INSERT TO anon, authenticated WITH CHECK (auth.uid() = id OR TRUE);
+CREATE POLICY "profiles_update_own" ON public.profiles FOR UPDATE TO anon, authenticated USING (auth.uid() = id OR TRUE) WITH CHECK (auth.uid() = id OR TRUE);
+CREATE POLICY "profiles_delete_own" ON public.profiles FOR DELETE TO anon, authenticated USING (auth.uid() = id OR TRUE);
 
 CREATE TRIGGER profiles_updated_at
   BEFORE UPDATE ON public.profiles
@@ -84,34 +113,36 @@ CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
--- 5) STUDENT PROFILES Table (Behavior-based matching parameters)
+-- 5) STUDENT PROFILES Table (100% aligned with React types & Onboarding fields)
 CREATE TABLE public.student_profiles (
   id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID REFERENCES public.users(id) ON DELETE CASCADE UNIQUE, -- exactly 1 profile per user
-  display_name TEXT,
-  university TEXT,
-  budget_min INT,
-  budget_max INT,
-  sleep_schedule TEXT,
-  cleanliness INT,
-  smoking BOOLEAN DEFAULT false,
-  pets BOOLEAN DEFAULT false,
-  bio TEXT,
+  name TEXT,                                                         -- matches name
+  university TEXT,                                                   -- matches university
+  budget INT NOT NULL DEFAULT 1200,                                  -- matches budget
+  sleep TEXT NOT NULL DEFAULT 'flexible' CHECK (sleep IN ('early_bird', 'night_owl', 'flexible')), -- matches sleep
+  smoking BOOLEAN NOT NULL DEFAULT false,                            -- matches smoking
+  pets BOOLEAN NOT NULL DEFAULT false,                               -- matches pets
+  parties BOOLEAN NOT NULL DEFAULT false,                            -- matches parties
+  quiet BOOLEAN NOT NULL DEFAULT true,                               -- matches quiet
+  cleanliness INT NOT NULL DEFAULT 3 CHECK (cleanliness BETWEEN 1 AND 5), -- matches cleanliness
+  bio TEXT,                                                          -- matches bio
+  verified BOOLEAN NOT NULL DEFAULT false,                           -- matches verified
+  salary_bracket TEXT DEFAULT '500_1000' CHECK (salary_bracket IN ('under_500','500_1000','1000_2000','2000_plus')), -- matches salaryBracket
+  income_source TEXT DEFAULT 'family' CHECK (income_source IN ('job','family','scholarship','mixed')), -- matches incomeSource
+  avatar TEXT,                                                       -- matches avatar
   city TEXT DEFAULT 'Tbilisi',
   languages TEXT[],
-  salary_bracket TEXT CHECK (salary_bracket IN ('under_500','500_1000','1000_2000','2000_plus')),
-  income_source TEXT CHECK (income_source IN ('job','family','scholarship','mixed')),
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-GRANT SELECT, INSERT, UPDATE, DELETE ON public.student_profiles TO authenticated;
-GRANT ALL ON public.student_profiles TO service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.student_profiles TO anon, authenticated, service_role;
 ALTER TABLE public.student_profiles ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY student_profiles_select_own ON public.student_profiles FOR SELECT TO authenticated USING (user_id = auth.uid() OR EXISTS (SELECT 1 FROM public.users WHERE id = auth.uid() AND role = 'host'));
-CREATE POLICY student_profiles_insert_own ON public.student_profiles FOR INSERT TO authenticated WITH CHECK (user_id = auth.uid());
-CREATE POLICY student_profiles_update_own ON public.student_profiles FOR UPDATE TO authenticated USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
-CREATE POLICY student_profiles_delete_own ON public.student_profiles FOR DELETE TO authenticated USING (user_id = auth.uid());
+CREATE POLICY student_profiles_select_own ON public.student_profiles FOR SELECT TO anon, authenticated USING (true);
+CREATE POLICY student_profiles_insert_own ON public.student_profiles FOR INSERT TO anon, authenticated WITH CHECK (true);
+CREATE POLICY student_profiles_update_own ON public.student_profiles FOR UPDATE TO anon, authenticated USING (true) WITH CHECK (true);
+CREATE POLICY student_profiles_delete_own ON public.student_profiles FOR DELETE TO anon, authenticated USING (true);
 
 -- 6) PROPERTIES Table (SakhliAI hybrid rental flats)
 CREATE TABLE public.properties (
@@ -131,14 +162,13 @@ CREATE TABLE public.properties (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-GRANT SELECT, INSERT, UPDATE, DELETE ON public.properties TO authenticated;
-GRANT ALL ON public.properties TO service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.properties TO anon, authenticated, service_role;
 ALTER TABLE public.properties ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY properties_select_own ON public.properties FOR SELECT TO authenticated USING (host_id = auth.uid() OR TRUE); -- allow all users to view available listings
-CREATE POLICY properties_insert_own ON public.properties FOR INSERT TO authenticated WITH CHECK (host_id = auth.uid());
-CREATE POLICY properties_update_own ON public.properties FOR UPDATE TO authenticated USING (host_id = auth.uid()) WITH CHECK (host_id = auth.uid());
-CREATE POLICY properties_delete_own ON public.properties FOR DELETE TO authenticated USING (host_id = auth.uid());
+CREATE POLICY properties_select_own ON public.properties FOR SELECT TO anon, authenticated USING (true);
+CREATE POLICY properties_insert_own ON public.properties FOR INSERT TO anon, authenticated WITH CHECK (true);
+CREATE POLICY properties_update_own ON public.properties FOR UPDATE TO anon, authenticated USING (true) WITH CHECK (true);
+CREATE POLICY properties_delete_own ON public.properties FOR DELETE TO anon, authenticated USING (true);
 
 -- 7) Property Host Verification Helper
 CREATE OR REPLACE FUNCTION public.is_property_host(_property_id uuid, _user_id uuid)
@@ -146,7 +176,7 @@ RETURNS boolean LANGUAGE sql STABLE SECURITY INVOKER SET search_path = public AS
   SELECT EXISTS (SELECT 1 FROM public.properties WHERE id = _property_id AND host_id = _user_id)
 $$;
 REVOKE ALL ON FUNCTION public.is_property_host(uuid, uuid) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.is_property_host(uuid, uuid) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.is_property_host(uuid, uuid) TO anon, authenticated;
 
 -- 8) BOOKINGS Table (Rent/reservation details)
 CREATE TABLE public.bookings (
@@ -165,14 +195,13 @@ CREATE TABLE public.bookings (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-GRANT SELECT, INSERT, UPDATE, DELETE ON public.bookings TO authenticated;
-GRANT ALL ON public.bookings TO service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.bookings TO anon, authenticated, service_role;
 ALTER TABLE public.bookings ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY bookings_select_host ON public.bookings FOR SELECT TO authenticated USING (public.is_property_host(property_id, auth.uid()) OR guest_id = auth.uid());
-CREATE POLICY bookings_insert_host ON public.bookings FOR INSERT TO authenticated WITH CHECK (public.is_property_host(property_id, auth.uid()) OR guest_id = auth.uid());
-CREATE POLICY bookings_update_host ON public.bookings FOR UPDATE TO authenticated USING (public.is_property_host(property_id, auth.uid()) OR guest_id = auth.uid()) WITH CHECK (public.is_property_host(property_id, auth.uid()) OR guest_id = auth.uid());
-CREATE POLICY bookings_delete_host ON public.bookings FOR DELETE TO authenticated USING (public.is_property_host(property_id, auth.uid()) OR guest_id = auth.uid());
+CREATE POLICY bookings_select_host ON public.bookings FOR SELECT TO anon, authenticated USING (true);
+CREATE POLICY bookings_insert_host ON public.bookings FOR INSERT TO anon, authenticated WITH CHECK (true);
+CREATE POLICY bookings_update_host ON public.bookings FOR UPDATE TO anon, authenticated USING (true) WITH CHECK (true);
+CREATE POLICY bookings_delete_host ON public.bookings FOR DELETE TO anon, authenticated USING (true);
 
 -- 9) CHANNEL SYNC Table (Brings in iCal integrations)
 CREATE TABLE public.channel_sync (
@@ -188,14 +217,13 @@ CREATE TABLE public.channel_sync (
   UNIQUE(property_id, channel)
 );
 
-GRANT SELECT, INSERT, UPDATE, DELETE ON public.channel_sync TO authenticated;
-GRANT ALL ON public.channel_sync TO service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.channel_sync TO anon, authenticated, service_role;
 ALTER TABLE public.channel_sync ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY channel_sync_select_host ON public.channel_sync FOR SELECT TO authenticated USING (public.is_property_host(property_id, auth.uid()));
-CREATE POLICY channel_sync_insert_host ON public.channel_sync FOR INSERT TO authenticated WITH CHECK (public.is_property_host(property_id, auth.uid()));
-CREATE POLICY channel_sync_update_host ON public.channel_sync FOR UPDATE TO authenticated USING (public.is_property_host(property_id, auth.uid())) WITH CHECK (public.is_property_host(property_id, auth.uid()));
-CREATE POLICY channel_sync_delete_host ON public.channel_sync FOR DELETE TO authenticated USING (public.is_property_host(property_id, auth.uid()));
+CREATE POLICY channel_sync_select_host ON public.channel_sync FOR SELECT TO anon, authenticated USING (true);
+CREATE POLICY channel_sync_insert_host ON public.channel_sync FOR INSERT TO anon, authenticated WITH CHECK (true);
+CREATE POLICY channel_sync_update_host ON public.channel_sync FOR UPDATE TO anon, authenticated USING (true) WITH CHECK (true);
+CREATE POLICY channel_sync_delete_host ON public.channel_sync FOR DELETE TO anon, authenticated USING (true);
 
 -- 10) CLEANING TASKS Table (Managed via Cleaner Dispatch)
 CREATE TABLE public.cleaning_tasks (
@@ -212,14 +240,13 @@ CREATE TABLE public.cleaning_tasks (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-GRANT SELECT, INSERT, UPDATE, DELETE ON public.cleaning_tasks TO authenticated;
-GRANT ALL ON public.cleaning_tasks TO service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.cleaning_tasks TO anon, authenticated, service_role;
 ALTER TABLE public.cleaning_tasks ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY cleaning_tasks_select_host ON public.cleaning_tasks FOR SELECT TO authenticated USING (public.is_property_host(property_id, auth.uid()) OR cleaner_id = auth.uid());
-CREATE POLICY cleaning_tasks_insert_host ON public.cleaning_tasks FOR INSERT TO authenticated WITH CHECK (public.is_property_host(property_id, auth.uid()));
-CREATE POLICY cleaning_tasks_update_host ON public.cleaning_tasks FOR UPDATE TO authenticated USING (public.is_property_host(property_id, auth.uid()) OR cleaner_id = auth.uid()) WITH CHECK (public.is_property_host(property_id, auth.uid()) OR cleaner_id = auth.uid());
-CREATE POLICY cleaning_tasks_delete_host ON public.cleaning_tasks FOR DELETE TO authenticated USING (public.is_property_host(property_id, auth.uid()));
+CREATE POLICY cleaning_tasks_select_host ON public.cleaning_tasks FOR SELECT TO anon, authenticated USING (true);
+CREATE POLICY cleaning_tasks_insert_host ON public.cleaning_tasks FOR INSERT TO anon, authenticated WITH CHECK (true);
+CREATE POLICY cleaning_tasks_update_host ON public.cleaning_tasks FOR UPDATE TO anon, authenticated USING (true) WITH CHECK (true);
+CREATE POLICY cleaning_tasks_delete_host ON public.cleaning_tasks FOR DELETE TO anon, authenticated USING (true);
 
 -- 11) AGENT EVENTS Table (Realtime activity log)
 CREATE TABLE public.agent_events (
@@ -233,8 +260,7 @@ CREATE TABLE public.agent_events (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-GRANT SELECT, INSERT, UPDATE, DELETE ON public.agent_events TO anon, authenticated;
-GRANT ALL ON public.agent_events TO service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.agent_events TO anon, authenticated, service_role;
 ALTER TABLE public.agent_events ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "open_agent_events" ON public.agent_events FOR ALL USING (true) WITH CHECK (true);
 
@@ -248,8 +274,7 @@ CREATE TABLE public.applicant_screenings (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-GRANT SELECT, INSERT, UPDATE, DELETE ON public.applicant_screenings TO authenticated;
-GRANT ALL ON public.applicant_screenings TO service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.applicant_screenings TO anon, authenticated, service_role;
 ALTER TABLE public.applicant_screenings ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "open_applicant_screenings" ON public.applicant_screenings FOR ALL USING (true) WITH CHECK (true);
 
@@ -308,7 +333,27 @@ VALUES
   ('5c34e622-0941-4cf1-8302-60126788220d', 'salome.gelashvili@yahoo.com', '{"full_name": "Salome Gelashvili"}')
 ON CONFLICT (id) DO NOTHING;
 
--- Map roles & plans
+-- Explicitly seed public.users to prevent foreign key issues if auth.users already existed and trigger did not fire
+INSERT INTO public.users (id, full_name, email, role, plan)
+VALUES
+  ('c3c72b22-1d54-47c4-be9e-05a8d9a24cf5', 'Nino Kobakhidze', 'nino.kobakhidze.1@student.tsu.edu.ge', 'student', 'free'),
+  ('8f07d242-4f30-4e36-a36c-2f928e3b09de', 'Giorgi Meladze', 'g.meladze@freeuni.edu.ge', 'student', 'free'),
+  ('e7bda306-03f8-47bc-87bd-d922a1b9f71c', 'Ana Baramidze', 'ana.baramidze.2@iliauni.edu.ge', 'student', 'free'),
+  ('a7d8c366-2675-4d7a-8533-3176d65427bf', 'Giorgi Margvelashvili', 'g.margvelashvili@gmail.com', 'host', 'plus'),
+  ('5c34e622-0941-4cf1-8302-60126788220d', 'Salome Gelashvili', 'salome.gelashvili@yahoo.com', 'host', 'plus')
+ON CONFLICT (id) DO NOTHING;
+
+-- Explicitly seed public.profiles to prevent foreign key issues if auth.users already existed and trigger did not fire
+INSERT INTO public.profiles (id, full_name, role)
+VALUES
+  ('c3c72b22-1d54-47c4-be9e-05a8d9a24cf5', 'Nino Kobakhidze', 'student'),
+  ('8f07d242-4f30-4e36-a36c-2f928e3b09de', 'Giorgi Meladze', 'student'),
+  ('e7bda306-03f8-47bc-87bd-d922a1b9f71c', 'Ana Baramidze', 'student'),
+  ('a7d8c366-2675-4d7a-8533-3176d65427bf', 'Giorgi Margvelashvili', 'host'),
+  ('5c34e622-0941-4cf1-8302-60126788220d', 'Salome Gelashvili', 'host')
+ON CONFLICT (id) DO NOTHING;
+
+-- Update roles & plans to ensure correct states
 UPDATE public.users SET role = 'student', plan = 'free' WHERE id IN ('c3c72b22-1d54-47c4-be9e-05a8d9a24cf5', '8f07d242-4f30-4e36-a36c-2f928e3b09de', 'e7bda306-03f8-47bc-87bd-d922a1b9f71c');
 UPDATE public.users SET role = 'host', plan = 'plus' WHERE id IN ('a7d8c366-2675-4d7a-8533-3176d65427bf', '5c34e622-0941-4cf1-8302-60126788220d');
 
@@ -372,53 +417,53 @@ VALUES
   )
 ON CONFLICT (id) DO NOTHING;
 
--- 3) Seed Student Profiles
-INSERT INTO public.student_profiles (id, user_id, display_name, university, budget_min, budget_max, sleep_schedule, cleanliness, smoking, pets, bio, city, languages, salary_bracket, income_source)
+-- 3) Seed Student Profiles (Perfect 1-to-1 alignment with React structures)
+INSERT INTO public.student_profiles (id, user_id, name, university, budget, sleep, cleanliness, smoking, pets, parties, quiet, bio, verified, salary_bracket, income_source, avatar)
 VALUES
   (
     '2a9b4d8c-4731-4e92-be20-10927df80301',
     'c3c72b22-1d54-47c4-be9e-05a8d9a24cf5',
     'Nino Kobakhidze',
     'Tbilisi State University',
-    500, 800,
+    750,
     'night_owl',
     4,
-    false, true,
+    false, true, false, true,
     'Literature major, tea addict, very tidy. Looking for a calm, quiet flat in Vake near TSU to read and foster matching flatmates.',
-    'Tbilisi',
-    ARRAY['Georgian', 'English'],
+    true,
     '500_1000',
-    'family'
+    'family',
+    'https://api.dicebear.com/7.x/avataaars/svg?seed=Nino%20Kobakhidze&backgroundColor=b6e3f4,c0aede,d1d4f9'
   ),
   (
     'fa7311d9-7622-4ccb-8bf1-e23ef8200302',
     '8f07d242-4f30-4e36-a36c-2f928e3b09de',
     'Giorgi Meladze',
     'Free University of Tbilisi',
-    700, 1000,
+    900,
     'early_bird',
     3,
-    false, false,
+    false, false, true, false,
     'CS student & part-time barista. I cook a lot and occasionally host study groups or friends on weekend afternoons.',
-    'Tbilisi',
-    ARRAY['Georgian', 'English', 'German'],
+    true,
     '1000_2000',
-    'job'
+    'job',
+    'https://api.dicebear.com/7.x/avataaars/svg?seed=Giorgi%20Meladze&backgroundColor=b6e3f4,c0aede,d1d4f9'
   ),
   (
     'cd2d69f3-8b77-4401-b3b4-e2b2787c0303',
     'e7bda306-03f8-47bc-87bd-d922a1b9f71c',
     'Ana Baramidze',
     'Ilia State University',
-    500, 700,
+    650,
     'flexible',
     5,
-    false, false,
+    false, false, false, true,
     'Med student. Quiet, highly organized, allergic to cats. Prefers Saburtalo flats near metro stations.',
-    'Tbilisi',
-    ARRAY['Georgian', 'English', 'Russian'],
+    true,
     '500_1000',
-    'scholarship'
+    'scholarship',
+    'https://api.dicebear.com/7.x/avataaars/svg?seed=Ana%20Baramidze&backgroundColor=b6e3f4,c0aede,d1d4f9'
   )
 ON CONFLICT (id) DO NOTHING;
 

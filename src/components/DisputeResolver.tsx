@@ -3,6 +3,7 @@ import { Gavel, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { AgentThinking } from "@/components/agent/AgentThinking";
+import { useProfile } from "@/lib/student-store";
 import {
   Dialog,
   DialogContent,
@@ -32,6 +33,7 @@ export function DisputeResolver() {
   const [issue, setIssue] = useState("");
   const [verdict, setVerdict] = useState<string | null>(null);
   const [thinking, setThinking] = useState(false);
+  const { profile } = useProfile();
 
   const resolve = async () => {
     if (!issue.trim()) return;
@@ -46,7 +48,28 @@ export function DisputeResolver() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ issue }),
+          body: JSON.stringify({
+            issue,
+            conflictDescription: issue, // 100% compatibility with n8n prompt variables!
+            user1: {
+              name: profile?.name || "Nino Kobakhidze",
+              sleep: profile?.sleep || "night_owl",
+              cleanliness: profile?.cleanliness || 4,
+              smoking: profile?.smoking || false,
+              pets: profile?.pets || false,
+              parties: profile?.parties || false,
+              quiet: profile?.quiet || true,
+            },
+            user2: {
+              name: "Giorgi Meladze",
+              sleep: "early_bird",
+              cleanliness: 3,
+              smoking: false,
+              pets: false,
+              parties: true,
+              quiet: false,
+            }
+          }),
         });
         if (res.ok) {
           const data = await res.json();

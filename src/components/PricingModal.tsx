@@ -1,6 +1,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Check, Crown, Sparkles, Zap } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
 import { PLAN_DETAILS, useSubscription, type Plan } from "@/lib/subscription";
 import { useI18n } from "@/lib/i18n";
 import { toast } from "sonner";
@@ -44,18 +45,20 @@ const ICONS: Record<Plan, typeof Sparkles> = {
 
 export function PricingModal({ open, onOpenChange, reason = "manual" }: Props) {
   const { plan, setPlan } = useSubscription();
-  const { t, locale } = useI18n();
+  const { t } = useI18n();
+  const navigate = useNavigate();
 
   const pick = (p: Plan) => {
-    setPlan(p);
     if (p === "free") {
+      // Downgrade is immediate — no checkout needed.
+      setPlan(p);
       toast(t("pricing.toast.free"));
-    } else {
-      toast.success(
-        `${locale === "ka" ? PLAN_DETAILS[p].nameKa : PLAN_DETAILS[p].name} ${t("pricing.toast.activated")}`,
-      );
+      onOpenChange(false);
+      return;
     }
+    // Paid plans go through the checkout page.
     onOpenChange(false);
+    navigate({ to: "/checkout", search: { plan: p } });
   };
 
   const headline =

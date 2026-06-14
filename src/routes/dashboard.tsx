@@ -82,21 +82,21 @@ function DashboardPage() {
         if (profilesData && !profilesErr) {
           const mappedFlatmates = profilesData.map((sp: any) => ({
             id: sp.id,
-            name: sp.display_name || "Student",
+            name: sp.name || "Student",
             age: 20,
             university: sp.university || "Tbilisi State University",
-            budget: sp.budget_max || 700,
-            sleep: sp.sleep_schedule || "flexible",
+            budget: sp.budget || 700,
+            sleep: sp.sleep || "flexible",
             cleanliness: sp.cleanliness || 3,
             smoking: sp.smoking || false,
             pets: sp.pets || false,
-            parties: false,
-            quiet: true,
+            parties: sp.parties || false,
+            quiet: sp.quiet ?? true,
             bio: sp.bio || "",
-            avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(sp.display_name || "student")}&backgroundColor=b6e3f4,c0aede,d1d4f9`,
+            avatar: sp.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(sp.name || "student")}&backgroundColor=b6e3f4,c0aede,d1d4f9`,
             salaryBracket: sp.salary_bracket || "under_500",
             incomeSource: sp.income_source || "job",
-            verified: true,
+            verified: sp.verified ?? true,
           }));
           setDbFlatmates(mappedFlatmates);
         }
@@ -698,9 +698,9 @@ function UtilitySplitter({
         </div>
       </div>
 
-      <div className="grid items-start gap-6 lg:grid-cols-[1fr_340px]">
+      <div className="grid items-start gap-6 lg:grid-cols-2">
         {/* Bills */}
-        <div className="card-elevated h-auto self-start p-5 pb-4">
+        <div className="card-elevated p-5">
           <h3 className="font-display text-base font-semibold">{t("util.bills")}</h3>
           <div className="mt-4 grid gap-2 sm:grid-cols-2">
             {bills.map((b) => {
@@ -769,31 +769,11 @@ function UtilitySplitter({
           </div>
         </div>
 
-        {/* Roommates & splits */}
-        <div className="card-elevated h-fit p-5">
-          <div className="flex items-center justify-between border-b border-border pb-3">
-            <h3 className="font-display text-base font-semibold">{t("util.flatmates")}</h3>
+        {/* Flatmates */}
+        <div className="card-elevated p-5">
+          <h3 className="font-display text-base font-semibold">{t("util.flatmates")}</h3>
 
-            {/* Prominent equal split toggle right inside card */}
-            <div className="inline-flex rounded-lg border border-border bg-secondary p-1 text-[11px]">
-              <button
-                type="button"
-                onClick={() => setMode("movein")}
-                className={`rounded px-2.5 py-1 font-semibold transition-colors ${mode === "movein" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"}`}
-              >
-                {t("util.mode.movein")}
-              </button>
-              <button
-                type="button"
-                onClick={() => setMode("equal")}
-                className={`rounded px-2.5 py-1 font-semibold transition-colors ${mode === "equal" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"}`}
-              >
-                {t("util.mode.equal")}
-              </button>
-            </div>
-          </div>
-
-          <div className="mt-3 space-y-2">
+          <div className="mt-4 space-y-2">
             {roommates.map((r, i) => (
               <div key={r.id} className="flex items-center gap-2 rounded-md border border-border bg-card p-2">
                 <Input
@@ -850,60 +830,63 @@ function UtilitySplitter({
             <Plus className="mr-1 h-4 w-4" /> {t("util.addFlatmate")}
           </Button>
 
-          <div className="mt-5 rounded-xl bg-gradient-to-br from-primary/90 to-primary p-4 text-primary-foreground">
-            <div className="text-xs opacity-70">{t("util.total")}</div>
-            <div className="font-display text-2xl font-bold">₾ {total.toFixed(2)}</div>
-            <div className="mt-1 text-[11px] opacity-70">
-              {mode === "movein" ? t("util.split.movein") : t("util.split.equal")}
-            </div>
-          </div>
+        </div>
+      </div>
 
-          {/* Localized payment */}
-          <div className="mt-4 rounded-xl border border-border bg-card p-4">
-            <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              {t("util.pay")}
-            </div>
-            {payStatus === "paid" ? (
-              <div className="mt-3 flex items-center gap-2 rounded-lg border border-emerald-500/60 bg-emerald-500/10 px-3 py-3 text-sm font-semibold text-emerald-600 shadow-[0_0_24px_rgba(16,185,129,0.45)] dark:text-emerald-400">
-                <CheckCircle2 className="h-5 w-5" />
-                <div className="flex-1">
-                  {t("util.paid")}
-                  <div className="text-[11px] font-normal opacity-80">
-                    {t("util.via")} {payBank === "TBC" ? t("util.pay.tbc") : t("util.pay.bog")} · ₾{total.toFixed(2)}
-                  </div>
+      {/* Summary + payment (full width) */}
+      <div className="card-elevated grid items-center gap-5 p-5 md:grid-cols-[minmax(0,16rem)_1fr]">
+        <div className="rounded-xl bg-gradient-to-br from-primary/90 to-primary p-5 text-primary-foreground">
+          <div className="text-xs opacity-70">{t("util.total")}</div>
+          <div className="font-display text-3xl font-bold">₾ {total.toFixed(2)}</div>
+          <div className="mt-1 text-[11px] opacity-70">
+            {mode === "movein" ? t("util.split.movein") : t("util.split.equal")}
+          </div>
+        </div>
+
+        <div>
+          <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            {t("util.pay")}
+          </div>
+          {payStatus === "paid" ? (
+            <div className="mt-3 flex items-center gap-2 rounded-lg border border-emerald-500/60 bg-emerald-500/10 px-3 py-3 text-sm font-semibold text-emerald-600 shadow-[0_0_24px_rgba(16,185,129,0.45)] dark:text-emerald-400">
+              <CheckCircle2 className="h-5 w-5" />
+              <div className="flex-1">
+                {t("util.paid")}
+                <div className="text-[11px] font-normal opacity-80">
+                  {t("util.via")} {payBank === "TBC" ? t("util.pay.tbc") : t("util.pay.bog")} · ₾{total.toFixed(2)}
                 </div>
               </div>
-            ) : (
-              <div className="mt-3 grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => pay("TBC")}
-                  disabled={payStatus === "processing"}
-                  className="group relative flex flex-col items-center justify-center gap-1 rounded-lg border border-[#00669b]/40 bg-gradient-to-br from-[#00669b] to-[#004e7c] px-3 py-3 text-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg disabled:cursor-wait disabled:opacity-70"
-                >
-                  {payStatus === "processing" && payBank === "TBC" ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <span className="font-display text-base font-extrabold tracking-tight">TBC</span>
-                  )}
-                  <span className="text-[10px] uppercase opacity-90">{t("util.pay.tbc")}</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => pay("BOG")}
-                  disabled={payStatus === "processing"}
-                  className="group relative flex flex-col items-center justify-center gap-1 rounded-lg border border-[#ff6f00]/40 bg-gradient-to-br from-[#ff6f00] to-[#cc4f00] px-3 py-3 text-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg disabled:cursor-wait disabled:opacity-70"
-                >
-                  {payStatus === "processing" && payBank === "BOG" ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <span className="font-display text-base font-extrabold tracking-tight">BOG</span>
-                  )}
-                  <span className="text-[10px] uppercase opacity-90">{t("util.pay.bog")}</span>
-                </button>
-              </div>
-            )}
-          </div>
+            </div>
+          ) : (
+            <div className="mt-3 grid max-w-md grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => pay("TBC")}
+                disabled={payStatus === "processing"}
+                className="group relative flex flex-col items-center justify-center gap-1 rounded-lg border border-[#00669b]/40 bg-gradient-to-br from-[#00669b] to-[#004e7c] px-3 py-3 text-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg disabled:cursor-wait disabled:opacity-70"
+              >
+                {payStatus === "processing" && payBank === "TBC" ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <span className="font-display text-base font-extrabold tracking-tight">TBC</span>
+                )}
+                <span className="text-[10px] uppercase opacity-90">{t("util.pay.tbc")}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => pay("BOG")}
+                disabled={payStatus === "processing"}
+                className="group relative flex flex-col items-center justify-center gap-1 rounded-lg border border-[#ff6f00]/40 bg-gradient-to-br from-[#ff6f00] to-[#cc4f00] px-3 py-3 text-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg disabled:cursor-wait disabled:opacity-70"
+              >
+                {payStatus === "processing" && payBank === "BOG" ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <span className="font-display text-base font-extrabold tracking-tight">BOG</span>
+                )}
+                <span className="text-[10px] uppercase opacity-90">{t("util.pay.bog")}</span>
+              </button>
+            </div>
+          )}
         </div>
       </div>
 

@@ -1280,16 +1280,17 @@ function SmartRentPredictor() {
 // -------------------- TENANT SCREENING --------------------
 type Applicant = {
   id: string;
-  display_name: string | null;
+  name: string | null;
   university: string | null;
   salary_bracket: string | null;
   income_source: string | null;
-  sleep_schedule: string | null;
+  sleep: string | null;
   smoking: boolean | null;
   pets: boolean | null;
+  parties: boolean | null;
+  quiet: boolean | null;
   cleanliness: number | null;
-  budget_min: number | null;
-  budget_max: number | null;
+  budget: number | null;
   bio: string | null;
   city: string | null;
   created_at: string;
@@ -1304,7 +1305,7 @@ function TenantScreeningView({ properties }: { properties: Property[] }) {
       const { data, error } = await supabase
         .from("student_profiles")
         .select(
-          "id, display_name, university, salary_bracket, income_source, sleep_schedule, smoking, pets, cleanliness, budget_min, budget_max, bio, city, created_at",
+          "id, name, university, salary_bracket, income_source, sleep, smoking, pets, parties, quiet, cleanliness, budget, bio, city, created_at",
         )
         .order("created_at", { ascending: false });
       if (error) console.error("[TenantScreening] fetch error:", error.message);
@@ -1370,7 +1371,7 @@ function ApplicantRow({ a, refPrice }: { a: Applicant; refPrice: number }) {
     <div className={`grid gap-3 rounded-xl border p-4 sm:grid-cols-[1fr_1.4fr] ${verdictClasses}`}>
       <div className="space-y-1.5">
         <div className="flex items-center gap-2">
-          <div className="font-display text-lg font-bold">{a.display_name ?? "Anonymous"}</div>
+          <div className="font-display text-lg font-bold">{a.name ?? "Anonymous"}</div>
           <Badge variant="secondary" className="text-[10px] uppercase">
             {screening.verdict === "ideal" ? "Ideal" : screening.verdict === "good" ? "Good" : "Review"}
           </Badge>
@@ -1380,7 +1381,7 @@ function ApplicantRow({ a, refPrice }: { a: Applicant; refPrice: number }) {
         </div>
         <div className="flex flex-wrap gap-1 text-[11px]">
           <span className="rounded-full bg-card px-2 py-0.5">
-            ₾{a.budget_min ?? 0}–{a.budget_max ?? 0}
+            ₾{a.budget ?? 0}
           </span>
           <span className="rounded-full bg-card px-2 py-0.5">{a.income_source ?? "—"}</span>
           <span className="rounded-full bg-card px-2 py-0.5">

@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { signUpConfirmed } from "@/lib/api/auth.functions";
 
 export type AppRole = "student" | "host";
 
@@ -16,7 +17,11 @@ type AuthState = {
   session: Session | null;
   profile: Profile | null;
   signIn: (email: string, password: string) => Promise<{ error?: string }>;
-  signUp: (email: string, password: string, fullName?: string) => Promise<{ error?: string }>;
+  signUp: (
+    email: string,
+    password: string,
+    fullName?: string,
+  ) => Promise<{ error?: string; needsConfirmation?: boolean }>;
   signOut: () => Promise<void>;
   setRole: (role: AppRole) => Promise<{ error?: string }>;
   refreshProfile: () => Promise<void>;
@@ -39,14 +44,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setProfile((data as Profile | null) ?? { id: uid, full_name: null, role: null });
   };
 
+  // The handle_new_user trigger normally creates a public.users row on sign-up,
+  // but accounts created before that trigger existed won't have one. Several
+  // tables (e.g. student_profiles.user_id) FK to public.users(id), so guarantee
+  // the row exists once we have a session. RLS allows id = auth.uid().
+  const ensureUserRow = async (u: User) => {
+    const row: { id: string; email: string | null; full_name?: string } = {
+      id: u.id,
+      email: u.email ?? null,
+    };
+    const fullName = u.user_metadata?.full_name as string | undefined;
+    if (fullName) row.full_name = fullName;
+    await supabase.from("users").upsert(row, { onConflict: "id" });
+  };
+
   useEffect(() => {
     // Listener FIRST (synchronous setState only)
     const { data: sub } = supabase.auth.onAuthStateChange((_event, sess) => {
       setSession(sess);
       setUser(sess?.user ?? null);
       if (sess?.user) {
-        // Defer DB call to avoid deadlock inside the listener
-        setTimeout(() => loadProfile(sess.user.id), 0);
+        // Defer DB calls to avoid deadlock inside the listener
+        setTimeout(() => {
+          void ensureUserRow(sess.user);
+          loadProfile(sess.user.id);
+        }, 0);
       } else {
         setProfile(null);
       }
@@ -56,7 +78,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
       setUser(data.session?.user ?? null);
-      if (data.session?.user) loadProfile(data.session.user.id);
+      if (data.session?.user) {
+        void ensureUserRow(data.session.user);
+        loadProfile(data.session.user.id);
+      }
       setLoading(false);
     });
 
@@ -69,14 +94,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signUp = async (email: string, password: string, fullName?: string) => {
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: typeof window !== "undefined" ? window.location.origin : undefined,
-        data: { full_name: fullName ?? null },
-      },
-    });
+    // Create the account server-side, already email-confirmed (no confirmation
+    // email is ever sent), then establish a session immediately.
+    const res = await signUpConfirmed({ data: { email, password, fullName } });
+    if ("error" in res && res.error) {
+      // If the email already exists, fall through to a normal sign-in.
+      if (res.alreadyExists) {
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        return error
+          ? { error: "An account with this email already exists — wrong password?" }
+          : {};
+      }
+      return { error: res.error };
+    }
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
     return error ? { error: error.message } : {};
   };
 
