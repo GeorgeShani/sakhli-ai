@@ -6,7 +6,7 @@ import { AgentActivityFeed } from "@/components/agent/AgentActivityFeed";
 
 export function AutomationStory() {
   const { t, locale } = useI18n();
-  const { events } = useAgentFeed(locale, { persona: "marketing", intervalMs: 3200, max: 5, seed: 4 });
+  const { events } = useAgentFeed(locale, { persona: "marketing", intervalMs: 3200, max: 4, seed: 4 });
 
   return (
     <section id="automation" className="relative overflow-hidden bg-primary text-primary-foreground">
@@ -33,7 +33,9 @@ export function AutomationStory() {
                 <Zap className="h-3 w-3 text-accent" /> n8n
               </span>
             </div>
-            <AgentActivityFeed events={events} />
+            <div className="h-[330px] overflow-hidden pr-1">
+              <AgentActivityFeed events={events} />
+            </div>
           </div>
         </Reveal>
       </div>

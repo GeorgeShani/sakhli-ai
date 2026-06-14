@@ -33,10 +33,34 @@ export function DisputeResolver() {
   const [verdict, setVerdict] = useState<string | null>(null);
   const [thinking, setThinking] = useState(false);
 
-  const resolve = () => {
+  const resolve = async () => {
     if (!issue.trim()) return;
     setThinking(true);
     setVerdict(null);
+
+    const webhookUrl = import.meta.env.VITE_N8N_MEDIATE_URL;
+    if (webhookUrl) {
+      try {
+        const res = await fetch(webhookUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ issue }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const verdictText = data.verdict || data.text || data.output || (typeof data === "string" ? data : JSON.stringify(data));
+          setVerdict(verdictText);
+          setThinking(false);
+          return;
+        }
+      } catch (err) {
+        console.warn("Error calling n8n mediator, falling back to local simulation", err);
+      }
+    }
+
+    // Local fallback
     setTimeout(() => {
       setVerdict(generateVerdict(issue));
       setThinking(false);

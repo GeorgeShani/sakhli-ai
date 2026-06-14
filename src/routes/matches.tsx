@@ -3,7 +3,6 @@ import { useEffect, useMemo, useState } from "react";
 import { StudentShell } from "@/components/shells/StudentShell";
 import { AuthGate } from "@/components/AuthGate";
 import { SwipeCard } from "@/components/SwipeCard";
-import { MatchCelebration, type CelebrationTarget } from "@/components/MatchCelebration";
 import { Undo2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -67,7 +66,6 @@ function MatchesPage() {
   const [aiBestFit, setAiBestFit] = useState(false);
   const [pricingOpen, setPricingOpen] = useState(false);
   const [pricingReason, setPricingReason] = useState<"swipe_limit" | "ai_best_fit" | "manual">("manual");
-  const [celebration, setCelebration] = useState<CelebrationTarget>(null);
   const [lastAction, setLastAction] = useState<{ tab: Tab; kind: "person" | "place"; id: string } | null>(null);
 
   const effectiveProfile: StudentProfile = profile ?? defaultProfile;
@@ -89,20 +87,11 @@ function MatchesPage() {
   if (!loaded) return null;
 
   const handleSwipe = (liked: boolean) => {
-    if (swipeBlocked) {
-      setPricingReason("swipe_limit");
-      setPricingOpen(true);
-      return;
-    }
     if (tab === "people") {
       const current = peopleStack[index.people];
       if (current) {
         record("person", current.f.id, liked);
         setLastAction({ tab: "people", kind: "person", id: current.f.id });
-        // A like on a strong fit reads as mutual → celebrate.
-        if (liked && current.fit.score >= 80) {
-          setCelebration({ name: current.f.name, avatar: current.f.avatar, score: current.fit.score });
-        }
       }
       setIndex((i) => ({ ...i, people: i.people + 1 }));
     } else {
@@ -190,7 +179,7 @@ function MatchesPage() {
                 )}
               </div>
               <div className="text-[11px] text-muted-foreground">
-                Show only matches ≥ 85% · მხოლოდ ≥85%-ის ჩვენება
+                {t("matches.aiBestFitDesc")}
               </div>
             </div>
           </div>
@@ -210,7 +199,7 @@ function MatchesPage() {
               }}
               className="inline-flex items-center gap-1 font-semibold text-primary hover:underline"
             >
-              <Crown className="h-3 w-3" /> განაახლეთ ტარიფი / Upgrade
+              <Crown className="h-3 w-3" /> {t("matches.upgrade")}
             </button>
           </div>
         )}
@@ -220,10 +209,10 @@ function MatchesPage() {
             <div className="card-elevated p-10 text-center">
               <Lock className="mx-auto h-8 w-8 text-primary" />
               <h3 className="mt-3 font-display text-xl font-semibold">
-                მიაღწიე უფასო ლიმიტს · Free swipe limit reached
+                {t("matches.freeLimit")}
               </h3>
               <p className="mt-2 text-sm text-muted-foreground">
-                განაახლეთ ტარიფი შეუზღუდავი მატჩებისთვის. · Upgrade to keep swiping unlimited matches.
+                {t("matches.upgradeUnlimited")}
               </p>
               <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
                 <Button
@@ -232,7 +221,7 @@ function MatchesPage() {
                     setPricingOpen(true);
                   }}
                 >
-                  <Crown className="mr-1.5 h-4 w-4" /> განაახლეთ ტარიფი / Switch Plans
+                  <Crown className="mr-1.5 h-4 w-4" /> {t("matches.switchPlans")}
                 </Button>
                 <FreeSwipeCountdown />
                 <Button asChild variant="outline">
@@ -272,7 +261,7 @@ function MatchesPage() {
         </div>
 
         <div className="mt-6 flex items-center justify-center gap-3 text-xs text-muted-foreground">
-          <span>{matches.filter((m) => m.liked).length} connections so far</span>
+          <span>{matches.filter((m) => m.liked).length} {t("matches.connections")}</span>
           {lastAction && !stackDone && !swipeBlocked && (
             <Button size="sm" variant="ghost" onClick={undo} className="h-7">
               <Undo2 className="mr-1 h-3.5 w-3.5" /> {t("matches.undo")}
@@ -282,7 +271,6 @@ function MatchesPage() {
       </div>
 
       <PricingModal open={pricingOpen} onOpenChange={setPricingOpen} reason={pricingReason} />
-      <MatchCelebration target={celebration} onClose={() => setCelebration(null)} />
     </StudentShell>
   );
 }
@@ -395,6 +383,7 @@ function bulletIcon(kind: AssistantBullet["icon"]) {
 
 function AssistantBubble({ bullets }: { bullets: AssistantBullet[] }) {
   const [open, setOpen] = useState(false);
+  const { t } = useI18n();
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
       <CollapsibleTrigger
@@ -406,10 +395,10 @@ function AssistantBubble({ bullets }: { bullets: AssistantBullet[] }) {
             <Wand2 className="h-3.5 w-3.5" />
           </span>
           <span className="text-xs font-semibold uppercase tracking-wide text-foreground">
-            SakhliAI ასისტენტი
+            {t("assistant.name")}
           </span>
           <span className="hidden text-[11px] text-muted-foreground sm:inline">
-            · რატომ გერჩევთ
+            {t("assistant.why")}
           </span>
         </span>
         <ChevronDown
@@ -479,6 +468,7 @@ function Pill({ children }: { children: React.ReactNode }) {
 
 function FreeSwipeCountdown() {
   const [now, setNow] = useState(() => Date.now());
+  const { t } = useI18n();
   useEffect(() => {
     const id = window.setInterval(() => setNow(Date.now()), 60_000);
     return () => window.clearInterval(id);
@@ -495,7 +485,7 @@ function FreeSwipeCountdown() {
         <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75" />
         <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-500" />
       </span>
-      <span className="text-muted-foreground">შემდეგი უფასო სვაიპი · Next free swipe in:</span>
+      <span className="text-muted-foreground">{t("matches.nextFreeSwipe")}</span>
       <span className="font-semibold text-foreground">{fmt}</span>
     </div>
   );

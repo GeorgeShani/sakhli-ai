@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight, Building2, GraduationCap, Sparkles, BadgeCheck, Heart } from "lucide-react";
@@ -6,7 +6,14 @@ import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n";
 import { flatmates } from "@/lib/mock-data";
 
-const UNIVERSITIES = ["TSU", "GTU", "Iliauni", "Free University", "BTU", "Caucasus University"];
+const UNIVERSITIES = [
+  { name: "TSU", logo: "/tsu.png" },
+  { name: "GTU", logo: "/gtu.svg" },
+  { name: "Iliauni", logo: "/Iliaunil.png" },
+  { name: "Free University", logo: "/Free_GEO.png" },
+  { name: "BTU", logo: "/BTU_LOGO.png" },
+  { name: "Caucasus University", logo: "/cu.png" },
+];
 
 /** A looping, self-swiping demo deck that shows the product in ~3 seconds. */
 function HeroDemo() {
@@ -15,6 +22,14 @@ function HeroDemo() {
   const deck = flatmates.filter((f) => f.verified).slice(0, 4);
   const [idx, setIdx] = useState(0);
   const [stamp, setStamp] = useState(false);
+
+  // Generate slightly varied scores for visual dynamism
+  const scores = useMemo(() => deck.map((f, i) => {
+    const base = f.aiPremiumScore ?? 88;
+    // Add small random variation (-3 to +3) but keep within bounds
+    const variation = ((i * 7 + 3) % 7) - 3;
+    return Math.max(80, Math.min(99, base + variation));
+  }), [deck]);
 
   useEffect(() => {
     const stampT = window.setTimeout(() => setStamp(true), 1600);
@@ -29,7 +44,7 @@ function HeroDemo() {
   }, [idx, deck.length]);
 
   const f = deck[idx];
-  const score = f.aiPremiumScore ?? 88 + (idx % 3) * 2;
+  const score = scores[idx];
 
   return (
     <div className="relative mx-auto h-[420px] w-[300px]">
@@ -55,7 +70,7 @@ function HeroDemo() {
                   animate={{ scale: 1, opacity: 1, rotate: -8 }}
                   className="absolute left-4 top-4 flex items-center gap-1.5 rounded-lg border-2 border-success bg-background/80 px-3 py-1 text-sm font-extrabold uppercase text-success backdrop-blur"
                 >
-                  <Heart className="h-4 w-4 fill-success" /> {t("land.hero.demo.match")}
+                  <Heart className="h-4 w-4 fill-success" /> {score}% {t("land.hero.demo.match")}
                 </motion.div>
               )}
             </AnimatePresence>
@@ -123,15 +138,23 @@ export function Hero() {
             </Button>
           </div>
 
-          <div className="mt-10">
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          <div className="mt-12">
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/80 mb-4">
               {t("land.hero.trust")}
             </p>
-            <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2">
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-4 md:gap-x-8">
               {UNIVERSITIES.map((u) => (
-                <span key={u} className="font-display text-sm font-semibold text-foreground/45">
-                  {u}
-                </span>
+                <div
+                  key={u.name}
+                  className="flex items-center justify-center opacity-80 transition-all duration-300 hover:grayscale-0 hover:opacity-100 dark:brightness-110"
+                  title={u.name}
+                >
+                  <img
+                    src={u.logo}
+                    alt={`${u.name} logo`}
+                    className="h-9 md:h-12 w-auto object-contain max-w-[130px]"
+                  />
+                </div>
               ))}
             </div>
           </div>

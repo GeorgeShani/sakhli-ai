@@ -15,7 +15,9 @@ import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as MatchesRouteImport } from './routes/matches'
 import { Route as HostRouteImport } from './routes/host'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiPublicPaymentRouteImport } from './routes/api/public/payment'
 import { Route as ApiPublicN8nCleaningRouteImport } from './routes/api/public/n8n/cleaning'
 import { Route as ApiPublicN8nBookingRouteImport } from './routes/api/public/n8n/booking'
 
@@ -49,9 +51,19 @@ const DashboardRoute = DashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CheckoutRoute = CheckoutRouteImport.update({
+  id: '/checkout',
+  path: '/checkout',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicPaymentRoute = ApiPublicPaymentRouteImport.update({
+  id: '/api/public/payment',
+  path: '/api/public/payment',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicN8nCleaningRoute = ApiPublicN8nCleaningRouteImport.update({
@@ -67,35 +79,41 @@ const ApiPublicN8nBookingRoute = ApiPublicN8nBookingRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/checkout': typeof CheckoutRoute
   '/dashboard': typeof DashboardRoute
   '/host': typeof HostRoute
   '/matches': typeof MatchesRoute
   '/onboarding': typeof OnboardingRoute
   '/role-select': typeof RoleSelectRoute
   '/settings': typeof SettingsRoute
+  '/api/public/payment': typeof ApiPublicPaymentRoute
   '/api/public/n8n/booking': typeof ApiPublicN8nBookingRoute
   '/api/public/n8n/cleaning': typeof ApiPublicN8nCleaningRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/checkout': typeof CheckoutRoute
   '/dashboard': typeof DashboardRoute
   '/host': typeof HostRoute
   '/matches': typeof MatchesRoute
   '/onboarding': typeof OnboardingRoute
   '/role-select': typeof RoleSelectRoute
   '/settings': typeof SettingsRoute
+  '/api/public/payment': typeof ApiPublicPaymentRoute
   '/api/public/n8n/booking': typeof ApiPublicN8nBookingRoute
   '/api/public/n8n/cleaning': typeof ApiPublicN8nCleaningRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/checkout': typeof CheckoutRoute
   '/dashboard': typeof DashboardRoute
   '/host': typeof HostRoute
   '/matches': typeof MatchesRoute
   '/onboarding': typeof OnboardingRoute
   '/role-select': typeof RoleSelectRoute
   '/settings': typeof SettingsRoute
+  '/api/public/payment': typeof ApiPublicPaymentRoute
   '/api/public/n8n/booking': typeof ApiPublicN8nBookingRoute
   '/api/public/n8n/cleaning': typeof ApiPublicN8nCleaningRoute
 }
@@ -103,46 +121,54 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/checkout'
     | '/dashboard'
     | '/host'
     | '/matches'
     | '/onboarding'
     | '/role-select'
     | '/settings'
+    | '/api/public/payment'
     | '/api/public/n8n/booking'
     | '/api/public/n8n/cleaning'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/checkout'
     | '/dashboard'
     | '/host'
     | '/matches'
     | '/onboarding'
     | '/role-select'
     | '/settings'
+    | '/api/public/payment'
     | '/api/public/n8n/booking'
     | '/api/public/n8n/cleaning'
   id:
     | '__root__'
     | '/'
+    | '/checkout'
     | '/dashboard'
     | '/host'
     | '/matches'
     | '/onboarding'
     | '/role-select'
     | '/settings'
+    | '/api/public/payment'
     | '/api/public/n8n/booking'
     | '/api/public/n8n/cleaning'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CheckoutRoute: typeof CheckoutRoute
   DashboardRoute: typeof DashboardRoute
   HostRoute: typeof HostRoute
   MatchesRoute: typeof MatchesRoute
   OnboardingRoute: typeof OnboardingRoute
   RoleSelectRoute: typeof RoleSelectRoute
   SettingsRoute: typeof SettingsRoute
+  ApiPublicPaymentRoute: typeof ApiPublicPaymentRoute
   ApiPublicN8nBookingRoute: typeof ApiPublicN8nBookingRoute
   ApiPublicN8nCleaningRoute: typeof ApiPublicN8nCleaningRoute
 }
@@ -191,11 +217,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/checkout': {
+      id: '/checkout'
+      path: '/checkout'
+      fullPath: '/checkout'
+      preLoaderRoute: typeof CheckoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/payment': {
+      id: '/api/public/payment'
+      path: '/api/public/payment'
+      fullPath: '/api/public/payment'
+      preLoaderRoute: typeof ApiPublicPaymentRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/n8n/cleaning': {
@@ -217,12 +257,14 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CheckoutRoute: CheckoutRoute,
   DashboardRoute: DashboardRoute,
   HostRoute: HostRoute,
   MatchesRoute: MatchesRoute,
   OnboardingRoute: OnboardingRoute,
   RoleSelectRoute: RoleSelectRoute,
   SettingsRoute: SettingsRoute,
+  ApiPublicPaymentRoute: ApiPublicPaymentRoute,
   ApiPublicN8nBookingRoute: ApiPublicN8nBookingRoute,
   ApiPublicN8nCleaningRoute: ApiPublicN8nCleaningRoute,
 }

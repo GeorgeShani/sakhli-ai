@@ -26,22 +26,54 @@ export function SmartContractCard({
 }: Props) {
   const [signed, setSigned] = useState(false);
   const [step, setStep] = useState(-1); // -1 idle, 0..2 ceremony steps
+  const [leaseText, setLeaseText] = useState<string | null>(null);
   const signing = step >= 0;
 
-  const handleSign = () => {
+  const handleSign = async () => {
     let i = 0;
     setStep(0);
+
+    const webhookUrl = import.meta.env.VITE_N8N_LEASE_URL;
+    let fetchedLease: string | null = null;
+
+    if (webhookUrl) {
+      try {
+        const res = await fetch(webhookUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            propertyTitle,
+            district,
+            monthlyRent,
+            tenantName,
+            hostName,
+          }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          fetchedLease = data.leaseText || data.text || data.output || (typeof data === "string" ? data : JSON.stringify(data));
+        }
+      } catch (err) {
+        console.warn("Failed to generate lease from n8n webhook, falling back", err);
+      }
+    }
+
     const tick = () => {
       i += 1;
       if (i < CEREMONY_STEPS.length) {
         setStep(i);
-        window.setTimeout(tick, 650);
+        window.setTimeout(tick, 750);
       } else {
         setStep(-1);
+        if (fetchedLease) {
+          setLeaseText(fetchedLease);
+        }
         setSigned(true);
       }
     };
-    window.setTimeout(tick, 650);
+    window.setTimeout(tick, 750);
   };
 
   return (
@@ -80,11 +112,17 @@ export function SmartContractCard({
         <Field label="ვადა / Term" value="12 თვე · 12 months" />
       </div>
 
-      <ol className="mt-4 space-y-1 text-xs text-muted-foreground">
-        <li>1. მდგმური იხდის თვის ქირას ყოველი თვის 1 რიცხვამდე / Tenant pays rent by the 1st of each month.</li>
-        <li>2. დეპოზიტი = 1 თვის ქირა, დაბრუნებადი / Deposit equals one month's rent, refundable.</li>
-        <li>3. დავის შემთხვევაში გამოიყენება SakhliAI AI მედიატორი / Disputes are mediated via SakhliAI AI.</li>
-      </ol>
+      {leaseText ? (
+        <div className="mt-4 max-h-48 overflow-y-auto rounded-lg border border-border bg-amber-50/5 dark:bg-amber-950/5 p-3 font-mono text-[11px] leading-relaxed whitespace-pre-wrap text-foreground">
+          {leaseText}
+        </div>
+      ) : (
+        <ol className="mt-4 space-y-1 text-xs text-muted-foreground">
+          <li>1. მდგმური იხდის თვის ქირას ყოველი თვის 1 რიცხვამდე / Tenant pays rent by the 1st of each month.</li>
+          <li>2. დეპოზიტი = 1 თვის ქირა, დაბრუნებადი / Deposit equals one month's rent, refundable.</li>
+          <li>3. დავის შემთხვევაში გამოიყენება SakhliAI AI მედიატორი / Disputes are mediated via SakhliAI AI.</li>
+        </ol>
+      )}
 
       {/* Ceremony progress */}
       <AnimatePresence>

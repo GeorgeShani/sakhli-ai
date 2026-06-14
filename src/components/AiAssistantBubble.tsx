@@ -66,67 +66,12 @@ function contextChips(path: string, locale: "en" | "ka"): string[] {
   return TEMPLATES[locale];
 }
 
-function autoReply(q: string, path: string, role: string | null | undefined, locale: "en" | "ka"): string {
-  const s = q.toLowerCase();
-  const ka = locale === "ka";
-  const pick = (en: string, k: string) => (ka ? k : en);
-
-  if (s.includes("winter gas") || s.includes("gas utility") || s.includes("გაზის გადასახ") || s.includes("ზამთრის გაზ"))
-    return pick(
-      "🔥 SakhliAI uses historical insulation data per building and smart n8n alert triggers to recommend lower thermostat schedules during off-peak hours. Flatmates typically save up to 25% on winter gas bills without losing comfort.",
-      "🔥 SakhliAI იყენებს ისტორიულ თბოიზოლაციის მონაცემებს და n8n-ის ჭკვიან გაფრთხილებებს ოპტიმალური თერმოსტატის გრაფიკისთვის — ეს ამცირებს ზამთრის გაზის გადასახადს 25%-მდე.",
-    );
-
-  if (s.includes("safest") || s.includes("safe student") || s.includes("neighborhood") || s.includes("უსაფრთხო") || s.includes("უბანი"))
-    return pick(
-      "🛡️ The safest student neighborhoods in Tbilisi are Saburtalo and Vake — high university density, active public transport, and street-lighting we monitor via the SakhliAI safety scorecard.",
-      "🛡️ ყველაზე უსაფრთხო სტუდენტური უბნებია საბურთალო და ვაკე — უნივერსიტეტების მაღალი კონცენტრაცია, აქტიური ტრანსპორტი და განათება, რომელსაც ვაკონტროლებთ SakhliAI Safety Scorecard-ით.",
-    );
-
-  if (s.includes("hybrid") || s.includes("ჰიბრიდულ"))
-    return pick(
-      "💸 SakhliAI's hybrid model shifts long-term student contracts into short-term Airbnb listings in summer. Hosts see ~2.5x yield uplift, while student rent stays fixed through the academic year.",
-      "💸 SakhliAI-ის ჰიბრიდული მოდელი: ზაფხულში გრძელვადიანი სტუდენტური კონტრაქტები გადადის მოკლევადიან Airbnb რეჟიმში — მასპინძლის შემოსავალი იზრდება 2.5x, სტუდენტის ქირა კი ფიქსირებულია.",
-    );
-
-  if (s.includes("price") || s.includes("rent") || s.includes("ფას"))
-    return path.startsWith("/host")
-      ? pick(
-          "Median rent for similar flats in Vake is ₾1,650. Recommendation: set ₾1,720 — demand is high.",
-          "ვაკეში მსგავსი ბინების მედიანა ₾1,650-ია. რეკომენდაცია: დააწესე ₾1,720 — მოთხოვნა მაღალია.",
-        )
-      : pick(
-          "For your budget (₾1,200–1,600) the best options are in Saburtalo. Try the AI Best Fit filter.",
-          "შენი ბიუჯეტისთვის (₾1,200–1,600) საუკეთესო ვარიანტებია საბურთალოზე. სცადე AI Best Fit ფილტრი.",
-        );
-  if (s.includes("budget") || s.includes("ბიუჯ"))
-    return pick(
-      "Median in Vake is ₾1,500/mo for students. Split across 2 flatmates → ₾750 each. 💡",
-      "სტუდენტებისთვის ვაკეს მედიანა ₾1,500/თვე. გავყოთ 2 თანამცხოვრებზე — გამოვა ₾750. 💡",
-    );
-  if (s.includes("contract") || s.includes("lease") || s.includes("ხელშეკრ"))
-    return pick(
-      "Our digital smart contract is signed via SakhliAI Vault — legally valid in Georgia.",
-      "ჩვენი ციფრული ხელშეკრულება ფორმდება SakhliAI Vault-ით — იურიდიულად ვალიდურია საქართველოში.",
-    );
-  if (s.includes("booking") || s.includes("channel") || s.includes("sync") || s.includes("ჯავშ") || s.includes("არხ"))
-    return pick(
-      "Your channels (Airbnb, Booking.com, Direct) sync in real time via n8n — any new booking appears on the calendar in ≤2s.",
-      "შენი არხები (Airbnb, Booking.com, Direct) რეალურ დროში სინქრონიზდება n8n-ით. ახალი ჯავშანი ჩანს კალენდარზე ≤2 წამში.",
-    );
-  if (s.includes("hello") || s.includes("hi ") || s.includes("გამარჯ"))
-    return contextGreeting(path, role, locale);
-  return pick(
-    "Good question! 🤔 My data says it depends on the district and season. Give me a few specifics and I'll give you an exact recommendation.",
-    "კარგი კითხვაა! 🤔 ეს დამოკიდებულია უბანზე და სეზონზე. დააკონკრეტე და მოგცემ ზუსტ რეკომენდაციას.",
-  );
-}
-
 export function AiAssistantBubble() {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [typing, setTyping] = useState(false);
+  const [sessionId] = useState(() => Math.random().toString(36).substring(2, 15));
   const path = useRouterState({ select: (s) => s.location.pathname });
   const { profile } = useAuth();
   const { locale, t } = useI18n();
@@ -158,14 +103,44 @@ export function AiAssistantBubble() {
     }, 28);
   };
 
-  const ask = (text: string) => {
+  const ask = async (text: string) => {
     if (typing) return;
     setMsgs((m) => [...m, { role: "user", text }]);
     setTyping(true);
-    const reply = autoReply(text, path, profile?.role, locale);
+
+    const webhookUrl = import.meta.env.VITE_N8N_ASSISTANT_URL;
+    if (webhookUrl) {
+      try {
+        const res = await fetch(webhookUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            question: text,
+            locale,
+            sessionId,
+          }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const replyText = data.text || data.reply || data.output || (typeof data === "string" ? data : JSON.stringify(data));
+          setTyping(false);
+          streamReply(replyText);
+          return;
+        }
+      } catch (err) {
+        console.warn("Error calling n8n chatbot:", err);
+      }
+    }
+
+    // Offline / connection error fallback
     window.setTimeout(() => {
       setTyping(false);
-      streamReply(reply);
+      const errReply = locale === "ka"
+        ? "ამჟამად კავშირი ვერ ხერხდება. გთხოვთ შეამოწმოთ, რომ თქვენი n8n ასისტენტი გაშვებულია."
+        : "I cannot connect to the assistant right now. Please make sure your n8n workflow is active and running.";
+      streamReply(errReply);
     }, 700);
   };
 
@@ -241,19 +216,21 @@ export function AiAssistantBubble() {
             )}
           </div>
 
-          <div className="flex flex-wrap gap-1.5 border-t border-border bg-background/30 p-2">
-            {chips.map((q) => (
-              <button
-                key={q}
-                type="button"
-                onClick={() => ask(q)}
-                className="truncate rounded-full border border-primary/30 bg-primary/5 px-2.5 py-1 text-[11px] text-foreground transition-colors hover:bg-primary/10"
-                title={q}
-              >
-                {q}
-              </button>
-            ))}
-          </div>
+          {msgs.length <= 1 && (
+            <div className="flex flex-wrap gap-1.5 border-t border-border bg-background/30 p-2">
+              {chips.map((q) => (
+                <button
+                  key={q}
+                  type="button"
+                  onClick={() => ask(q)}
+                  className="truncate rounded-full border border-primary/30 bg-primary/5 px-2.5 py-1 text-[11px] text-foreground transition-colors hover:bg-primary/10"
+                  title={q}
+                >
+                  {q}
+                </button>
+              ))}
+            </div>
+          )}
 
           <div className="flex items-center gap-2 border-t border-border bg-background/50 p-2">
             <Input

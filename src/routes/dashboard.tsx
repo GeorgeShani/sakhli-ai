@@ -47,7 +47,7 @@ export const Route = createFileRoute("/dashboard")({
   head: () => ({
     meta: [
       { title: "Dashboard — SakhliAI" },
-      { name: "description", content: "Your matches, utility splits, and chats." },
+      { name: "description", content: "Your matches, utility splits, and more." },
     ],
   }),
   component: () => (
@@ -142,7 +142,7 @@ function DashboardPage() {
                         <Button asChild size="sm" variant="outline">
                           <Link to="/matches">
                             <Plus className="mr-1 h-3.5 w-3.5" />
-                            ახალი თანამცხოვრებლის დამატება / Add New Match
+                            {t("dashboard.addMatch")}
                           </Link>
                         </Button>
                       </div>
@@ -173,7 +173,7 @@ function DashboardPage() {
                         <Button asChild size="sm" variant="outline">
                           <Link to="/matches">
                             <Plus className="mr-1 h-3.5 w-3.5" />
-                            ახალი ბინის დამატება / Add New Property
+                            {t("dashboard.addProperty")}
                           </Link>
                         </Button>
                       </div>
@@ -249,6 +249,7 @@ function PropertyDetailsDialog({
   onOpenChange: (open: boolean) => void;
   onUnmatch: (id: string) => void;
 }) {
+  const { t } = useI18n();
   return (
     <Dialog open={!!property} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
@@ -312,7 +313,7 @@ function PropertyDetailsDialog({
                 onClick={() => onUnmatch(property.id)}
               >
                 <Trash2 className="mr-2 h-4 w-4" />
-                ბინის წაშლა / Remove Property
+                {t("dashboard.removeProperty")}
               </Button>
               <Button variant="outline" onClick={() => onOpenChange(false)}>
                 Close
@@ -335,6 +336,7 @@ function FlatmateDetailsDialog({
   onOpenChange: (open: boolean) => void;
   onUnmatch: (id: string) => void;
 }) {
+  const { t } = useI18n();
   const sleepLabel: Record<Flatmate["sleep"], string> = {
     early_bird: "🌅 Early bird",
     night_owl: "🌙 Night owl",
@@ -448,7 +450,7 @@ function FlatmateDetailsDialog({
                 onClick={() => onUnmatch(flatmate.id)}
               >
                 <UserMinus className="mr-2 h-4 w-4" />
-                კავშირის გაწყვეტა / Unmatch
+                {t("dashboard.unmatch")}
               </Button>
               <Button variant="outline" onClick={() => onOpenChange(false)}>
                 Close
@@ -518,7 +520,7 @@ function UtilitySplitter({
   flatmateNames: string[];
   activeProperty?: (typeof properties)[number];
 }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [bills, setBills] = useState<Bill[]>([
     { id: "1", category: "Electricity", icon: Zap, amount: 140 },
     { id: "2", category: "Water", icon: Droplet, amount: 40 },
@@ -567,7 +569,7 @@ function UtilitySplitter({
         ...r,
         owes: per,
         days: monthDays,
-        reason: `Equal share across ${roommates.length} flatmate${roommates.length > 1 ? "s" : ""}`,
+        reason: t("util.reason.equal", { n: roommates.length }),
       }));
     }
     // Move-in date weighted: each person owes proportional to days occupied
@@ -579,10 +581,11 @@ function UtilitySplitter({
       owes: total * (o.days / totalDays),
       reason:
         o.days === maxDays
-          ? `Here from day ${o.moveInDay} — full ${o.days}/30 days, pays the most`
-          : `Moved in day ${o.moveInDay} → only ${o.days}/30 days, pays less`,
+          ? t("util.reason.most", { d: o.moveInDay, days: o.days })
+          : t("util.reason.less", { d: o.moveInDay, days: o.days }),
     }));
-  }, [bills, roommates, mode, total]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bills, roommates, mode, total, locale]);
 
   return (
     <div className="space-y-6">
@@ -595,7 +598,7 @@ function UtilitySplitter({
             />
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-primary">
-                <Home className="h-3.5 w-3.5" /> კომუნალურების დაყოფა · Splitting bills for
+                <Home className="h-3.5 w-3.5" /> {t("util.linked")}
               </div>
               <div className="mt-0.5 truncate font-display text-lg font-semibold">
                 {activeProperty.title}
@@ -608,33 +611,27 @@ function UtilitySplitter({
         ) : (
           <div className="flex items-center gap-2 border-b border-dashed border-border bg-muted/40 p-4 text-xs text-muted-foreground">
             <Home className="h-4 w-4" />
-            აირჩიეთ ან მონიშნეთ ბინა Matches გვერდზე, რომ კალკულატორი დაუკავშირდეს კონკრეტულ ბინას.
+            {t("util.notlinked")}
           </div>
         )}
 
-        <div className="flex flex-wrap items-center justify-between gap-3 p-5">
+        <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="font-display text-lg font-semibold">
-              AI Utility Bill Splitter · სტუდენტური კომუნალურების გამყოფი
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              {activeProperty
-                ? `მონაცემები ეხება: ${activeProperty.title}`
-                : "Track monthly utilities and split fairly by move-in dates or equally."}
-            </p>
+            <h2 className="font-display text-lg font-semibold">{t("util.title")}</h2>
+            <p className="text-sm text-muted-foreground">{t("util.desc")}</p>
           </div>
-          <div className="flex rounded-md border border-border bg-secondary p-1 text-xs">
+          <div className="inline-flex shrink-0 rounded-lg border border-border bg-secondary p-1 text-sm">
             <button
               onClick={() => setMode("movein")}
-              className={`rounded px-3 py-1.5 ${mode === "movein" ? "bg-card font-medium shadow-sm" : "text-muted-foreground"}`}
+              className={`rounded-md px-3 py-1.5 transition-colors ${mode === "movein" ? "bg-card font-medium shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
             >
-              By move-in dates
+              {t("util.mode.movein")}
             </button>
             <button
               onClick={() => setMode("equal")}
-              className={`rounded px-3 py-1.5 ${mode === "equal" ? "bg-card font-medium shadow-sm" : "text-muted-foreground"}`}
+              className={`rounded-md px-3 py-1.5 transition-colors ${mode === "equal" ? "bg-card font-medium shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
             >
-              Equal split
+              {t("util.mode.equal")}
             </button>
           </div>
         </div>
@@ -643,7 +640,7 @@ function UtilitySplitter({
       <div className="grid items-start gap-6 lg:grid-cols-[1fr_340px]">
         {/* Bills */}
         <div className="card-elevated h-auto self-start p-5 pb-4">
-          <h3 className="font-display text-base font-semibold">Monthly bills</h3>
+          <h3 className="font-display text-base font-semibold">{t("util.bills")}</h3>
           <div className="mt-4 grid gap-2 sm:grid-cols-2">
             {bills.map((b) => {
               const Icon = CATEGORY_ICONS[b.category] ?? Zap;
@@ -654,7 +651,7 @@ function UtilitySplitter({
                   </div>
                   <div className="flex-1">
                     <div className="text-sm font-medium">{b.category}</div>
-                    <div className="text-xs text-muted-foreground">monthly</div>
+                    <div className="text-xs text-muted-foreground">{t("util.monthly")}</div>
                   </div>
                   <Input
                     type="number"
@@ -691,7 +688,7 @@ function UtilitySplitter({
             </select>
             <Input
               type="number"
-              placeholder="Amount"
+              placeholder={t("util.amount")}
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
             />
@@ -706,14 +703,35 @@ function UtilitySplitter({
                 setAmount("");
               }}
             >
-              <Plus className="mr-1 h-4 w-4" /> Add
+              <Plus className="mr-1 h-4 w-4" /> {t("util.add")}
             </Button>
           </div>
         </div>
 
         {/* Roommates & splits */}
         <div className="card-elevated h-fit p-5">
-          <h3 className="font-display text-base font-semibold">Flatmates</h3>
+          <div className="flex items-center justify-between border-b border-border pb-3">
+            <h3 className="font-display text-base font-semibold">{t("util.flatmates")}</h3>
+
+            {/* Prominent equal split toggle right inside card */}
+            <div className="inline-flex rounded-lg border border-border bg-secondary p-1 text-[11px]">
+              <button
+                type="button"
+                onClick={() => setMode("movein")}
+                className={`rounded px-2.5 py-1 font-semibold transition-colors ${mode === "movein" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"}`}
+              >
+                {t("util.mode.movein")}
+              </button>
+              <button
+                type="button"
+                onClick={() => setMode("equal")}
+                className={`rounded px-2.5 py-1 font-semibold transition-colors ${mode === "equal" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"}`}
+              >
+                {t("util.mode.equal")}
+              </button>
+            </div>
+          </div>
+
           <div className="mt-3 space-y-2">
             {roommates.map((r, i) => (
               <div key={r.id} className="flex items-center gap-2 rounded-md border border-border bg-card p-2">
@@ -726,7 +744,7 @@ function UtilitySplitter({
                 />
                 {mode === "movein" && (
                   <div className="flex items-center gap-1">
-                    <Label className="text-[10px] uppercase tracking-wide text-muted-foreground">Day</Label>
+                    <Label className="text-[10px] uppercase tracking-wide text-muted-foreground">{t("util.day")}</Label>
                     <Input
                       type="number"
                       min={1}
@@ -758,30 +776,39 @@ function UtilitySplitter({
             size="sm"
             className="mt-3 w-full"
             onClick={() =>
-              setRoommates((rs) => [...rs, { id: crypto.randomUUID(), name: `Flatmate ${rs.length + 1}`, moveInDay: 1 }])
+              setRoommates((rs) => [
+                ...rs, 
+                { 
+                  id: crypto.randomUUID(), 
+                  name: locale === "ka" ? `თანამცხოვრები ${rs.length + 1}` : `Flatmate ${rs.length + 1}`, 
+                  moveInDay: 1 
+                }
+              ])
             }
           >
-            <Plus className="mr-1 h-4 w-4" /> Add flatmate
+            <Plus className="mr-1 h-4 w-4" /> {t("util.addFlatmate")}
           </Button>
 
           <div className="mt-5 rounded-xl bg-gradient-to-br from-primary/90 to-primary p-4 text-primary-foreground">
-            <div className="text-xs opacity-70">Monthly total</div>
+            <div className="text-xs opacity-70">{t("util.total")}</div>
             <div className="font-display text-2xl font-bold">₾ {total.toFixed(2)}</div>
-            <div className="mt-1 text-[11px] opacity-70">{mode === "movein" ? "Split by move-in days" : "Equal split"}</div>
+            <div className="mt-1 text-[11px] opacity-70">
+              {mode === "movein" ? t("util.split.movein") : t("util.split.equal")}
+            </div>
           </div>
 
           {/* Localized payment */}
           <div className="mt-4 rounded-xl border border-border bg-card p-4">
             <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              გადახდა · Proceed to Pay
+              {t("util.pay")}
             </div>
             {payStatus === "paid" ? (
               <div className="mt-3 flex items-center gap-2 rounded-lg border border-emerald-500/60 bg-emerald-500/10 px-3 py-3 text-sm font-semibold text-emerald-600 shadow-[0_0_24px_rgba(16,185,129,0.45)] dark:text-emerald-400">
                 <CheckCircle2 className="h-5 w-5" />
                 <div className="flex-1">
-                  გადახდილია წარმატებით · Paid Successfully
+                  {t("util.paid")}
                   <div className="text-[11px] font-normal opacity-80">
-                    via {payBank === "TBC" ? "TBC Bank" : "Bank of Georgia"} · ₾{total.toFixed(2)}
+                    {t("util.via")} {payBank === "TBC" ? t("util.pay.tbc") : t("util.pay.bog")} · ₾{total.toFixed(2)}
                   </div>
                 </div>
               </div>
@@ -798,7 +825,7 @@ function UtilitySplitter({
                   ) : (
                     <span className="font-display text-base font-extrabold tracking-tight">TBC</span>
                   )}
-                  <span className="text-[10px] uppercase opacity-90">TBC Bank</span>
+                  <span className="text-[10px] uppercase opacity-90">{t("util.pay.tbc")}</span>
                 </button>
                 <button
                   type="button"
@@ -811,7 +838,7 @@ function UtilitySplitter({
                   ) : (
                     <span className="font-display text-base font-extrabold tracking-tight">BOG</span>
                   )}
-                  <span className="text-[10px] uppercase opacity-90">Bank of Georgia</span>
+                  <span className="text-[10px] uppercase opacity-90">{t("util.pay.bog")}</span>
                 </button>
               </div>
             )}
@@ -819,16 +846,14 @@ function UtilitySplitter({
         </div>
       </div>
 
-
-
       {/* Per-person breakdown */}
       <div className="card-elevated p-5">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h3 className="font-display text-base font-semibold">Who pays what</h3>
+          <h3 className="font-display text-base font-semibold">{t("util.who")}</h3>
           {recalcing ? (
-            <AgentThinking label="Calculating fair split…" />
+            <AgentThinking label={t("util.calc")} />
           ) : (
-            <span className="text-xs text-muted-foreground">SakhliAI split · reasoning shown per person</span>
+            <span className="text-xs text-muted-foreground">{t("util.reasoning")}</span>
           )}
         </div>
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -837,7 +862,7 @@ function UtilitySplitter({
               <div className="flex items-center justify-between">
                 <div className="font-medium">{s.name}</div>
                 {mode === "movein" && (
-                  <Badge variant="secondary" className="text-[10px]">{s.days} days</Badge>
+                  <Badge variant="secondary" className="text-[10px]">{s.days} {t("util.days")}</Badge>
                 )}
               </div>
               <div className="mt-2 font-display text-2xl font-bold text-gradient">
@@ -854,7 +879,7 @@ function UtilitySplitter({
                 onClick={() => alert(`Mock: requesting ₾${s.owes.toFixed(2)} from ${s.name}`)}
               >
                 <Send className="mr-1.5 h-3.5 w-3.5" />
-                {s.id === "me" ? "Your share" : "Pay to roommate"}
+                {s.id === "me" ? t("util.yourShare") : t("util.payRoommate")}
               </Button>
             </div>
           ))}
@@ -862,18 +887,18 @@ function UtilitySplitter({
         <div className="mt-4 flex items-start gap-2 rounded-md border border-accent/30 bg-accent/5 p-3 text-xs text-muted-foreground">
           <ShieldCheck className="mt-0.5 h-4 w-4 text-accent" />
           <div>
-            <strong className="text-foreground">AI fairness check:</strong> totals reconcile to ₾{total.toFixed(2)}.
-            Payments are mocked — connect a Georgian PSP (TBC Pay / BoG) to enable real transfers.
+            <strong className="text-foreground">{t("util.fairness")}</strong> {locale === "ka" ? "ჯამი ემთხვევა" : "totals reconcile to"} ₾{total.toFixed(2)}.
+            {t("util.fairness.desc")}
           </div>
         </div>
       </div>
 
       <div className="card-elevated p-5">
         <div className="mb-2 text-xs uppercase tracking-wide text-muted-foreground">
-          AI House Rules · კონფლიქტების მედიატორი
+          {t("dashboard.aiHouseRules")}
         </div>
         <p className="mb-3 text-sm text-muted-foreground">
-          არ ეთანხმები flatmate-ს? AI გააანალიზებს onboarding-ის ჩვევებს და გასცემს კომპრომისს.
+          {t("dashboard.aiHouseRulesDesc")}
         </p>
         <DisputeResolver />
       </div>

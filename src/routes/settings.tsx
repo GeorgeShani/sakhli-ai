@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { PricingModal } from "@/components/PricingModal";
 import { useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
+import { useI18n } from "@/lib/i18n";
 import { useProfile, defaultProfile } from "@/lib/student-store";
 import { useSubscription, PLAN_DETAILS } from "@/lib/subscription";
 import {
@@ -51,6 +52,7 @@ function SettingsPage() {
   const { profile, save } = useProfile();
   const { theme, toggle } = useTheme();
   const { plan } = useSubscription();
+  const { t } = useI18n();
   const navigate = useNavigate();
 
   const [sendingCode, setSendingCode] = useState(false);
@@ -70,14 +72,14 @@ function SettingsPage() {
     window.setTimeout(() => {
       save({ ...activeProfile, verified: true });
       setSendingCode(false);
-      toast.success("ვერიფიკაცია წარმატებით დასრულდა · Verified successfully");
+      toast.success(t("settings.verifiedSuccess"));
     }, 1200);
   };
 
   const handlePickAvatar = (url: string) => {
     save({ ...activeProfile, avatar: url });
     setShowAvatars(false);
-    toast.success("ავატარი შენახულია · Avatar saved");
+    toast.success(t("settings.avatarSaved"));
   };
 
   const fileRef = useRef<HTMLInputElement>(null);
@@ -85,7 +87,7 @@ function SettingsPage() {
     const file = e.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith("image/")) {
-      toast.error("გთხოვთ აირჩიოთ სურათი · Please select an image");
+      toast.error(t("settings.selectImage"));
       return;
     }
     const reader = new FileReader();
@@ -93,7 +95,7 @@ function SettingsPage() {
       const url = String(reader.result);
       save({ ...activeProfile, avatar: url });
       setShowAvatars(false);
-      toast.success("ფოტო ატვირთულია · Photo uploaded");
+      toast.success(t("settings.photoUploaded"));
     };
     reader.readAsDataURL(file);
     e.target.value = "";
@@ -104,7 +106,7 @@ function SettingsPage() {
   return (
     <StudentShell>
       <div className="mx-auto max-w-2xl">
-        <h1 className="font-display text-3xl font-bold">მომხმარებლის პარამეტრები</h1>
+        <h1 className="font-display text-3xl font-bold">{t("settings.title")}</h1>
         <p className="mt-1 text-sm text-muted-foreground">User Settings</p>
 
         <div className="card-elevated mt-6 p-5">
@@ -140,7 +142,7 @@ function SettingsPage() {
                     ) : (
                       <Mail className="mr-1 h-3 w-3" />
                     )}
-                    კოდის გაგზავნა / Send Code
+                    {t("settings.sendCode")}
                   </Button>
                 )}
               </div>
@@ -153,7 +155,7 @@ function SettingsPage() {
             onClick={() => setShowAvatars((v) => !v)}
           >
             <ImageIcon className="mr-2 h-4 w-4" />
-            ავატარის არჩევა / Choose Avatar
+            {t("settings.chooseAvatar")}
           </Button>
 
           {showAvatars && (
@@ -191,14 +193,14 @@ function SettingsPage() {
                   type="button"
                   onClick={() => fileRef.current?.click()}
                   className="relative flex aspect-square flex-col items-center justify-center gap-0.5 rounded-full border-2 border-dashed border-primary/60 bg-primary/5 text-primary transition-all hover:scale-105 hover:bg-primary/10"
-                  title="ფოტოს ატვირთვა / Upload Custom Photo"
+                  title={t("settings.uploadPhoto")}
                 >
                   <Upload className="h-4 w-4" />
                   <span className="text-[8px] font-semibold leading-none">UPLOAD</span>
                 </button>
               </div>
               <div className="mt-2 text-center text-[11px] text-muted-foreground">
-                + ფოტოს ატვირთვა / Upload Custom Photo
+                + {t("settings.uploadPhoto")}
               </div>
             </>
           )}
@@ -208,7 +210,7 @@ function SettingsPage() {
           <div className="flex items-center justify-between">
             <div>
               <div className="text-xs uppercase tracking-wide text-muted-foreground">
-                ტარიფი / Subscription
+                {t("settings.subscription")}
               </div>
               <div className="mt-1 font-display text-lg font-semibold">
                 {planDetails.name}
@@ -220,7 +222,7 @@ function SettingsPage() {
             </div>
             <Button onClick={() => setPricingOpen(true)}>
               <Crown className="mr-2 h-4 w-4" />
-              {plan === "free" ? "განაახლეთ / Upgrade" : "მართვა / Manage"}
+              {plan === "free" ? t("settings.upgrade") : t("settings.manage")}
             </Button>
           </div>
         </div>

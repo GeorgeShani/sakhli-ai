@@ -2,6 +2,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from "@/components/ui/button";
 import { Check, Crown, Sparkles, Zap } from "lucide-react";
 import { PLAN_DETAILS, useSubscription, type Plan } from "@/lib/subscription";
+import { useI18n } from "@/lib/i18n";
 import { toast } from "sonner";
 
 type Props = {
@@ -43,14 +44,15 @@ const ICONS: Record<Plan, typeof Sparkles> = {
 
 export function PricingModal({ open, onOpenChange, reason = "manual" }: Props) {
   const { plan, setPlan } = useSubscription();
+  const { t, locale } = useI18n();
 
   const pick = (p: Plan) => {
     setPlan(p);
     if (p === "free") {
-      toast("გადახვედი Free ტარიფზე · Switched to Free");
+      toast(t("pricing.toast.free"));
     } else {
       toast.success(
-        `${PLAN_DETAILS[p].nameKa} გააქტიურდა · ${PLAN_DETAILS[p].name} activated`,
+        `${locale === "ka" ? PLAN_DETAILS[p].nameKa : PLAN_DETAILS[p].name} ${t("pricing.toast.activated")}`,
       );
     }
     onOpenChange(false);
@@ -61,18 +63,18 @@ export function PricingModal({ open, onOpenChange, reason = "manual" }: Props) {
       ? {
           ka: "მიაღწიე უფასო ლიმიტს",
           en: "You've hit the free swipe limit",
-          sub: "განაახლეთ ტარიფი შეუზღუდავი მატჩებისთვის · Upgrade for unlimited matching",
+          sub: `${t("matches.upgradeUnlimited")} · Upgrade for unlimited matching`,
         }
       : reason === "ai_best_fit"
         ? {
             ka: "AI Best Fit მხოლოდ Plus და Ultra-სთვის",
             en: "AI Best Fit is exclusive to Plus & Ultra",
-            sub: "ეს ფუნქცია ხელმისაწვდომია მხოლოდ Plus და Ultra წევრებისთვის. განაახლეთ ტარიფი! · This feature is exclusive to Plus & Ultra members. Upgrade now!",
+            sub: `${t("pricing.orReturn")}. Upgrade now!`,
           }
         : {
             ka: "აირჩიე შენი ტარიფი",
             en: "Choose your plan",
-            sub: "გადართე ნებისმიერ დროს · Switch any time",
+            sub: "Switch any time · გადართე ნებისმიერ დროს",
           };
 
   return (
@@ -140,10 +142,10 @@ export function PricingModal({ open, onOpenChange, reason = "manual" }: Props) {
                   disabled={isCurrent}
                 >
                   {isCurrent
-                    ? "მიმდინარე · Current"
+                    ? `${t("pricing.current")} · Current`
                     : p === "free"
-                      ? "Free-ზე გადასვლა · Switch to Free"
-                      : "განაახლეთ ტარიფი · Upgrade"}
+                      ? `${t("pricing.switchToFree")} · Switch to Free`
+                      : `${t("pricing.upgrade")} · Upgrade`}
                 </Button>
               </div>
             );
@@ -152,7 +154,7 @@ export function PricingModal({ open, onOpenChange, reason = "manual" }: Props) {
 
         {reason === "swipe_limit" && (
           <div className="mt-2 text-center text-xs text-muted-foreground">
-            ან დაბრუნდი დაფაზე · or return to dashboard to keep browsing your existing matches
+            {t("pricing.orReturn")}
           </div>
         )}
       </DialogContent>

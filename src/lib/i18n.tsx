@@ -41,7 +41,7 @@ const en: Dict = {
   "features.match.title": "Behavioral matching",
   "features.match.desc": "We pair flatmates by sleep schedule, cleanliness, study habits, and budget — not vibes.",
   "features.swipe.title": "Swipe to discover",
-  "features.swipe.desc": "Browse compatible flatmates and homes like a feed. Match, chat, move in.",
+  "features.swipe.desc": "Browse compatible flatmates and homes like a feed. Match and move in.",
   "features.split.title": "Split utilities easily",
   "features.split.desc": "Built-in calculator splits rent, internet, and bills fairly across the household.",
 
@@ -51,7 +51,7 @@ const en: Dict = {
   "how.s2.title": "Swipe your matches",
   "how.s2.desc": "Review compatible flatmates and properties scored just for you.",
   "how.s3.title": "Move in",
-  "how.s3.desc": "Chat in-app, split utilities, sign your lease — all in one place.",
+  "how.s3.desc": "Split utilities, sign your lease — all in one place.",
 
   "footer.rights": "All rights reserved.",
 
@@ -114,7 +114,7 @@ const en: Dict = {
   "matches.like": "Connect",
 
   "dashboard.title": "Your dashboard",
-  "dashboard.subtitle": "Manage matches, bills, and chats in one place.",
+  "dashboard.subtitle": "Manage matches, bills, and more in one place.",
   "dashboard.tab.matches": "Matches",
   "dashboard.tab.utilities": "Utilities",
   "dashboard.tab.chat": "Chat",
@@ -148,7 +148,7 @@ const en: Dict = {
     "SakhliAI scores flatmates and homes on sleep schedule, cleanliness, budget and lifestyle — then an AI agent handles the boring parts: bills, rules, and the lease.",
   "land.hero.cta.student": "I'm a student",
   "land.hero.cta.host": "I list properties",
-  "land.hero.demo.match": "It's a 94% match",
+  "land.hero.demo.match": "match!",
   "land.hero.trust": "Students from",
 
   "land.problem.tag": "The old way is broken",
@@ -160,7 +160,7 @@ const en: Dict = {
   "land.before.4": "Lease in a language you half-understand",
   "land.after.title": "With SakhliAI",
   "land.after.1": "Fit-scored matches near your university",
-  "land.after.2": "Know the lifestyle match before you message",
+  "land.after.2": "Know the lifestyle match before you connect",
   "land.after.3": "Bills split fairly, automatically",
   "land.after.4": "Clear bilingual lease, signed in-app",
 
@@ -178,7 +178,7 @@ const en: Dict = {
   "land.features.title": "From first swipe to signed lease",
   "land.feat.discover.title": "Swipe to discover",
   "land.feat.discover.desc":
-    "Browse fit-scored flatmates and homes like a feed. Like, match, and start chatting — no spam, no agents.",
+    "Browse fit-scored flatmates and homes like a feed. Like, match, and move in — no spam, no agents.",
   "land.feat.split.title": "Bills split fairly, by an agent",
   "land.feat.split.desc":
     "The AI pro-rates every bill by who moved in when, and tells you the reasoning in one line. No spreadsheets, no arguments.",
@@ -243,6 +243,82 @@ const en: Dict = {
   "assistant.name": "SakhliAI Assistant",
   "assistant.placeholder": "Ask SakhliAI…",
   "assistant.why": "· why we suggest this",
+
+  /* ---------- Utility splitter ---------- */
+  "util.linked": "Splitting bills for",
+  "util.notlinked": "Pick a property on Matches to link the calculator to a specific flat.",
+  "util.title": "AI Bill Splitter",
+  "util.desc": "Track monthly utilities and split them fairly — by move-in date or equally.",
+  "util.mode.movein": "By move-in dates",
+  "util.mode.equal": "Equal split",
+  "util.bills": "Monthly bills",
+  "util.monthly": "monthly",
+  "util.amount": "Amount",
+  "util.add": "Add",
+  "util.flatmates": "Flatmates",
+  "util.day": "Day",
+  "util.addFlatmate": "Add flatmate",
+  "util.total": "Monthly total",
+  "util.split.movein": "Split by move-in days",
+  "util.split.equal": "Split equally",
+  "util.pay": "Proceed to pay",
+  "util.pay.tbc": "TBC Bank",
+  "util.pay.bog": "Bank of Georgia",
+  "util.paid": "Paid successfully",
+  "util.via": "via",
+  "util.who": "Who pays what",
+  "util.reasoning": "SakhliAI split · reasoning per person",
+  "util.calc": "Calculating fair split…",
+  "util.days": "days",
+  "util.yourShare": "Your share",
+  "util.payRoommate": "Pay to roommate",
+  "util.fairness": "AI fairness check:",
+  "util.fairness.desc":
+    "Totals reconcile exactly. Payments are mocked — connect a Georgian PSP (TBC Pay / BoG) for real transfers.",
+  "util.rules.title": "AI house-rules mediator",
+  "util.rules.desc":
+    "Disagree with a flatmate? The AI reads both onboarding profiles and proposes a fair compromise.",
+  "util.reason.equal": "Equal share across {n} flatmates",
+  "util.reason.most": "Here from day {d} — full {days}/30 days, pays the most",
+  "util.reason.less": "Moved in day {d} → only {days}/30 days, pays less",
+
+  /* ---------- Dashboard ---------- */
+  "dashboard.addMatch": "Add New Match",
+  "dashboard.addProperty": "Add New Property",
+  "dashboard.removeProperty": "Remove Property",
+  "dashboard.unmatch": "Unmatch",
+  "dashboard.aiHouseRules": "AI House Rules",
+  "dashboard.aiHouseRulesDesc": "Disagree with a flatmate? The AI reads both onboarding profiles and proposes a fair compromise.",
+
+  /* ---------- Matches ---------- */
+  "matches.aiBestFitDesc": "Show only matches ≥ 85%",
+  "matches.upgrade": "Upgrade",
+  "matches.freeLimit": "Free swipe limit reached",
+  "matches.upgradeUnlimited": "Upgrade to keep swiping unlimited matches.",
+  "matches.switchPlans": "Switch Plans",
+  "matches.nextFreeSwipe": "Next free swipe in:",
+  "matches.connections": "connections so far",
+
+  /* ---------- Pricing ---------- */
+  "pricing.toast.free": "Switched to Free",
+  "pricing.toast.activated": "activated",
+  "pricing.current": "Current",
+  "pricing.switchToFree": "Switch to Free",
+  "pricing.upgrade": "Upgrade",
+  "pricing.orReturn": "or return to dashboard to keep browsing your existing matches",
+
+  /* ---------- Settings ---------- */
+  "settings.title": "User Settings",
+  "settings.sendCode": "Send Code",
+  "settings.chooseAvatar": "Choose Avatar",
+  "settings.uploadPhoto": "Upload Custom Photo",
+  "settings.subscription": "Subscription",
+  "settings.upgrade": "Upgrade",
+  "settings.manage": "Manage",
+  "settings.verifiedSuccess": "Verified successfully",
+  "settings.avatarSaved": "Avatar saved",
+  "settings.photoUploaded": "Photo uploaded",
+  "settings.selectImage": "Please select an image",
 };
 
 const ka: Dict = {
@@ -282,7 +358,7 @@ const ka: Dict = {
   "features.match.title": "ქცევაზე დაფუძნებული შერჩევა",
   "features.match.desc": "ვამოწმებთ ძილის რეჟიმს, სისუფთავეს, სწავლის ჩვევებსა და ბიუჯეტს.",
   "features.swipe.title": "აღმოაჩინე გადაცურვით",
-  "features.swipe.desc": "ნახე თავსებადი თანამცხოვრებლები და ბინები ფიდის სტილში.",
+  "features.swipe.desc": "ნახე თავსებადი თანამცხოვრებლები და ბინები ფიდის სტილში. მოიწონე და გადადი.",
   "features.split.title": "გაიყავი კომუნალური მარტივად",
   "features.split.desc": "ჩაშენებული კალკულატორი სამართლიანად ანაწილებს გადასახადებს.",
 
@@ -292,7 +368,7 @@ const ka: Dict = {
   "how.s2.title": "გადაცურე შენი შესაბამისობები",
   "how.s2.desc": "ნახე თავსებადი ადამიანები და ბინები.",
   "how.s3.title": "გადადი საცხოვრებლად",
-  "how.s3.desc": "ჩათი, კომუნალური, ხელშეკრულება — ერთ აპში.",
+  "how.s3.desc": "კომუნალური, ხელშეკრულება — ერთ აპში.",
 
   "footer.rights": "ყველა უფლება დაცულია.",
 
@@ -355,7 +431,7 @@ const ka: Dict = {
   "matches.like": "დაკავშირება",
 
   "dashboard.title": "შენი დაფა",
-  "dashboard.subtitle": "მართე შესაბამისობები, ანგარიშები და ჩატი.",
+  "dashboard.subtitle": "მართე შესაბამისობები, ანგარიშები და მეტი.",
   "dashboard.tab.matches": "შესაბამისობები",
   "dashboard.tab.utilities": "კომუნალური",
   "dashboard.tab.chat": "ჩატი",
@@ -389,7 +465,7 @@ const ka: Dict = {
     "SakhliAI აფასებს თანამცხოვრებსა და ბინებს ძილის რეჟიმით, სისუფთავით, ბიუჯეტითა და ცხოვრების სტილით — შემდეგ კი AI აგენტი იღებს მოსაწყენ საქმეებს: გადასახადებს, წესებსა და ხელშეკრულებას.",
   "land.hero.cta.student": "მე სტუდენტი ვარ",
   "land.hero.cta.host": "მე ბინებს ვაქირავებ",
-  "land.hero.demo.match": "94% თანხვედრა",
+  "land.hero.demo.match": "თანხვედრა!",
   "land.hero.trust": "სტუდენტები",
 
   "land.problem.tag": "ძველი გზა გაფუჭებულია",
@@ -401,7 +477,7 @@ const ka: Dict = {
   "land.before.4": "ხელშეკრულება ენაზე, რომელსაც ბოლომდე ვერ იგებ",
   "land.after.title": "SakhliAI-თან ერთად",
   "land.after.1": "შეფასებული მატჩები შენი უნივერსიტეტის ახლოს",
-  "land.after.2": "გაიგე თავსებადობა შეტყობინების გაგზავნამდე",
+  "land.after.2": "გაიგე თავსებადობა დაკავშირებამდე",
   "land.after.3": "გადასახადები სამართლიანად, ავტომატურად იყოფა",
   "land.after.4": "გასაგები ორენოვანი ხელშეკრულება, ხელმოწერილი აპში",
 
@@ -419,7 +495,7 @@ const ka: Dict = {
   "land.features.title": "პირველი გადაცურვიდან ხელმოწერილ ხელშეკრულებამდე",
   "land.feat.discover.title": "აღმოაჩინე გადაცურვით",
   "land.feat.discover.desc":
-    "ნახე შეფასებული თანამცხოვრებლები და ბინები ფიდის სტილში. მოიწონე, დაუკავშირდი და დაიწყე საუბარი — სპამისა და აგენტების გარეშე.",
+    "ნახე შეფასებული თანამცხოვრებლები და ბინები ფიდის სტილში. მოიწონე, დააკავშირე და გადადი საცხოვრებლად — სპამისა და აგენტების გარეშე.",
   "land.feat.split.title": "გადასახადებს აგენტი ანაწილებს",
   "land.feat.split.desc":
     "AI ანაწილებს ყველა გადასახადს იმის მიხედვით, ვინ როდის შემოვიდა, და ერთ წინადადებაში გიხსნის მიზეზს. ცხრილებისა და კამათის გარეშე.",
@@ -484,6 +560,80 @@ const ka: Dict = {
   "assistant.name": "SakhliAI ასისტენტი",
   "assistant.placeholder": "ჰკითხე SakhliAI-ს…",
   "assistant.why": "· რატომ გირჩევთ",
+
+  /* ---------- Utility splitter ---------- */
+  "util.linked": "ანგარიშები ბინისთვის",
+  "util.notlinked": "აირჩიეთ ბინა Matches გვერდზე, რომ კალკულატორი დაუკავშირდეს კონკრეტულ ბინას.",
+  "util.title": "AI კომუნალურების გამყოფი",
+  "util.desc": "თვალი ადევნეთ თვიურ გადასახადებს და გაყავით სამართლიანად — შესვლის თარიღით ან თანაბრად.",
+  "util.mode.movein": "შესვლის თარიღით",
+  "util.mode.equal": "თანაბარი გაყოფა",
+  "util.bills": "თვიური გადასახადები",
+  "util.monthly": "თვიური",
+  "util.amount": "თანხა",
+  "util.add": "დამატება",
+  "util.flatmates": "თანამცხოვრებლები",
+  "util.day": "დღე",
+  "util.addFlatmate": "თანამცხოვრების დამატება",
+  "util.total": "თვიური ჯამი",
+  "util.split.movein": "გაყოფილია შესვლის დღეებით",
+  "util.split.equal": "თანაბრად გაყოფილი",
+  "util.pay": "გადახდა",
+  "util.paid": "გადახდილია წარმატებით",
+  "util.via": "მეშვეობით",
+  "util.who": "ვინ რამდენს იხდის",
+  "util.reasoning": "SakhliAI გაყოფა · დასაბუთება თითო პირზე",
+  "util.calc": "მიმდინარეობს სამართლიანი გაყოფის დათვლა…",
+  "util.days": "დღე",
+  "util.yourShare": "შენი წილი",
+  "util.payRoommate": "გადახდა თანამცხოვრებზე",
+  "util.fairness": "AI სამართლიანობის შემოწმება:",
+  "util.fairness.desc":
+    "ჯამები ზუსტად ემთხვევა. გადახდები სიმულირებულია — დააკავშირეთ ქართული PSP (TBC Pay / BoG) რეალური გადარიცხვებისთვის.",
+  "util.rules.title": "AI მედიატორი სახლის წესებზე",
+  "util.rules.desc":
+    "ვერ ეთანხმები თანამცხოვრებს? AI კითხულობს ორივეს ონბორდინგის პროფილს და სთავაზობს სამართლიან კომპრომისს.",
+  "util.reason.equal": "თანაბარი წილი {n} თანამცხოვრებზე",
+  "util.reason.most": "დღე {d}-დან — სრული {days}/30 დღე, ყველაზე მეტს იხდის",
+  "util.reason.less": "შემოვიდა დღე {d}-ში → მხოლოდ {days}/30 დღე, ნაკლებს იხდის",
+
+  /* ---------- Dashboard ---------- */
+  "dashboard.addMatch": "ახალი თანამცხოვრებლის დამატება",
+  "dashboard.addProperty": "ახალი ბინის დამატება",
+  "dashboard.removeProperty": "ბინის წაშლა",
+  "dashboard.unmatch": "კავშირის გაწყვეტა",
+  "dashboard.aiHouseRules": "AI კონფლიქტების მედიატორი",
+  "dashboard.aiHouseRulesDesc": "არ ეთანხმები flatmate-ს? AI გააანალიზებს onboarding-ის ჩვევებს და გასცემს კომპრომისს.",
+
+  /* ---------- Matches ---------- */
+  "matches.aiBestFitDesc": "მხოლოდ ≥85%-ის ჩვენება",
+  "matches.upgrade": "განაახლეთ ტარიფი",
+  "matches.freeLimit": "მიაღწიე უფასო ლიმიტს",
+  "matches.upgradeUnlimited": "განაახლეთ ტარიფი შეუზღუდავი მატჩებისთვის.",
+  "matches.switchPlans": "განაახლეთ ტარიფი",
+  "matches.nextFreeSwipe": "შემდეგი უფასო სვაიპი:",
+  "matches.connections": "კავშირი ამ დრომდე",
+
+  /* ---------- Pricing ---------- */
+  "pricing.toast.free": "გადახვედი Free ტარიფზე",
+  "pricing.toast.activated": "გააქტიურდა",
+  "pricing.current": "მიმდინარე",
+  "pricing.switchToFree": "Free-ზე გადასვლა",
+  "pricing.upgrade": "განაახლეთ ტარიფი",
+  "pricing.orReturn": "ან დაბრუნდი დაფაზე რომ განაგრძო არსებული მატჩების დათვალიერება",
+
+  /* ---------- Settings ---------- */
+  "settings.title": "მომხმარებლის პარამეტრები",
+  "settings.sendCode": "კოდის გაგზავნა",
+  "settings.chooseAvatar": "ავატარის არჩევა",
+  "settings.uploadPhoto": "ფოტოს ატვირთვა",
+  "settings.subscription": "ტარიფი",
+  "settings.upgrade": "განაახლეთ",
+  "settings.manage": "მართვა",
+  "settings.verifiedSuccess": "ვერიფიკაცია წარმატებით დასრულდა",
+  "settings.avatarSaved": "ავატარი შენახულია",
+  "settings.photoUploaded": "ფოტო ატვირთულია",
+  "settings.selectImage": "გთხოვთ აირჩიოთ სურათი",
 };
 
 const dicts: Record<Locale, Dict> = { en, ka };
@@ -491,7 +641,7 @@ const dicts: Record<Locale, Dict> = { en, ka };
 type Ctx = {
   locale: Locale;
   setLocale: (l: Locale) => void;
-  t: (key: string) => string;
+  t: (key: string, vars?: Record<string, string | number>) => string;
 };
 
 const I18nContext = createContext<Ctx | null>(null);
@@ -509,7 +659,11 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     if (typeof window !== "undefined") localStorage.setItem("sakli.locale", l);
   };
 
-  const t = (key: string) => dicts[locale][key] ?? dicts.en[key] ?? key;
+  const t = (key: string, vars?: Record<string, string | number>) => {
+    let s = dicts[locale][key] ?? dicts.en[key] ?? key;
+    if (vars) for (const k of Object.keys(vars)) s = s.replace(`{${k}}`, String(vars[k]));
+    return s;
+  };
 
   return <I18nContext.Provider value={{ locale, setLocale, t }}>{children}</I18nContext.Provider>;
 }

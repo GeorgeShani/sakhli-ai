@@ -1,15 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import type { Locale } from "./i18n";
+import { supabase } from "@/integrations/supabase/client";
 
 /**
  * SakhliAI agent activity stream.
  *
- * A lightweight, locale-aware mock event source that makes the AI agent +
- * n8n automation *visible* across the product (landing automation story,
- * host automation indicator, student "assistant activity").
- *
- * It is intentionally swappable: replace `streamTemplates` / the interval in
- * `useAgentFeed` with a Supabase Realtime subscription and the UI keeps working.
+ * Connected to a real Supabase Realtime subscription on the `agent_events` table.
+ * If no events are stored in the database, it falls back to a realistic local
+ * simulation to ensure a self-contained, interactive presentation experience.
  */
 
 export type AgentEventKind =
@@ -175,9 +173,84 @@ export function useAgentFeed(locale: Locale, opts: FeedOptions = {}) {
   const pool = useRef(templatesFor(persona));
   const [events, setEvents] = useState<AgentEvent[]>([]);
   const [latest, setLatest] = useState<AgentEvent | null>(null);
+  const [usingDatabase, setUsingDatabase] = useState(false);
 
-  // Seed once on mount (client-only to avoid SSR hydration drift).
+  // 1) Load initial events from Supabase and subscribe to realtime
   useEffect(() => {
+    let active = true;
+
+    const fetchSupabaseEvents = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("agent_events")
+          .select("*")
+          .order("created_at", { ascending: false })
+          .limit(max);
+
+        if (error) {
+          console.warn("Supabase agent_events table not loaded/accessible, falling back to mock stream.", error);
+          return;
+        }
+
+        if (active && data && data.length > 0) {
+          setUsingDatabase(true);
+          const mapped: AgentEvent[] = data.map((d) => ({
+            id: d.id,
+            kind: d.kind as AgentEventKind,
+            source: d.source as AgentEventSource,
+            title: locale === "ka" ? d.title_ka : d.title_en,
+            detail: locale === "ka" ? d.detail_ka : d.detail_en,
+            at: new Date(d.created_at).getTime(),
+          }));
+          setEvents(mapped);
+        }
+      } catch (err) {
+        console.warn("Failed to query agent_events, running simulation fallback", err);
+      }
+    };
+
+    fetchSupabaseEvents();
+
+    const channel = supabase
+      .channel("agent-events-feed")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "agent_events",
+        },
+        (payload) => {
+          if (!active) return;
+          setUsingDatabase(true);
+          const d = payload.new;
+          const ev: AgentEvent = {
+            id: d.id,
+            kind: d.kind as AgentEventKind,
+            source: d.source as AgentEventSource,
+            title: locale === "ka" ? d.title_ka : d.title_en,
+            detail: locale === "ka" ? d.detail_ka : d.detail_en,
+            at: new Date(d.created_at).getTime(),
+          };
+          setLatest(ev);
+          setEvents((prev) => {
+            // Filter out any mock/simulated events once we get real DB events
+            const base = prev.filter((item) => !item.id.startsWith("ev_"));
+            return [ev, ...base].slice(0, max);
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      active = false;
+      supabase.removeChannel(channel);
+    };
+  }, [locale, max]);
+
+  // 2) Seed once on mount if not using database events yet (mock stream)
+  useEffect(() => {
+    if (usingDatabase) return;
     const now = Date.now();
     const seeded = Array.from({ length: seed }, (_, i) => {
       const tpl = pool.current[i % pool.current.length];
@@ -185,12 +258,12 @@ export function useAgentFeed(locale: Locale, opts: FeedOptions = {}) {
     }).reverse();
     setEvents(seeded);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [persona, locale]);
+  }, [persona, locale, usingDatabase]);
 
+  // 3) Periodically generate simulated events ONLY if not receiving database events
   useEffect(() => {
-    if (!intervalMs) return;
+    if (usingDatabase || !intervalMs) return;
     const id = window.setInterval(() => {
-      // Don't do work while the tab is backgrounded.
       if (typeof document !== "undefined" && document.hidden) return;
       const tpl = pool.current[Math.floor(Math.random() * pool.current.length)];
       const ev = makeEvent(tpl, locale);
@@ -198,7 +271,7 @@ export function useAgentFeed(locale: Locale, opts: FeedOptions = {}) {
       setEvents((prev) => [ev, ...prev].slice(0, max));
     }, intervalMs);
     return () => window.clearInterval(id);
-  }, [intervalMs, max, locale]);
+  }, [intervalMs, max, locale, usingDatabase]);
 
   return { events, latest };
 }

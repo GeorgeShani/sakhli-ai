@@ -87,7 +87,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         name: "description",
         content:
-          "Match with compatible flatmates and long-term homes in Georgia. Behavior-based matching, in-app chat, and utility splitting for students.",
+          "Match with compatible flatmates and long-term homes in Georgia. Behavior-based matching and utility splitting for students.",
       },
       { name: "author", content: "SakhliAI" },
       { property: "og:title", content: "SakhliAI — Smart rentals for Georgia" },

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { MapPin, TrendingUp } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
 
 type Zone = {
   id: string;
@@ -9,6 +10,7 @@ type Zone = {
   y: number;
   heat: number; // 0-100
   recommendedPrice: number;
+  insight: string;
   insightKa: string;
 };
 
@@ -21,6 +23,7 @@ const ZONES: Zone[] = [
     y: 45,
     heat: 92,
     recommendedPrice: 1750,
+    insight: "Vake demand is exceptionally high due to the density of international universities and students. Suggested price: 1,750 GEL.",
     insightKa: "ვაკეში მოთხოვნა მაღალია უცხოელი სტუდენტების გამო. რეკომენდებული ფასი: 1,750 GEL.",
   },
   {
@@ -31,6 +34,7 @@ const ZONES: Zone[] = [
     y: 40,
     heat: 86,
     recommendedPrice: 1400,
+    insight: "Saburtalo student demand is up 14% as a direct result of the new metro station and high density of private campuses.",
     insightKa: "საბურთალოზე სტუდენტური მოთხოვნა +14% — ახალი მეტრო სადგურის ეფექტი.",
   },
   {
@@ -41,7 +45,8 @@ const ZONES: Zone[] = [
     y: 60,
     heat: 78,
     recommendedPrice: 1900,
-    insightKa: "ძველი თბილისი — მოკლევადიანი დაჯავშნებისთვის +22%. რეკომენდაცია: Airbnb prioriტეტი.",
+    insight: "Old Tbilisi tourist zone sees premium short-term demand up 22%. We suggest prioritization of SakhliAI hybrid rental leases.",
+    insightKa: "ძველი თბილისი — მოკლევადიანი დაჯავშნებისთვის +22%. რეკომენდაცია: Airbnb პრიორიტეტი.",
   },
   {
     id: "rustavi",
@@ -51,6 +56,7 @@ const ZONES: Zone[] = [
     y: 75,
     heat: 65,
     recommendedPrice: 600,
+    insight: "Rustavi student demand has increased 18% due to affordable inter-city transport. Recommended price: 600 GEL.",
     insightKa: "რუსთავში სტუდენტური მოთხოვნა 18%-ით გაიზარდა ტრანსპორტის გამო. რეკომენდებული ფასი: 600 GEL.",
   },
 ];
@@ -63,14 +69,20 @@ function heatColor(h: number) {
 
 export function DemandMap() {
   const [active, setActive] = useState<Zone | null>(null);
+  const { locale } = useI18n();
+  const isKa = locale === "ka";
+
   return (
     <div className="card-elevated p-5">
       <div className="mb-3 flex items-center justify-between">
         <div>
           <div className="flex items-center gap-1.5 text-xs uppercase tracking-wide text-primary">
-            <TrendingUp className="h-3.5 w-3.5" /> Interactive Demand Map · მოთხოვნის რუკა
+            <TrendingUp className="h-3.5 w-3.5" /> 
+            {isKa ? "მოთხოვნის რუკა" : "Interactive Demand Map"}
           </div>
-          <h3 className="mt-1 font-display text-lg font-semibold">თბილისი & რეგიონები</h3>
+          <h3 className="mt-1 font-display text-lg font-semibold">
+            {isKa ? "თბილისი & რეგიონები" : "Tbilisi & Regions"}
+          </h3>
         </div>
         <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
           <span className="flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-full bg-red-500" /> High</span>
@@ -103,7 +115,7 @@ export function DemandMap() {
           >
             <span className={`block h-5 w-5 animate-pulse rounded-full ${heatColor(z.heat)}`} />
             <span className="absolute left-1/2 top-full mt-1 -translate-x-1/2 whitespace-nowrap text-[10px] font-semibold text-foreground/80 group-hover:text-foreground">
-              {z.nameKa}
+              {isKa ? z.nameKa : z.name}
             </span>
           </button>
         ))}
@@ -113,13 +125,15 @@ export function DemandMap() {
         <div className="mt-3 animate-fade-in rounded-lg border border-accent/40 bg-gradient-to-br from-accent/10 to-transparent p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5 font-display text-base font-semibold">
-              <MapPin className="h-4 w-4 text-accent" /> {active.nameKa} · {active.name}
+              <MapPin className="h-4 w-4 text-accent" /> {isKa ? active.nameKa : active.name}
             </div>
             <span className="rounded-full bg-red-500/10 px-2 py-0.5 text-[11px] font-semibold text-red-600 dark:text-red-400">
               Heat {active.heat}/100
             </span>
           </div>
-          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{active.insightKa}</p>
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+            {isKa ? active.insightKa : active.insight}
+          </p>
           <div className="mt-2 inline-flex items-center gap-1 rounded-md bg-emerald-500/10 px-2 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
             💰 AI Suggested: ₾{active.recommendedPrice.toLocaleString()} / month
           </div>
