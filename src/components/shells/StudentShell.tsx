@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { Compass, Heart, Wallet, User as UserIcon, Home, LogOut, Crown } from "lucide-react";
+import { Compass, Heart, Wallet, User as UserIcon, LogOut, Crown } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageToggle } from "@/components/LanguageToggle";
@@ -56,10 +56,7 @@ export function StudentShell({ children }: { children: ReactNode }) {
       {/* Top bar */}
       <header className="sticky top-0 z-30 border-b border-border/60 bg-background/80 backdrop-blur">
         <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
-          <Link to="/matches" className="flex items-center gap-2 font-display text-lg font-bold tracking-tight">
-            <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-              <Home className="h-4 w-4" />
-            </span>
+          <Link to="/matches" className="flex items-center gap-2 font-syne text-lg md:text-xl font-semibold tracking-tight">
             {t("app.name")}
           </Link>
 

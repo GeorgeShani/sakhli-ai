@@ -21,8 +21,8 @@ export function AutomationStory() {
           <p className="mt-4 max-w-lg text-primary-foreground/70">{t("land.auto.subtitle")}</p>
         </Reveal>
 
-        <Reveal delay={0.15}>
-          <div className="rounded-3xl border border-primary-foreground/15 bg-background/95 p-5 text-foreground shadow-2xl">
+        <Reveal delay={0.15} className="w-full max-w-xl mx-auto md:max-w-none">
+          <div className="rounded-3xl border border-primary-foreground/15 bg-background/95 p-5 text-foreground shadow-2xl w-full">
             <div className="mb-4 flex items-center gap-2 border-b border-border pb-3">
               <span className="relative flex h-2.5 w-2.5">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-75" />
@@ -33,8 +33,10 @@ export function AutomationStory() {
                 <Zap className="h-3 w-3 text-accent" /> n8n
               </span>
             </div>
-            <div className="h-[330px] overflow-hidden pr-1">
+            <div className="relative h-[330px] overflow-hidden pr-1">
               <AgentActivityFeed events={events} />
+              {/* Bottom fading mask */}
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-background via-background/90 to-transparent" />
             </div>
           </div>
         </Reveal>

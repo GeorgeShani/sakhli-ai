@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowRight, Building2, GraduationCap, Sparkles, BadgeCheck, Heart } from "lucide-react";
+import { ArrowRight, Building2, GraduationCap, Sparkles, BadgeCheck, Heart, HeartOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n";
 import { flatmates } from "@/lib/mock-data";
@@ -10,33 +10,58 @@ const UNIVERSITIES = [
   { name: "TSU", logo: "/tsu.png" },
   { name: "GTU", logo: "/gtu.svg" },
   { name: "Iliauni", logo: "/Iliaunil.png" },
-  { name: "Free University", logo: "/Free_GEO.png" },
   { name: "BTU", logo: "/BTU_LOGO.png" },
+  { name: "Free University", logo: "/Free_GEO.png" },
   { name: "Caucasus University", logo: "/cu.png" },
+];
+
+const DEMO_STATES = [
+  {
+    score: 98,
+    statusEn: "Super Match!",
+    statusKa: "სუპერ მატჩი!",
+    colorClass: "border-success text-success bg-background/95 shadow-[0_4px_12px_rgba(34,197,94,0.15)]",
+    bgClass: "from-success/20 to-accent/20",
+    barColor: "bg-success",
+    isSuper: true,
+    isFailed: false,
+  },
+  {
+    score: 81,
+    statusEn: "Good Match",
+    statusKa: "კარგი მატჩი",
+    colorClass: "border-primary/40 text-primary bg-background/95",
+    bgClass: "from-primary/15 to-accent/15",
+    barColor: "bg-primary",
+    isSuper: false,
+    isFailed: false,
+  },
+  {
+    score: 42,
+    statusEn: "Match Failed",
+    statusKa: "არ დაემთხვა",
+    colorClass: "border-destructive text-destructive bg-background/95 shadow-[0_4px_12px_rgba(239,68,68,0.15)]",
+    bgClass: "from-destructive/15 to-muted/15",
+    barColor: "bg-destructive",
+    isSuper: false,
+    isFailed: true,
+  }
 ];
 
 /** A looping, self-swiping demo deck that shows the product in ~3 seconds. */
 function HeroDemo() {
-  const { t } = useI18n();
-  // Pick a few photogenic, high-scoring profiles.
-  const deck = flatmates.filter((f) => f.verified).slice(0, 4);
+  const { t, locale } = useI18n();
+  // Pick exactly 3 verified profiles to showcase the 3 matching levels.
+  const deck = useMemo(() => flatmates.filter((f) => f.verified).slice(0, 3), []);
   const [idx, setIdx] = useState(0);
   const [stamp, setStamp] = useState(false);
 
-  // Generate slightly varied scores for visual dynamism
-  const scores = useMemo(() => deck.map((f, i) => {
-    const base = f.aiPremiumScore ?? 88;
-    // Add small random variation (-3 to +3) but keep within bounds
-    const variation = ((i * 7 + 3) % 7) - 3;
-    return Math.max(80, Math.min(99, base + variation));
-  }), [deck]);
-
   useEffect(() => {
-    const stampT = window.setTimeout(() => setStamp(true), 1600);
+    const stampT = window.setTimeout(() => setStamp(true), 1200);
     const nextT = window.setTimeout(() => {
       setStamp(false);
       setIdx((i) => (i + 1) % deck.length);
-    }, 2600);
+    }, 2800);
     return () => {
       window.clearTimeout(stampT);
       window.clearTimeout(nextT);
@@ -44,7 +69,9 @@ function HeroDemo() {
   }, [idx, deck.length]);
 
   const f = deck[idx];
-  const score = scores[idx];
+  const demoState = DEMO_STATES[idx % DEMO_STATES.length];
+  const score = demoState.score;
+  const status = locale === "ka" ? demoState.statusKa : demoState.statusEn;
 
   return (
     <div className="relative mx-auto h-[420px] w-[300px]">
@@ -61,16 +88,21 @@ function HeroDemo() {
           transition={{ type: "spring", stiffness: 220, damping: 26 }}
           className="card-elevated absolute inset-0 overflow-hidden rounded-3xl"
         >
-          <div className="relative h-1/2 bg-gradient-to-br from-primary/15 to-accent/15">
+          <div className={`relative h-1/2 bg-gradient-to-br ${demoState.bgClass} transition-colors duration-500`}>
             <img src={f.avatar} alt={f.name} className="h-full w-full object-contain p-6" />
             <AnimatePresence>
               {stamp && (
                 <motion.div
                   initial={{ scale: 0.6, opacity: 0, rotate: -12 }}
                   animate={{ scale: 1, opacity: 1, rotate: -8 }}
-                  className="absolute left-4 top-4 flex items-center gap-1.5 rounded-lg border-2 border-success bg-background/80 px-3 py-1 text-sm font-extrabold uppercase text-success backdrop-blur"
+                  className={`absolute left-4 top-4 flex items-center gap-1.5 rounded-lg border-2 px-3 py-1.5 text-xs font-extrabold uppercase backdrop-blur ${demoState.colorClass}`}
                 >
-                  <Heart className="h-4 w-4 fill-success" /> {score}% {t("land.hero.demo.match")}
+                  {demoState.isFailed ? (
+                    <HeartOff className="h-3.5 w-3.5 fill-destructive/10" />
+                  ) : (
+                    <Heart className={`h-3.5 w-3.5 ${demoState.isSuper ? "fill-success animate-pulse" : "fill-primary/20"}`} />
+                  )}
+                  <span>{score}% {status}</span>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -79,14 +111,16 @@ function HeroDemo() {
             <div className="flex items-center gap-1.5">
               <h3 className="font-display text-lg font-bold">{f.name}</h3>
               {f.verified && <BadgeCheck className="h-4 w-4 text-accent" />}
-              <span className="ml-auto font-display text-lg font-extrabold text-success">{score}%</span>
+              <span className={`ml-auto font-display text-lg font-extrabold ${demoState.isFailed ? "text-destructive" : demoState.isSuper ? "text-success" : "text-primary"}`}>
+                {score}%
+              </span>
             </div>
             <p className="text-sm text-muted-foreground">{f.university}</p>
             <p className="mt-3 line-clamp-2 text-sm leading-relaxed text-foreground/80">{f.bio}</p>
             <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-secondary">
               <motion.div
                 key={f.id + "-bar"}
-                className="h-full rounded-full bg-success"
+                className={`h-full rounded-full ${demoState.barColor}`}
                 initial={{ width: 0 }}
                 animate={{ width: `${score}%` }}
                 transition={{ duration: 1 }}

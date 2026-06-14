@@ -76,10 +76,7 @@ export function HostShell({ children }: { children: ReactNode }) {
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-30 border-b border-border/60 bg-background/80 backdrop-blur">
         <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4">
-          <Link to="/host" className="flex items-center gap-2 font-display text-lg font-bold tracking-tight">
-            <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-              <Home className="h-4 w-4" />
-            </span>
+          <Link to="/host" className="flex items-center gap-2 font-syne text-lg md:text-xl font-semibold tracking-tight">
             {t("app.name")}
             <span className="ml-1 rounded-full bg-secondary px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
               Host

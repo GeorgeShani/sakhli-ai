@@ -1,5 +1,4 @@
 import { Link } from "@tanstack/react-router";
-import { Home } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { LanguageToggle } from "./LanguageToggle";
 import { ThemeToggle } from "./ThemeToggle";
@@ -18,10 +17,7 @@ export function MarketingHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/70 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
-        <Link to="/" className="flex items-center gap-2 font-display text-lg font-bold tracking-tight">
-          <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <Home className="h-4 w-4" />
-          </span>
+        <Link to="/" className="flex items-center gap-2 font-syne text-lg md:text-xl font-semibold tracking-tight">
           {t("app.name")}
         </Link>
 
