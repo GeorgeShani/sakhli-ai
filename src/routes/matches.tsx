@@ -1,8 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { AppHeader } from "@/components/AppHeader";
+import { StudentShell } from "@/components/shells/StudentShell";
 import { AuthGate } from "@/components/AuthGate";
 import { SwipeCard } from "@/components/SwipeCard";
+import { MatchCelebration, type CelebrationTarget } from "@/components/MatchCelebration";
+import { Undo2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -65,6 +67,8 @@ function MatchesPage() {
   const [aiBestFit, setAiBestFit] = useState(false);
   const [pricingOpen, setPricingOpen] = useState(false);
   const [pricingReason, setPricingReason] = useState<"swipe_limit" | "ai_best_fit" | "manual">("manual");
+  const [celebration, setCelebration] = useState<CelebrationTarget>(null);
+  const [lastAction, setLastAction] = useState<{ tab: Tab; kind: "person" | "place"; id: string } | null>(null);
 
   const effectiveProfile: StudentProfile = profile ?? defaultProfile;
 
@@ -92,14 +96,31 @@ function MatchesPage() {
     }
     if (tab === "people") {
       const current = peopleStack[index.people];
-      if (current) record("person", current.f.id, liked);
+      if (current) {
+        record("person", current.f.id, liked);
+        setLastAction({ tab: "people", kind: "person", id: current.f.id });
+        // A like on a strong fit reads as mutual → celebrate.
+        if (liked && current.fit.score >= 80) {
+          setCelebration({ name: current.f.name, avatar: current.f.avatar, score: current.fit.score });
+        }
+      }
       setIndex((i) => ({ ...i, people: i.people + 1 }));
     } else {
       const current = placeStack[index.places];
-      if (current) record("place", current.p.id, liked);
+      if (current) {
+        record("place", current.p.id, liked);
+        setLastAction({ tab: "places", kind: "place", id: current.p.id });
+      }
       setIndex((i) => ({ ...i, places: i.places + 1 }));
     }
     if (!isPaid) bumpSwipes();
+  };
+
+  const undo = () => {
+    if (!lastAction) return;
+    record(lastAction.kind, lastAction.id, false);
+    setIndex((i) => ({ ...i, [lastAction.tab]: Math.max(0, i[lastAction.tab] - 1) }));
+    setLastAction(null);
   };
 
   const handleAiToggle = (checked: boolean) => {
@@ -129,10 +150,8 @@ function MatchesPage() {
   );
 
   return (
-    <div className="min-h-screen bg-background">
-      <AppHeader />
-
-      <div className="mx-auto max-w-xl px-4 py-8">
+    <StudentShell>
+      <div className="mx-auto max-w-xl">
         <div className="text-center">
           <h1 className="font-display text-3xl font-bold">{t("matches.title")}</h1>
           <p className="mt-1 text-sm text-muted-foreground">{t("matches.subtitle")}</p>
@@ -252,13 +271,19 @@ function MatchesPage() {
           )}
         </div>
 
-        <div className="mt-6 text-center text-xs text-muted-foreground">
-          {matches.filter((m) => m.liked).length} connections so far
+        <div className="mt-6 flex items-center justify-center gap-3 text-xs text-muted-foreground">
+          <span>{matches.filter((m) => m.liked).length} connections so far</span>
+          {lastAction && !stackDone && !swipeBlocked && (
+            <Button size="sm" variant="ghost" onClick={undo} className="h-7">
+              <Undo2 className="mr-1 h-3.5 w-3.5" /> {t("matches.undo")}
+            </Button>
+          )}
         </div>
       </div>
 
       <PricingModal open={pricingOpen} onOpenChange={setPricingOpen} reason={pricingReason} />
-    </div>
+      <MatchCelebration target={celebration} onClose={() => setCelebration(null)} />
+    </StudentShell>
   );
 }
 

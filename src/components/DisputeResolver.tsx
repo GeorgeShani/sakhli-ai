@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Gavel, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { AgentThinking } from "@/components/agent/AgentThinking";
 import {
   Dialog,
   DialogContent,
@@ -59,6 +60,24 @@ export function DisputeResolver() {
             აღწერე კონფლიქტი — AI გააანალიზებს თქვენი onboarding-ის ჩვევებს და გასცემს სამართლიან, ბალანსირებულ (და ცოტა იუმორიან) გადაწყვეტილებას.
           </DialogDescription>
         </DialogHeader>
+        <div className="flex flex-wrap gap-1.5">
+          {[
+            { label: "🎧 Noise", v: "My flatmate plays music late at night" },
+            { label: "🧹 Cleaning", v: "Dishes are never washed" },
+            { label: "💸 Bills", v: "We disagree on how to split bills" },
+            { label: "🐾 Pets", v: "A flatmate wants a pet but I'm allergic" },
+            { label: "👋 Guests", v: "Too many overnight guests" },
+          ].map((c) => (
+            <button
+              key={c.label}
+              type="button"
+              onClick={() => setIssue(c.v)}
+              className="rounded-full border border-border bg-secondary px-2.5 py-1 text-xs transition-colors hover:border-accent/50 hover:bg-accent/10"
+            >
+              {c.label}
+            </button>
+          ))}
+        </div>
         <Textarea
           value={issue}
           onChange={(e) => setIssue(e.target.value)}
@@ -66,16 +85,13 @@ export function DisputeResolver() {
           rows={4}
         />
         <Button onClick={resolve} disabled={thinking || !issue.trim()}>
-          {thinking ? (
-            <>
-              <Sparkles className="mr-1.5 h-4 w-4 animate-spin" /> AI ფიქრობს…
-            </>
-          ) : (
-            <>
-              <Gavel className="mr-1.5 h-4 w-4" /> გასცეს ვერდიქტი / Generate Verdict
-            </>
-          )}
+          <Gavel className="mr-1.5 h-4 w-4" /> გასცეს ვერდიქტი / Generate Verdict
         </Button>
+        {thinking && (
+          <div className="flex justify-center py-2">
+            <AgentThinking label="SakhliAI mediator is weighing both sides…" />
+          </div>
+        )}
         {verdict && (
           <div className="animate-fade-in rounded-xl border border-emerald-500/40 bg-gradient-to-br from-emerald-500/10 to-accent/10 p-4 text-sm leading-relaxed">
             <div className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-emerald-600 dark:text-emerald-400">

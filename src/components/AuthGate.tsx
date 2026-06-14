@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth";
+import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,6 +15,7 @@ type Props = {
 
 export function AuthGate({ children, requireRole = true }: Props) {
   const { loading, user, profile } = useAuth();
+  const { t } = useI18n();
 
   if (loading) {
     return (
@@ -56,14 +58,10 @@ export function AuthGate({ children, requireRole = true }: Props) {
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-accent/15 text-accent">
               <Sparkles className="h-5 w-5" />
             </div>
-            <h2 className="mt-4 font-display text-2xl font-bold">
-              აირჩიეთ თქვენი როლი
-            </h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Choose Your Profile Purpose to continue.
-            </p>
+            <h2 className="mt-4 font-display text-2xl font-bold">{t("role.title")}</h2>
+            <p className="mt-1 text-sm text-muted-foreground">{t("role.subtitle")}</p>
             <Button asChild className="mt-5 w-full">
-              <Link to="/role-select">Choose role</Link>
+              <Link to="/role-select">{t("role.change")}</Link>
             </Button>
           </div>
         </div>
@@ -76,6 +74,7 @@ export function AuthGate({ children, requireRole = true }: Props) {
 
 function AuthCard() {
   const { signIn, signUp } = useAuth();
+  const { t } = useI18n();
   const navigate = useNavigate();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
@@ -106,16 +105,8 @@ function AuthCard() {
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-primary/15 text-primary ring-1 ring-primary/30">
             <Lock className="h-5 w-5" />
           </div>
-          <h2 className="mt-3 font-display text-2xl font-bold tracking-tight">
-            ავტორიზაცია / Access Restricted
-          </h2>
-          <p className="mt-2 text-sm text-foreground/80">
-            საუკეთესო თანამცხოვრებლებისა და ბინების სანახავად საჭიროა ავტორიზაცია.
-            თქვენ შეგიძლიათ დაბრუნდეთ მთავარ გვერდზე სტუმრის სტატუსით.
-          </p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Authentication required to see matches. You can return to the main page as a guest.
-          </p>
+          <h2 className="mt-3 font-display text-2xl font-bold tracking-tight">{t("auth.title")}</h2>
+          <p className="mt-2 text-sm text-foreground/80">{t("auth.desc")}</p>
           <Button
             variant="outline"
             size="sm"
@@ -123,7 +114,7 @@ function AuthCard() {
             onClick={() => navigate({ to: "/" })}
           >
             <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />
-            უკან დაბრუნება / Go Back to Homepage
+            {t("auth.back")}
           </Button>
         </div>
 
@@ -134,21 +125,21 @@ function AuthCard() {
               onClick={() => setMode("signin")}
               className={`flex-1 rounded px-3 py-1.5 transition ${mode === "signin" ? "bg-card font-medium shadow-sm" : "text-muted-foreground"}`}
             >
-              Sign in
+              {t("auth.signin")}
             </button>
             <button
               type="button"
               onClick={() => setMode("signup")}
               className={`flex-1 rounded px-3 py-1.5 transition ${mode === "signup" ? "bg-card font-medium shadow-sm" : "text-muted-foreground"}`}
             >
-              Create account
+              {t("auth.create")}
             </button>
           </div>
 
           <form onSubmit={submit} className="space-y-3">
             {mode === "signup" && (
               <div>
-                <Label htmlFor="auth-name">Full name</Label>
+                <Label htmlFor="auth-name">{t("auth.name")}</Label>
                 <Input
                   id="auth-name"
                   value={name}
@@ -159,7 +150,7 @@ function AuthCard() {
               </div>
             )}
             <div>
-              <Label htmlFor="auth-email">Email</Label>
+              <Label htmlFor="auth-email">{t("auth.email")}</Label>
               <Input
                 id="auth-email"
                 type="email"
@@ -171,7 +162,7 @@ function AuthCard() {
               />
             </div>
             <div>
-              <Label htmlFor="auth-password">Password</Label>
+              <Label htmlFor="auth-password">{t("auth.password")}</Label>
               <Input
                 id="auth-password"
                 type="password"
@@ -192,13 +183,13 @@ function AuthCard() {
 
             <Button type="submit" disabled={busy} className="w-full">
               {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {mode === "signin" ? "Sign in" : "Create account"}
+              {mode === "signin" ? t("auth.signin") : t("auth.create")}
             </Button>
           </form>
 
           <div className="mt-4 flex items-center gap-2 rounded-md bg-secondary/60 p-3 text-[11px] text-muted-foreground">
             <ShieldCheck className="h-3.5 w-3.5 text-accent" />
-            Sessions are end-to-end encrypted. We never share your data with hosts.
+            {t("auth.encrypted")}
           </div>
         </div>
       </div>

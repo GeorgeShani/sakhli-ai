@@ -21,71 +21,152 @@ const TEMPLATES: Record<"en" | "ka", string[]> = {
 
 type Msg = { role: "ai" | "user"; text: string };
 
-function contextGreeting(path: string, role?: string | null): string {
-  if (path.startsWith("/host"))
-    return "გამარჯობა მასპინძელო! 🏠 დაგეხმარები ფასების ოპტიმიზაციაში, დაჯავშნების სტატუსში ან არხების სინქრონიზაციაში.";
-  if (path.startsWith("/matches"))
-    return "მზად ვარ შემოგთავაზო ყველაზე თავსებადი თანამცხოვრები. სცადე AI Best Fit ფილტრი!";
-  if (path.startsWith("/dashboard"))
-    return "შენი დაფიდან შემიძლია გავყო კომუნალური, შემოგთავაზო ბიუჯეტის ოპტიმიზაცია ან ხელშეკრულების სტატუსი.";
-  if (path.startsWith("/onboarding"))
-    return "გავაგრძელოთ შენი პროფილი — რაც უფრო ზუსტია, მით უკეთესია მატჩები. 🎯";
-  return role === "host"
-    ? "მე ვარ SakhliAI ასისტენტი — შემიძლია გითხრა ბაზრის ტრენდები საქართველოში."
-    : "მე ვარ SakhliAI ასისტენტი — დაგეხმარები ბინის, თანამცხოვრებლის ან ბიუჯეტის შერჩევაში.";
+function contextGreeting(path: string, role: string | null | undefined, locale: "en" | "ka"): string {
+  const en = {
+    host: "Hi host! 🏠 I can help with pricing, booking status, or channel sync.",
+    matches: "Ready to surface your most compatible flatmate — try the AI Best Fit filter!",
+    dashboard: "From your dashboard I can split bills, optimize your budget, or check your contract.",
+    onboarding: "Let's finish your profile — the more precise it is, the better your matches. 🎯",
+    defHost: "I'm the SakhliAI assistant — I can share rental market trends across Georgia.",
+    defStudent: "I'm the SakhliAI assistant — I'll help you pick a home, flatmate, or budget.",
+  };
+  const ka = {
+    host: "გამარჯობა მასპინძელო! 🏠 დაგეხმარები ფასების ოპტიმიზაციაში, დაჯავშნების სტატუსში ან არხების სინქრონიზაციაში.",
+    matches: "მზად ვარ შემოგთავაზო ყველაზე თავსებადი თანამცხოვრები. სცადე AI Best Fit ფილტრი!",
+    dashboard: "შენი დაფიდან შემიძლია გავყო კომუნალური, შემოგთავაზო ბიუჯეტის ოპტიმიზაცია ან ხელშეკრულების სტატუსი.",
+    onboarding: "გავაგრძელოთ შენი პროფილი — რაც უფრო ზუსტია, მით უკეთესია მატჩები. 🎯",
+    defHost: "მე ვარ SakhliAI ასისტენტი — შემიძლია გითხრა ბაზრის ტრენდები საქართველოში.",
+    defStudent: "მე ვარ SakhliAI ასისტენტი — დაგეხმარები ბინის, თანამცხოვრებლის ან ბიუჯეტის შერჩევაში.",
+  };
+  const d = locale === "ka" ? ka : en;
+  if (path.startsWith("/host")) return d.host;
+  if (path.startsWith("/matches")) return d.matches;
+  if (path.startsWith("/dashboard")) return d.dashboard;
+  if (path.startsWith("/onboarding")) return d.onboarding;
+  return role === "host" ? d.defHost : d.defStudent;
 }
 
-function autoReply(q: string, path: string, role?: string | null): string {
+/** Per-page suggested questions, with the evergreen templates as fallback. */
+function contextChips(path: string, locale: "en" | "ka"): string[] {
+  if (path.startsWith("/host")) {
+    return locale === "ka"
+      ? ["რა ფასი დავაწესო ვაკეში?", "როგორ მუშაობს არხების სინქრონიზაცია?", ...TEMPLATES.ka.slice(2)]
+      : ["What price should I set in Vake?", "How does channel sync work?", ...TEMPLATES.en.slice(2)];
+  }
+  if (path.startsWith("/matches")) {
+    return locale === "ka"
+      ? ["როგორ მუშაობს AI Best Fit?", "რომელია უსაფრთხო უბანი?", ...TEMPLATES.ka.slice(2)]
+      : ["How does AI Best Fit work?", "Which neighborhood is safest?", ...TEMPLATES.en.slice(2)];
+  }
+  if (path.startsWith("/dashboard")) {
+    return locale === "ka"
+      ? ["როგორ იყოფა გადასახადები?", "ხელშეკრულება ვალიდურია?", ...TEMPLATES.ka.slice(0, 1)]
+      : ["How are bills split?", "Is the lease legally valid?", ...TEMPLATES.en.slice(0, 1)];
+  }
+  return TEMPLATES[locale];
+}
+
+function autoReply(q: string, path: string, role: string | null | undefined, locale: "en" | "ka"): string {
   const s = q.toLowerCase();
+  const ka = locale === "ka";
+  const pick = (en: string, k: string) => (ka ? k : en);
 
-  // --- Hardcoded contextual answers for the 3 template questions ---
   if (s.includes("winter gas") || s.includes("gas utility") || s.includes("გაზის გადასახ") || s.includes("ზამთრის გაზ"))
-    return "🔥 SakhliAI იყენებს ისტორიულ თბოიზოლაციის მონაცემებს და n8n-ის ჭკვიან გაფრთხილებებს, რომ შემოგთავაზოს ოპტიმალური თერმოსტატის გრაფიკი — ეს ამცირებს ზამთრის გაზის გადასახადს თანამცხოვრებლებზე 25%-მდე.\n\n🔥 SakhliAI uses historical insulation data per building and smart n8n alert triggers to recommend lower thermostat schedules during off-peak hours. Flatmates typically save up to 25% on winter gas utility bills without losing comfort.";
+    return pick(
+      "🔥 SakhliAI uses historical insulation data per building and smart n8n alert triggers to recommend lower thermostat schedules during off-peak hours. Flatmates typically save up to 25% on winter gas bills without losing comfort.",
+      "🔥 SakhliAI იყენებს ისტორიულ თბოიზოლაციის მონაცემებს და n8n-ის ჭკვიან გაფრთხილებებს ოპტიმალური თერმოსტატის გრაფიკისთვის — ეს ამცირებს ზამთრის გაზის გადასახადს 25%-მდე.",
+    );
 
-  if (s.includes("safest student") || s.includes("safe student") || s.includes("neighborhood") || s.includes("უსაფრთხო სტუდენტურ") || s.includes("უბანი"))
-    return "🛡️ ყველაზე უსაფრთხო სტუდენტური უბნებია საბურთალო და ვაკე — უნივერსიტეტების მაღალი კონცენტრაცია, აქტიური საზოგადოებრივი ტრანსპორტი და განათების ინფრასტრუქტურა, რომელსაც ვაკონტროლებთ SakhliAI Safety Scorecard-ით.\n\n🛡️ The safest student neighborhoods in Tbilisi are Saburtalo and Vake — high university density, active public-transport links, and street-lighting infrastructure that we monitor via the SakhliAI safety scorecard.";
+  if (s.includes("safest") || s.includes("safe student") || s.includes("neighborhood") || s.includes("უსაფრთხო") || s.includes("უბანი"))
+    return pick(
+      "🛡️ The safest student neighborhoods in Tbilisi are Saburtalo and Vake — high university density, active public transport, and street-lighting we monitor via the SakhliAI safety scorecard.",
+      "🛡️ ყველაზე უსაფრთხო სტუდენტური უბნებია საბურთალო და ვაკე — უნივერსიტეტების მაღალი კონცენტრაცია, აქტიური ტრანსპორტი და განათება, რომელსაც ვაკონტროლებთ SakhliAI Safety Scorecard-ით.",
+    );
 
-  if (s.includes("hybrid revenue") || s.includes("hybrid") || s.includes("ჰიბრიდულ"))
-    return "💸 SakhliAI-ის ჰიბრიდული მოდელი: ზაფხულის აქტიურ თვეებში გრძელვადიანი სტუდენტური კონტრაქტები გადადის მოკლევადიან Airbnb რეჟიმში, რაც მასპინძლების შემოსავალს 2.5x ზრდის — ხოლო სტუდენტის ქირა ფიქსირებული და დაცულია სასწავლო წლის განმავლობაში.\n\n💸 SakhliAI's hybrid model shifts long-term student contracts into short-term Airbnb listings during active summer months. Hosts see ~2.5x yield uplift, while student rent stays fixed and protected throughout the academic year.";
+  if (s.includes("hybrid") || s.includes("ჰიბრიდულ"))
+    return pick(
+      "💸 SakhliAI's hybrid model shifts long-term student contracts into short-term Airbnb listings in summer. Hosts see ~2.5x yield uplift, while student rent stays fixed through the academic year.",
+      "💸 SakhliAI-ის ჰიბრიდული მოდელი: ზაფხულში გრძელვადიანი სტუდენტური კონტრაქტები გადადის მოკლევადიან Airbnb რეჟიმში — მასპინძლის შემოსავალი იზრდება 2.5x, სტუდენტის ქირა კი ფიქსირებულია.",
+    );
 
-  // --- Older contextual heuristics ---
-  if (s.includes("ფას") || s.includes("price") || s.includes("rent"))
+  if (s.includes("price") || s.includes("rent") || s.includes("ფას"))
     return path.startsWith("/host")
-      ? "ვაკეში მსგავსი ბინების მედიანა არის ₾1,650. რეკომენდაცია: დააწესე ₾1,720 — მოთხოვნა მაღალია."
-      : "შენი ბიუჯეტისთვის (₾1,200–1,600) საუკეთესო ვარიანტებია საბურთალოზე. სცადე AI Best Fit ფილტრი.";
-  if (s.includes("ბიუჯ") || s.includes("budget"))
-    return "სტუდენტებისთვის ვაკეს მედიანა ₾1,500/თვე. გავყოთ 2 თანამცხოვრებზე — გამოვა ₾750. 💡";
-  if (s.includes("ხელშეკრ") || s.includes("contract") || s.includes("lease"))
-    return "ჩვენი ციფრული Smart Contract ხელმოწერა ხდება SakhliAI Vault-ით — იურიდიულად ვალიდურია საქართველოში.";
-  if (s.includes("booking") || s.includes("ჯავშ"))
-    return "შენი არხები (Airbnb, Booking.com, Direct) რეალურ დროში სინქრონიზდება n8n-ით. ნებისმიერი ახალი ჯავშანი ჩანს კალენდარზე ≤2 წამში.";
-  if (s.includes("hello") || s.includes("გამარჯ"))
-    return contextGreeting(path, role);
-  return "კარგი კითხვაა! 🤔 ჩემი მონაცემები მიუთითებს, რომ ეს დამოკიდებულია უბანზე და სეზონზე. დააკონკრეტე და მოგცემ ზუსტ რეკომენდაციას.";
+      ? pick(
+          "Median rent for similar flats in Vake is ₾1,650. Recommendation: set ₾1,720 — demand is high.",
+          "ვაკეში მსგავსი ბინების მედიანა ₾1,650-ია. რეკომენდაცია: დააწესე ₾1,720 — მოთხოვნა მაღალია.",
+        )
+      : pick(
+          "For your budget (₾1,200–1,600) the best options are in Saburtalo. Try the AI Best Fit filter.",
+          "შენი ბიუჯეტისთვის (₾1,200–1,600) საუკეთესო ვარიანტებია საბურთალოზე. სცადე AI Best Fit ფილტრი.",
+        );
+  if (s.includes("budget") || s.includes("ბიუჯ"))
+    return pick(
+      "Median in Vake is ₾1,500/mo for students. Split across 2 flatmates → ₾750 each. 💡",
+      "სტუდენტებისთვის ვაკეს მედიანა ₾1,500/თვე. გავყოთ 2 თანამცხოვრებზე — გამოვა ₾750. 💡",
+    );
+  if (s.includes("contract") || s.includes("lease") || s.includes("ხელშეკრ"))
+    return pick(
+      "Our digital smart contract is signed via SakhliAI Vault — legally valid in Georgia.",
+      "ჩვენი ციფრული ხელშეკრულება ფორმდება SakhliAI Vault-ით — იურიდიულად ვალიდურია საქართველოში.",
+    );
+  if (s.includes("booking") || s.includes("channel") || s.includes("sync") || s.includes("ჯავშ") || s.includes("არხ"))
+    return pick(
+      "Your channels (Airbnb, Booking.com, Direct) sync in real time via n8n — any new booking appears on the calendar in ≤2s.",
+      "შენი არხები (Airbnb, Booking.com, Direct) რეალურ დროში სინქრონიზდება n8n-ით. ახალი ჯავშანი ჩანს კალენდარზე ≤2 წამში.",
+    );
+  if (s.includes("hello") || s.includes("hi ") || s.includes("გამარჯ"))
+    return contextGreeting(path, role, locale);
+  return pick(
+    "Good question! 🤔 My data says it depends on the district and season. Give me a few specifics and I'll give you an exact recommendation.",
+    "კარგი კითხვაა! 🤔 ეს დამოკიდებულია უბანზე და სეზონზე. დააკონკრეტე და მოგცემ ზუსტ რეკომენდაციას.",
+  );
 }
 
 export function AiAssistantBubble() {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const [msgs, setMsgs] = useState<Msg[]>([]);
+  const [typing, setTyping] = useState(false);
   const path = useRouterState({ select: (s) => s.location.pathname });
   const { profile } = useAuth();
-  const { locale } = useI18n();
+  const { locale, t } = useI18n();
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (open && msgs.length === 0) {
-      setMsgs([{ role: "ai", text: contextGreeting(path, profile?.role) }]);
+      setMsgs([{ role: "ai", text: contextGreeting(path, profile?.role, locale) }]);
     }
   }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [msgs]);
+  }, [msgs, typing]);
+
+  // Reveal the reply word-by-word, like a streaming model.
+  const streamReply = (full: string) => {
+    const words = full.split(" ");
+    setMsgs((m) => [...m, { role: "ai", text: "" }]);
+    let i = 0;
+    const id = window.setInterval(() => {
+      i += 1;
+      setMsgs((m) => {
+        const copy = [...m];
+        copy[copy.length - 1] = { role: "ai", text: words.slice(0, i).join(" ") };
+        return copy;
+      });
+      if (i >= words.length) window.clearInterval(id);
+    }, 28);
+  };
 
   const ask = (text: string) => {
-    const reply = autoReply(text, path, profile?.role);
-    setMsgs((m) => [...m, { role: "user", text }, { role: "ai", text: reply }]);
+    if (typing) return;
+    setMsgs((m) => [...m, { role: "user", text }]);
+    setTyping(true);
+    const reply = autoReply(text, path, profile?.role, locale);
+    window.setTimeout(() => {
+      setTyping(false);
+      streamReply(reply);
+    }, 700);
   };
 
   const send = () => {
@@ -94,6 +175,8 @@ export function AiAssistantBubble() {
     ask(text);
     setInput("");
   };
+
+  const chips = contextChips(path, locale);
 
   return (
     <>
@@ -119,7 +202,7 @@ export function AiAssistantBubble() {
                 <Sparkles className="h-4 w-4" />
               </div>
               <div>
-                <div className="text-sm font-semibold leading-tight">SakhliAI ასისტენტი</div>
+                <div className="text-sm font-semibold leading-tight">{t("assistant.name")}</div>
                 <div className="text-[10px] text-muted-foreground">context: {path}</div>
               </div>
             </div>
@@ -143,10 +226,23 @@ export function AiAssistantBubble() {
                 </div>
               </div>
             ))}
+            {typing && (
+              <div className="flex justify-start">
+                <div className="flex items-center gap-1 rounded-2xl rounded-bl-sm bg-secondary px-3 py-2.5">
+                  {[0, 150, 300].map((delay) => (
+                    <span
+                      key={delay}
+                      className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground"
+                      style={{ animationDelay: `${delay}ms` }}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="flex flex-wrap gap-1.5 border-t border-border bg-background/30 p-2">
-            {TEMPLATES[locale].map((q) => (
+            {chips.map((q) => (
               <button
                 key={q}
                 type="button"
@@ -164,7 +260,7 @@ export function AiAssistantBubble() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && send()}
-              placeholder="ჰკითხე SakhliAI-ს…"
+              placeholder={t("assistant.placeholder")}
               className="h-9 flex-1"
             />
             <Button size="icon" onClick={send}>

@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AppHeader } from "@/components/AppHeader";
 import { AuthGate } from "@/components/AuthGate";
+import { OnboardingReveal } from "@/components/OnboardingReveal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -60,6 +61,7 @@ function OnboardingInner() {
   const navigate = useNavigate();
   const { save } = useProfile();
   const [step, setStep] = useState(0);
+  const [done, setDone] = useState(false);
   const [profile, setProfile] = useState<StudentProfile>(defaultProfile);
 
   const update = <K extends keyof StudentProfile>(k: K, v: StudentProfile[K]) =>
@@ -69,9 +71,13 @@ function OnboardingInner() {
     if (step < TOTAL - 1) setStep(step + 1);
     else {
       save(profile);
-      navigate({ to: "/matches" });
+      setDone(true);
     }
   };
+
+  if (done) {
+    return <OnboardingReveal profile={profile} onContinue={() => navigate({ to: "/matches" })} />;
+  }
   const back = () => setStep((s) => Math.max(0, s - 1));
 
   const sleepOption = (v: SleepSchedule, label: string) => (

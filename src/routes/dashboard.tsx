@@ -1,7 +1,8 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
-import { AppHeader } from "@/components/AppHeader";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEffect, useMemo, useState } from "react";
+import { StudentShell } from "@/components/shells/StudentShell";
 import { AuthGate } from "@/components/AuthGate";
+import { AgentThinking } from "@/components/agent/AgentThinking";
 import { SmartContractCard } from "@/components/SmartContract";
 import { DisputeResolver } from "@/components/DisputeResolver";
 import { CommuteWidget } from "@/components/CommuteWidget";
@@ -30,6 +31,7 @@ import {
   Plus,
   Send,
   ShieldCheck,
+  Sparkles,
   Trash2,
   UserMinus,
   Users,
@@ -39,6 +41,9 @@ import {
 } from "lucide-react";
 
 export const Route = createFileRoute("/dashboard")({
+  validateSearch: (search: Record<string, unknown>): { tab?: Tab } => ({
+    tab: search.tab === "utilities" ? "utilities" : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Dashboard — SakhliAI" },
@@ -58,7 +63,9 @@ function DashboardPage() {
   const { t } = useI18n();
   const { profile } = useProfile();
   const { matches, record } = useMatches();
-  const [tab, setTab] = useState<Tab>("matches");
+  const navigate = useNavigate();
+  const { tab: tabParam } = Route.useSearch();
+  const tab: Tab = tabParam === "utilities" ? "utilities" : "matches";
   const [selectedFlatmate, setSelectedFlatmate] = useState<Flatmate | null>(null);
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
 
@@ -86,7 +93,7 @@ function DashboardPage() {
 
   const tabBtn = (v: Tab, label: string) => (
     <button
-      onClick={() => setTab(v)}
+      onClick={() => navigate({ to: "/dashboard", search: v === "utilities" ? { tab: "utilities" } : {} })}
       className={[
         "flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors",
         tab === v ? "bg-card shadow-sm" : "text-muted-foreground hover:text-foreground",
@@ -97,10 +104,8 @@ function DashboardPage() {
   );
 
   return (
-    <div className="min-h-screen bg-background">
-      <AppHeader />
-
-      <div className="mx-auto max-w-5xl px-4 py-8">
+    <StudentShell>
+      <div className="mx-auto max-w-5xl">
         <div>
           <h1 className="font-display text-3xl font-bold">
             {t("dashboard.title")}
@@ -228,7 +233,7 @@ function DashboardPage() {
         onOpenChange={(open) => !open && setSelectedProperty(null)}
         onUnmatch={handleUnmatchProperty}
       />
-    </div>
+    </StudentShell>
   );
 }
 
@@ -547,15 +552,36 @@ function UtilitySplitter({
 
   const total = bills.reduce((s, b) => s + b.amount, 0);
 
+  // Brief "agent is recalculating" beat whenever the inputs change.
+  const [recalcing, setRecalcing] = useState(false);
+  useEffect(() => {
+    setRecalcing(true);
+    const id = window.setTimeout(() => setRecalcing(false), 650);
+    return () => window.clearTimeout(id);
+  }, [total, mode, roommates]);
+
   const splits = useMemo(() => {
     if (mode === "equal" || roommates.length === 0) {
       const per = roommates.length ? total / roommates.length : 0;
-      return roommates.map((r) => ({ ...r, owes: per, days: monthDays }));
+      return roommates.map((r) => ({
+        ...r,
+        owes: per,
+        days: monthDays,
+        reason: `Equal share across ${roommates.length} flatmate${roommates.length > 1 ? "s" : ""}`,
+      }));
     }
     // Move-in date weighted: each person owes proportional to days occupied
     const occ = roommates.map((r) => ({ ...r, days: Math.max(1, monthDays - r.moveInDay + 1) }));
     const totalDays = occ.reduce((s, o) => s + o.days, 0);
-    return occ.map((o) => ({ ...o, owes: total * (o.days / totalDays) }));
+    const maxDays = Math.max(...occ.map((o) => o.days));
+    return occ.map((o) => ({
+      ...o,
+      owes: total * (o.days / totalDays),
+      reason:
+        o.days === maxDays
+          ? `Here from day ${o.moveInDay} — full ${o.days}/30 days, pays the most`
+          : `Moved in day ${o.moveInDay} → only ${o.days}/30 days, pays less`,
+    }));
   }, [bills, roommates, mode, total]);
 
   return (
@@ -797,7 +823,14 @@ function UtilitySplitter({
 
       {/* Per-person breakdown */}
       <div className="card-elevated p-5">
-        <h3 className="font-display text-base font-semibold">Who pays what</h3>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h3 className="font-display text-base font-semibold">Who pays what</h3>
+          {recalcing ? (
+            <AgentThinking label="Calculating fair split…" />
+          ) : (
+            <span className="text-xs text-muted-foreground">SakhliAI split · reasoning shown per person</span>
+          )}
+        </div>
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {splits.map((s) => (
             <div key={s.id} className="rounded-xl border border-border bg-card p-4">
@@ -810,6 +843,10 @@ function UtilitySplitter({
               <div className="mt-2 font-display text-2xl font-bold text-gradient">
                 ₾ {s.owes.toFixed(2)}
               </div>
+              <p className="mt-1.5 flex items-start gap-1 text-[11px] leading-snug text-muted-foreground">
+                <Sparkles className="mt-0.5 h-3 w-3 shrink-0 text-accent" />
+                {s.reason}
+              </p>
               <Button
                 size="sm"
                 className="mt-3 w-full"

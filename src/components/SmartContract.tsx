@@ -1,6 +1,13 @@
 import { useState } from "react";
-import { CheckCircle2, FileSignature, ShieldCheck, Sparkles } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { CheckCircle2, FileSignature, ShieldCheck, Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+
+const CEREMONY_STEPS = [
+  "Verifying your identity…",
+  "Generating bilingual lease…",
+  "Sealing in SakhliAI Vault…",
+] as const;
 
 type Props = {
   propertyTitle: string;
@@ -18,14 +25,23 @@ export function SmartContractCard({
   hostName = "SakhliAI Host",
 }: Props) {
   const [signed, setSigned] = useState(false);
-  const [signing, setSigning] = useState(false);
+  const [step, setStep] = useState(-1); // -1 idle, 0..2 ceremony steps
+  const signing = step >= 0;
 
   const handleSign = () => {
-    setSigning(true);
-    setTimeout(() => {
-      setSigning(false);
-      setSigned(true);
-    }, 1100);
+    let i = 0;
+    setStep(0);
+    const tick = () => {
+      i += 1;
+      if (i < CEREMONY_STEPS.length) {
+        setStep(i);
+        window.setTimeout(tick, 650);
+      } else {
+        setStep(-1);
+        setSigned(true);
+      }
+    };
+    window.setTimeout(tick, 650);
   };
 
   return (
@@ -70,6 +86,31 @@ export function SmartContractCard({
         <li>3. დავის შემთხვევაში გამოიყენება SakhliAI AI მედიატორი / Disputes are mediated via SakhliAI AI.</li>
       </ol>
 
+      {/* Ceremony progress */}
+      <AnimatePresence>
+        {signing && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="mt-4 overflow-hidden rounded-lg border border-accent/30 bg-accent/5 p-3"
+          >
+            {CEREMONY_STEPS.map((label, i) => (
+              <div key={label} className="flex items-center gap-2 py-1 text-xs">
+                {i < step ? (
+                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+                ) : i === step ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin text-accent" />
+                ) : (
+                  <span className="h-3.5 w-3.5 rounded-full border border-border" />
+                )}
+                <span className={i <= step ? "text-foreground" : "text-muted-foreground"}>{label}</span>
+              </div>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
           <ShieldCheck className="h-3.5 w-3.5 text-accent" /> Secured by SakhliAI Vault (eIDAS-equivalent)
@@ -87,9 +128,14 @@ export function SmartContractCard({
             )}
           </Button>
         ) : (
-          <div className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold">
-            ✓ Signed · {new Date().toLocaleString("ka-GE")}
-          </div>
+          <motion.div
+            initial={{ scale: 0, rotate: -25 }}
+            animate={{ scale: 1, rotate: -8 }}
+            transition={{ type: "spring", stiffness: 200, damping: 12 }}
+            className="flex items-center gap-1.5 rounded-lg border-2 border-emerald-500/70 px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-emerald-600 dark:text-emerald-400"
+          >
+            <ShieldCheck className="h-4 w-4" /> Signed · Vault
+          </motion.div>
         )}
       </div>
     </div>

@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useRef, useState } from "react";
-import { AppHeader } from "@/components/AppHeader";
+import { StudentShell } from "@/components/shells/StudentShell";
 import { AuthGate } from "@/components/AuthGate";
 import { Button } from "@/components/ui/button";
 import { PricingModal } from "@/components/PricingModal";
@@ -102,9 +102,8 @@ function SettingsPage() {
   const planDetails = PLAN_DETAILS[plan];
 
   return (
-    <div className="min-h-screen bg-background">
-      <AppHeader />
-      <div className="mx-auto max-w-2xl px-4 py-10">
+    <StudentShell>
+      <div className="mx-auto max-w-2xl">
         <h1 className="font-display text-3xl font-bold">მომხმარებლის პარამეტრები</h1>
         <p className="mt-1 text-sm text-muted-foreground">User Settings</p>
 
@@ -265,6 +264,6 @@ function SettingsPage() {
       </div>
 
       <PricingModal open={pricingOpen} onOpenChange={setPricingOpen} reason="manual" />
-    </div>
+    </StudentShell>
   );
 }

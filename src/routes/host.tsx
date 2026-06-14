@@ -18,12 +18,11 @@ import {
 } from "lucide-react";
 import { screenApplicant } from "@/lib/mock-data";
 import { supabase } from "@/integrations/supabase/client";
-import { AppHeader } from "@/components/AppHeader";
+import { HostShell, type HostSection } from "@/components/shells/HostShell";
 import { DemandMap } from "@/components/DemandMap";
 import { SmartContractCard } from "@/components/SmartContract";
 import { AuthGate } from "@/components/AuthGate";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
@@ -44,6 +43,15 @@ import {
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/host")({
+  validateSearch: (search: Record<string, unknown>): { section?: HostSection } => {
+    const s = search.section;
+    return {
+      section:
+        s === "calendar" || s === "channels" || s === "applicants" || s === "operations"
+          ? s
+          : undefined,
+    };
+  },
   component: () => (
     <AuthGate>
       <HostPage />
@@ -147,6 +155,7 @@ const DEFAULT_PROPERTIES: Property[] = [
 ];
 
 function HostPage() {
+  const section = Route.useSearch({ select: (s) => s.section ?? "overview" });
   const [properties, setProperties] = useState<Property[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [syncs, setSyncs] = useState<ChannelSync[]>([]);
@@ -246,57 +255,69 @@ function HostPage() {
     return Math.min(100, Math.round((nights / next30) * 100));
   }, [bookings, properties]);
 
+  const visibleProps = selectedProp === "all" ? properties : properties.filter((p) => p.id === selectedProp);
+
   return (
-    <div className="min-h-screen bg-background">
-      <AppHeader />
-      <main className="mx-auto max-w-6xl px-4 py-8">
-        <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <h1 className="font-display text-3xl font-bold tracking-tight">Host control center</h1>
-            <p className="text-muted-foreground">
-              Unified calendar, channel sync, and cleaning ops — all live.
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Select value={selectedProp} onValueChange={setSelectedProp}>
-              <SelectTrigger className="w-[220px]">
-                <SelectValue placeholder="All properties" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All properties</SelectItem>
-                {properties.map((p) => (
-                  <SelectItem key={p.id} value={p.id}>
-                    {p.title}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <NewBookingDialog properties={properties} defaultProp={selectedProp} />
-          </div>
+    <HostShell>
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="font-display text-3xl font-bold tracking-tight">Host control center</h1>
+          <p className="text-muted-foreground">
+            Unified calendar, channel sync, and cleaning ops — all live.
+          </p>
         </div>
+        <div className="flex items-center gap-2">
+          <Select value={selectedProp} onValueChange={setSelectedProp}>
+            <SelectTrigger className="w-[220px]">
+              <SelectValue placeholder="All properties" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All properties</SelectItem>
+              {properties.map((p) => (
+                <SelectItem key={p.id} value={p.id}>
+                  {p.title}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <NewBookingDialog properties={properties} defaultProp={selectedProp} />
+        </div>
+      </div>
 
-        {/* Hero analytics: Occupancy / Revenue / AI Tip */}
-        <HeroAnalytics
-          occupancy={occupancyRate}
-          revenue={bookings
-            .filter((b) => b.status !== "cancelled" && b.total_price)
-            .reduce((s, b) => s + Number(b.total_price ?? 0), 0)}
-        />
+      {section === "overview" && (
+        <div className="space-y-6">
+          <HeroAnalytics
+            occupancy={occupancyRate}
+            revenue={bookings
+              .filter((b) => b.status !== "cancelled" && b.total_price)
+              .reduce((s, b) => s + Number(b.total_price ?? 0), 0)}
+          />
 
-        {/* AI Smart Rent Predictor */}
-        <SmartRentPredictor />
+          {/* Stats */}
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+            <StatCard label="Properties" value={properties.length} icon={<MapPin className="h-4 w-4" />} />
+            <StatCard
+              label="Active bookings"
+              value={upcomingBookings.length}
+              icon={<CalendarDays className="h-4 w-4" />}
+            />
+            <StatCard
+              label="Occupancy (30d)"
+              value={`${occupancyRate}%`}
+              icon={<Radio className="h-4 w-4" />}
+            />
+            <StatCard
+              label="Cleaning queue"
+              value={tasks.filter((t) => t.status !== "completed").length}
+              icon={<Sparkles className="h-4 w-4" />}
+            />
+          </div>
 
-        {/* Airbnb Priority — tourist-season pricing/optimization toggle */}
-        <AirbnbPriorityToggle />
-
-        {/* Interactive Demand Map */}
-        <div className="mb-6">
+          <SmartRentPredictor />
+          <AirbnbPriorityToggle />
           <DemandMap />
-        </div>
 
-        {/* Featured Smart Contract */}
-        {properties[0] && (
-          <div className="mb-6">
+          {properties[0] && (
             <SmartContractCard
               propertyTitle={properties[0].title}
               district={properties[0].city ?? "Tbilisi"}
@@ -304,77 +325,27 @@ function HostPage() {
               tenantName="Nino K."
               hostName="You"
             />
-          </div>
-        )}
-
-
-
-
-        {/* Stats */}
-        <div className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-4">
-          <StatCard label="Properties" value={properties.length} icon={<MapPin className="h-4 w-4" />} />
-          <StatCard
-            label="Active bookings"
-            value={upcomingBookings.length}
-            icon={<CalendarDays className="h-4 w-4" />}
-          />
-          <StatCard
-            label="Occupancy (30d)"
-            value={`${occupancyRate}%`}
-            icon={<Radio className="h-4 w-4" />}
-          />
-          <StatCard
-            label="Cleaning queue"
-            value={tasks.filter((t) => t.status !== "completed").length}
-            icon={<Sparkles className="h-4 w-4" />}
-          />
+          )}
         </div>
+      )}
 
-        <Tabs defaultValue="calendar" className="w-full">
-          <TabsList>
-            <TabsTrigger value="calendar">
-              <CalendarDays className="mr-2 h-4 w-4" /> Calendar
-            </TabsTrigger>
-            <TabsTrigger value="channels">
-              <Radio className="mr-2 h-4 w-4" /> Channels
-            </TabsTrigger>
-            <TabsTrigger value="applicants">
-              <Sparkles className="mr-2 h-4 w-4" /> Applicants
-            </TabsTrigger>
-            <TabsTrigger value="ops">
-              <Sparkles className="mr-2 h-4 w-4" /> Operations
-            </TabsTrigger>
-          </TabsList>
+      {section === "calendar" && (
+        <CalendarView properties={visibleProps} bookings={filteredBookings} pulse={pulse} />
+      )}
 
-          <TabsContent value="calendar" className="mt-4">
-            <CalendarView
-              properties={selectedProp === "all" ? properties : properties.filter((p) => p.id === selectedProp)}
-              bookings={filteredBookings}
-              pulse={pulse}
-            />
-          </TabsContent>
+      {section === "channels" && <ChannelsView properties={properties} syncs={syncs} />}
 
-          <TabsContent value="channels" className="mt-4">
-            <ChannelsView properties={properties} syncs={syncs} />
-          </TabsContent>
+      {section === "applicants" && <TenantScreeningView properties={visibleProps} />}
 
-          <TabsContent value="applicants" className="mt-4">
-            <TenantScreeningView
-              properties={selectedProp === "all" ? properties : properties.filter((p) => p.id === selectedProp)}
-            />
-          </TabsContent>
-
-          <TabsContent value="ops" className="mt-4">
-            <OpsView
-              properties={properties}
-              tasks={tasks}
-              bookings={filteredBookings}
-              filteredPropId={selectedProp === "all" ? null : selectedProp}
-            />
-          </TabsContent>
-        </Tabs>
-      </main>
-    </div>
+      {section === "operations" && (
+        <OpsView
+          properties={properties}
+          tasks={tasks}
+          bookings={filteredBookings}
+          filteredPropId={selectedProp === "all" ? null : selectedProp}
+        />
+      )}
+    </HostShell>
   );
 }
 

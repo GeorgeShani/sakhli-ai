@@ -11,6 +11,22 @@ const en: Dict = {
   "nav.matches": "Matches",
   "nav.dashboard": "Dashboard",
   "nav.start": "Get started",
+  "nav.discover": "Discover",
+  "nav.saved": "Matches",
+  "nav.utilities": "Bills",
+  "nav.profile": "Profile",
+  "match.celebrate.title": "It's a match!",
+  "match.celebrate.desc": "You both liked each other. Say hi and start planning.",
+  "match.celebrate.cta": "Send a message",
+  "match.celebrate.keep": "Keep swiping",
+  "matches.undo": "Undo",
+  "host.nav.overview": "Overview",
+  "host.nav.calendar": "Calendar",
+  "host.nav.channels": "Channels",
+  "host.nav.applicants": "Applicants",
+  "host.nav.operations": "Operations",
+  "host.n8n.connected": "Connected to n8n",
+  "host.n8n.lastsync": "last sync",
 
   "hero.title": "Find your flatmate. Find your flat.",
   "hero.subtitle":
@@ -72,6 +88,19 @@ const en: Dict = {
   "onboarding.q6.title": "Tell flatmates about you",
   "onboarding.q6.placeholder": "A few words about your studies, hobbies, what you're looking for…",
 
+  "onboarding.reveal.tag": "Your housing personality",
+  "onboarding.reveal.ready": "Profile ready · matching unlocked",
+  "onboarding.reveal.budget": "Monthly budget",
+  "onboarding.reveal.cta": "See my matches",
+  "persona.neat": "Neat",
+  "persona.relaxed": "Relaxed",
+  "persona.balanced": "Balanced",
+  "persona.social": "social",
+  "persona.quiet": "homebody",
+  "persona.nightowl": "night owl",
+  "persona.earlybird": "early bird",
+  "persona.flexible": "flexible spirit",
+
   "matches.title": "Your matches",
   "matches.subtitle": "Swipe right to connect, left to pass.",
   "matches.tab.people": "Flatmates",
@@ -106,6 +135,114 @@ const en: Dict = {
   "chat.placeholder": "Type a message…",
   "chat.send": "Send",
   "chat.empty": "Select a match to start chatting",
+
+  /* ---------- Landing (redesign) ---------- */
+  "land.nav.how": "How it works",
+  "land.nav.features": "Features",
+  "land.nav.automation": "Automation",
+  "land.nav.hosts": "For hosts",
+  "land.hero.badge": "Behavior-based rentals for Georgian students",
+  "land.hero.title.a": "Stop scrolling Facebook groups.",
+  "land.hero.title.b": "Start living with people who fit.",
+  "land.hero.subtitle":
+    "SakhliAI scores flatmates and homes on sleep schedule, cleanliness, budget and lifestyle — then an AI agent handles the boring parts: bills, rules, and the lease.",
+  "land.hero.cta.student": "I'm a student",
+  "land.hero.cta.host": "I list properties",
+  "land.hero.demo.match": "It's a 94% match",
+  "land.hero.trust": "Students from",
+
+  "land.problem.tag": "The old way is broken",
+  "land.problem.title": "Finding a flat in Tbilisi shouldn't be a gamble",
+  "land.before.title": "Without SakhliAI",
+  "land.before.1": "Endless Facebook-group scrolling",
+  "land.before.2": "Move in with a stranger, hope it works",
+  "land.before.3": "Awkward fights over bills and chores",
+  "land.before.4": "Lease in a language you half-understand",
+  "land.after.title": "With SakhliAI",
+  "land.after.1": "Fit-scored matches near your university",
+  "land.after.2": "Know the lifestyle match before you message",
+  "land.after.3": "Bills split fairly, automatically",
+  "land.after.4": "Clear bilingual lease, signed in-app",
+
+  "land.match.tag": "Not vibes — signals",
+  "land.match.title": "See exactly why two people fit",
+  "land.match.subtitle":
+    "Every match is broken down into the factors that actually cause flatmate conflict. No black box.",
+  "land.match.factor.sleep": "Sleep schedule",
+  "land.match.factor.clean": "Cleanliness",
+  "land.match.factor.budget": "Budget overlap",
+  "land.match.factor.lifestyle": "Lifestyle habits",
+  "land.match.overall": "Overall fit",
+
+  "land.features.tag": "Everything in one place",
+  "land.features.title": "From first swipe to signed lease",
+  "land.feat.discover.title": "Swipe to discover",
+  "land.feat.discover.desc":
+    "Browse fit-scored flatmates and homes like a feed. Like, match, and start chatting — no spam, no agents.",
+  "land.feat.split.title": "Bills split fairly, by an agent",
+  "land.feat.split.desc":
+    "The AI pro-rates every bill by who moved in when, and tells you the reasoning in one line. No spreadsheets, no arguments.",
+  "land.feat.mediator.title": "AI house-rules mediator",
+  "land.feat.mediator.desc":
+    "Disagree on noise, guests, or cleaning? Describe it and get a fair compromise drawn from both of your profiles.",
+  "land.feat.lease.title": "Lease, signed in minutes",
+  "land.feat.lease.desc":
+    "A clear bilingual lease generated for your match, signed digitally and secured in the SakhliAI Vault.",
+
+  "land.auto.tag": "The agent never sleeps",
+  "land.auto.title": "An AI agent works behind every match",
+  "land.auto.subtitle":
+    "Matching, bill-splitting, applicant screening and turnover are run by an AI agent and n8n automations — live, while you get on with your studies.",
+  "land.auto.live": "Live agent activity",
+
+  "land.host.tag": "For hosts",
+  "land.host.title": "Own property? Run it on autopilot.",
+  "land.host.desc":
+    "One live calendar across Airbnb, Booking.com and student leases. AI rent pricing, automated cleaning and smart-lock codes — synced in real time by n8n.",
+  "land.host.cta": "Explore the host dashboard",
+
+  "land.footer.tagline": "Behavior-based flatmate matching and automated rentals for Georgia.",
+  "land.footer.product": "Product",
+  "land.footer.company": "Company",
+  "land.footer.students": "For students",
+  "land.footer.hosts": "For hosts",
+  "land.footer.lang": "English / ქართული",
+
+  /* ---------- Auth / role select / assistant ---------- */
+  "auth.title": "Sign in to continue",
+  "auth.desc":
+    "Authentication is required to view compatible flatmates and homes. You can return to the homepage as a guest.",
+  "auth.back": "Back to homepage",
+  "auth.signin": "Sign in",
+  "auth.create": "Create account",
+  "auth.name": "Full name",
+  "auth.email": "Email",
+  "auth.password": "Password",
+  "auth.signin.go": "Sign in",
+  "auth.encrypted": "Sessions are end-to-end encrypted. We never share your data with hosts.",
+
+  "role.title": "Choose your role",
+  "role.subtitle": "How will you use SakhliAI?",
+  "role.student.title": "Rent a flat (Student)",
+  "role.student.desc":
+    "Take the compatibility quiz and swipe through fit-scored flatmates and homes near your university.",
+  "role.host.title": "Rent out my place (Host)",
+  "role.host.desc":
+    "Unified live calendar, channel sync (Airbnb, Booking.com), AI rent predictor, and occupancy analytics.",
+  "role.current": "Current role",
+  "role.tap": "Tap to select",
+  "role.change": "Change role",
+  "role.account.title": "Create your account",
+  "role.student.next": "Next — the 7-step student quiz.",
+  "role.host.next": "Next — your host dashboard and calendar.",
+  "role.setup": "Setting up your profile…",
+  "role.saved": "Your role is saved and applied the moment your account is ready.",
+  "role.signin.continue": "Sign in & continue",
+  "role.create.continue": "Create account & continue",
+
+  "assistant.name": "SakhliAI Assistant",
+  "assistant.placeholder": "Ask SakhliAI…",
+  "assistant.why": "· why we suggest this",
 };
 
 const ka: Dict = {
@@ -115,6 +252,22 @@ const ka: Dict = {
   "nav.matches": "შესაბამისობები",
   "nav.dashboard": "დაფა",
   "nav.start": "დაიწყე",
+  "nav.discover": "აღმოჩენა",
+  "nav.saved": "მატჩები",
+  "nav.utilities": "გადასახადები",
+  "nav.profile": "პროფილი",
+  "match.celebrate.title": "თქვენ ერთმანეთი მოიწონეთ!",
+  "match.celebrate.desc": "ორივემ მოიწონეთ ერთმანეთი. მიესალმე და დაიწყე დაგეგმვა.",
+  "match.celebrate.cta": "მისწერე შეტყობინება",
+  "match.celebrate.keep": "გააგრძელე ცურვა",
+  "matches.undo": "დაბრუნება",
+  "host.nav.overview": "მიმოხილვა",
+  "host.nav.calendar": "კალენდარი",
+  "host.nav.channels": "არხები",
+  "host.nav.applicants": "აპლიკანტები",
+  "host.nav.operations": "ოპერაციები",
+  "host.n8n.connected": "დაკავშირებულია n8n-თან",
+  "host.n8n.lastsync": "ბოლო სინქი",
 
   "hero.title": "იპოვე თანამცხოვრები. იპოვე ბინა.",
   "hero.subtitle":
@@ -176,6 +329,19 @@ const ka: Dict = {
   "onboarding.q6.title": "მოგვიყევი შენ შესახებ",
   "onboarding.q6.placeholder": "რამდენიმე სიტყვა შენი სწავლის, ჰობის და ძიების შესახებ…",
 
+  "onboarding.reveal.tag": "შენი საცხოვრებელი ტიპაჟი",
+  "onboarding.reveal.ready": "პროფილი მზადაა · შერჩევა გააქტიურდა",
+  "onboarding.reveal.budget": "თვიური ბიუჯეტი",
+  "onboarding.reveal.cta": "ჩემი მატჩები",
+  "persona.neat": "სუფთა",
+  "persona.relaxed": "მოდუნებული",
+  "persona.balanced": "დაბალანსებული",
+  "persona.social": "სოციალური",
+  "persona.quiet": "მშვიდი",
+  "persona.nightowl": "ღამის ბუ",
+  "persona.earlybird": "დილის ფრინველი",
+  "persona.flexible": "მოქნილი",
+
   "matches.title": "შენი შესაბამისობები",
   "matches.subtitle": "მარჯვნივ – დაკავშირება, მარცხნივ – გამოტოვება.",
   "matches.tab.people": "თანამცხოვრები",
@@ -210,6 +376,114 @@ const ka: Dict = {
   "chat.placeholder": "დაწერე შეტყობინება…",
   "chat.send": "გაგზავნა",
   "chat.empty": "აირჩიე მატჩი ჩათის დასაწყებად",
+
+  /* ---------- Landing (redesign) ---------- */
+  "land.nav.how": "როგორ მუშაობს",
+  "land.nav.features": "ფუნქციები",
+  "land.nav.automation": "ავტომატიზაცია",
+  "land.nav.hosts": "მასპინძლებს",
+  "land.hero.badge": "ქცევაზე დაფუძნებული ქირაობა ქართველი სტუდენტებისთვის",
+  "land.hero.title.a": "შეწყვიტე Facebook-ჯგუფების სქროლვა.",
+  "land.hero.title.b": "იცხოვრე იმ ადამიანებთან, ვინც გერგება.",
+  "land.hero.subtitle":
+    "SakhliAI აფასებს თანამცხოვრებსა და ბინებს ძილის რეჟიმით, სისუფთავით, ბიუჯეტითა და ცხოვრების სტილით — შემდეგ კი AI აგენტი იღებს მოსაწყენ საქმეებს: გადასახადებს, წესებსა და ხელშეკრულებას.",
+  "land.hero.cta.student": "მე სტუდენტი ვარ",
+  "land.hero.cta.host": "მე ბინებს ვაქირავებ",
+  "land.hero.demo.match": "94% თანხვედრა",
+  "land.hero.trust": "სტუდენტები",
+
+  "land.problem.tag": "ძველი გზა გაფუჭებულია",
+  "land.problem.title": "თბილისში ბინის პოვნა აზარტული თამაში არ უნდა იყოს",
+  "land.before.title": "SakhliAI-ის გარეშე",
+  "land.before.1": "გაუთავებელი Facebook-ჯგუფების სქროლვა",
+  "land.before.2": "უცნობთან გადასვლა და იმედის დადება",
+  "land.before.3": "უხერხული ჩხუბი გადასახადებსა და საქმეებზე",
+  "land.before.4": "ხელშეკრულება ენაზე, რომელსაც ბოლომდე ვერ იგებ",
+  "land.after.title": "SakhliAI-თან ერთად",
+  "land.after.1": "შეფასებული მატჩები შენი უნივერსიტეტის ახლოს",
+  "land.after.2": "გაიგე თავსებადობა შეტყობინების გაგზავნამდე",
+  "land.after.3": "გადასახადები სამართლიანად, ავტომატურად იყოფა",
+  "land.after.4": "გასაგები ორენოვანი ხელშეკრულება, ხელმოწერილი აპში",
+
+  "land.match.tag": "არა ვაიბი — სიგნალები",
+  "land.match.title": "ნახე ზუსტად, რატომ ერგებათ ორი ადამიანი ერთმანეთს",
+  "land.match.subtitle":
+    "ყველა მატჩი იშლება იმ ფაქტორებად, რომლებიც რეალურად იწვევს კონფლიქტს თანამცხოვრებებში. შავი ყუთის გარეშე.",
+  "land.match.factor.sleep": "ძილის რეჟიმი",
+  "land.match.factor.clean": "სისუფთავე",
+  "land.match.factor.budget": "ბიუჯეტის თანხვედრა",
+  "land.match.factor.lifestyle": "ცხოვრების ჩვევები",
+  "land.match.overall": "საერთო თავსებადობა",
+
+  "land.features.tag": "ყველაფერი ერთ ადგილას",
+  "land.features.title": "პირველი გადაცურვიდან ხელმოწერილ ხელშეკრულებამდე",
+  "land.feat.discover.title": "აღმოაჩინე გადაცურვით",
+  "land.feat.discover.desc":
+    "ნახე შეფასებული თანამცხოვრებლები და ბინები ფიდის სტილში. მოიწონე, დაუკავშირდი და დაიწყე საუბარი — სპამისა და აგენტების გარეშე.",
+  "land.feat.split.title": "გადასახადებს აგენტი ანაწილებს",
+  "land.feat.split.desc":
+    "AI ანაწილებს ყველა გადასახადს იმის მიხედვით, ვინ როდის შემოვიდა, და ერთ წინადადებაში გიხსნის მიზეზს. ცხრილებისა და კამათის გარეშე.",
+  "land.feat.mediator.title": "AI მედიატორი სახლის წესებზე",
+  "land.feat.mediator.desc":
+    "ვერ თანხმდებით ხმაურზე, სტუმრებზე ან დასუფთავებაზე? აღწერე და მიიღე სამართლიანი კომპრომისი თქვენი ორივე პროფილის მიხედვით.",
+  "land.feat.lease.title": "ხელშეკრულება, ხელმოწერილი წუთებში",
+  "land.feat.lease.desc":
+    "გასაგები ორენოვანი ხელშეკრულება შენი მატჩისთვის, ხელმოწერილი ციფრულად და დაცული SakhliAI Vault-ში.",
+
+  "land.auto.tag": "აგენტი არ იძინებს",
+  "land.auto.title": "ყველა მატჩის უკან AI აგენტი დგას",
+  "land.auto.subtitle":
+    "შერჩევას, გადასახადების გაყოფას, აპლიკანტების შემოწმებასა და დასუფთავებას AI აგენტი და n8n ავტომატიზაციები მართავენ — ცოცხლად, სანამ შენ სწავლაზე ხარ ფოკუსირებული.",
+  "land.auto.live": "აგენტის ცოცხალი აქტივობა",
+
+  "land.host.tag": "მასპინძლებს",
+  "land.host.title": "გაქვს ბინა? მართე ის ავტოპილოტზე.",
+  "land.host.desc":
+    "ერთი ცოცხალი კალენდარი Airbnb-ზე, Booking.com-სა და სტუდენტურ ხელშეკრულებებზე. AI ფასწარმოქმნა, ავტომატური დასუფთავება და ჭკვიანი საკეტის კოდები — რეალურ დროში n8n-ით სინქრონიზებული.",
+  "land.host.cta": "ნახე მასპინძლის დაფა",
+
+  "land.footer.tagline": "ქცევაზე დაფუძნებული თანამცხოვრებლების შერჩევა და ავტომატური ქირაობა საქართველოსთვის.",
+  "land.footer.product": "პროდუქტი",
+  "land.footer.company": "კომპანია",
+  "land.footer.students": "სტუდენტებს",
+  "land.footer.hosts": "მასპინძლებს",
+  "land.footer.lang": "English / ქართული",
+
+  /* ---------- Auth / role select / assistant ---------- */
+  "auth.title": "ავტორიზაცია",
+  "auth.desc":
+    "თავსებადი თანამცხოვრებლებისა და ბინების სანახავად საჭიროა ავტორიზაცია. შეგიძლიათ დაბრუნდეთ მთავარ გვერდზე სტუმრის სტატუსით.",
+  "auth.back": "უკან მთავარ გვერდზე",
+  "auth.signin": "შესვლა",
+  "auth.create": "ანგარიშის შექმნა",
+  "auth.name": "სრული სახელი",
+  "auth.email": "ელ-ფოსტა",
+  "auth.password": "პაროლი",
+  "auth.signin.go": "შესვლა",
+  "auth.encrypted": "სესიები დაშიფრულია. თქვენს მონაცემებს მასპინძლებს არ ვუზიარებთ.",
+
+  "role.title": "აირჩიეთ თქვენი როლი",
+  "role.subtitle": "როგორ გამოიყენებთ SakhliAI-ს?",
+  "role.student.title": "ბინის ქირაობა (სტუდენტი)",
+  "role.student.desc":
+    "გაიარეთ თავსებადობის ქვიზი და დაათვალიერეთ შეფასებული თანამცხოვრებლები და ბინები უნივერსიტეტთან ახლოს.",
+  "role.host.title": "ბინის გაქირავება (მასპინძელი)",
+  "role.host.desc":
+    "ერთიანი ცოცხალი კალენდარი, არხების სინქი (Airbnb, Booking.com), AI ქირის პროგნოზი და დატვირთულობის ანალიტიკა.",
+  "role.current": "მიმდინარე როლი",
+  "role.tap": "აირჩიეთ",
+  "role.change": "როლის შეცვლა",
+  "role.account.title": "შექმენით თქვენი ანგარიში",
+  "role.student.next": "შემდეგ — 7-ნაბიჯიანი სტუდენტური ქვიზი.",
+  "role.host.next": "შემდეგ — მასპინძლის დაფა და კალენდარი.",
+  "role.setup": "მიმდინარეობს თქვენი პროფილის მომზადება…",
+  "role.saved": "თქვენი როლი შენახულია და გააქტიურდება ანგარიშის მზადყოფნისთანავე.",
+  "role.signin.continue": "შესვლა და გაგრძელება",
+  "role.create.continue": "ანგარიშის შექმნა და გაგრძელება",
+
+  "assistant.name": "SakhliAI ასისტენტი",
+  "assistant.placeholder": "ჰკითხე SakhliAI-ს…",
+  "assistant.why": "· რატომ გირჩევთ",
 };
 
 const dicts: Record<Locale, Dict> = { en, ka };

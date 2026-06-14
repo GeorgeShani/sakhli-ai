@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth, type AppRole } from "@/lib/auth";
+import { useI18n } from "@/lib/i18n";
 import {
   GraduationCap,
   Building2,
@@ -18,6 +19,10 @@ import {
 const PENDING_ROLE_KEY = "sakhli:pending_role";
 
 export const Route = createFileRoute("/role-select")({
+  validateSearch: (search: Record<string, unknown>): { role?: AppRole } => {
+    const role = search.role;
+    return { role: role === "student" || role === "host" ? role : undefined };
+  },
   head: () => ({
     meta: [
       { title: "Choose your role — SakhliAI" },
@@ -30,9 +35,9 @@ export const Route = createFileRoute("/role-select")({
 type Card = {
   role: AppRole;
   icon: typeof GraduationCap;
-  titleKa: string;
-  titleEn: string;
-  desc: string;
+  titleKey: string;
+  descKey: string;
+  nextKey: string;
   to: "/onboarding" | "/host";
   tint: string;
 };
@@ -41,18 +46,18 @@ const CARDS: Card[] = [
   {
     role: "student",
     icon: GraduationCap,
-    titleKa: "ბინის ქირაობა (სტუდენტი)",
-    titleEn: "Rent a Flat (Student)",
-    desc: "Take the compatibility quiz and swipe through fit-scored flatmates and homes near your university.",
+    titleKey: "role.student.title",
+    descKey: "role.student.desc",
+    nextKey: "role.student.next",
     to: "/onboarding",
     tint: "from-primary/15 to-primary/5 text-primary",
   },
   {
     role: "host",
     icon: Building2,
-    titleKa: "ბინის გაქირავება (მასპინძელი)",
-    titleEn: "Rent Out My House (Host)",
-    desc: "Unified live calendar, channel sync (Airbnb, Booking.com), AI rent predictor, and occupancy analytics.",
+    titleKey: "role.host.title",
+    descKey: "role.host.desc",
+    nextKey: "role.host.next",
     to: "/host",
     tint: "from-accent/20 to-accent/5 text-accent",
   },
@@ -67,19 +72,23 @@ function readPendingRole(): AppRole | null {
 function RoleSelectPage() {
   const { user, profile, setRole, loading } = useAuth();
   const navigate = useNavigate();
+  const { role: roleParam } = Route.useSearch();
   const [selected, setSelected] = useState<Card | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [applying, setApplying] = useState(false);
 
-  // Restore any pending role chosen before refresh
+  // Pre-select from a landing CTA (?role=student|host), then any pending role.
   useEffect(() => {
     if (selected) return;
-    const pending = readPendingRole();
-    if (pending) {
-      const c = CARDS.find((x) => x.role === pending) ?? null;
-      if (c) setSelected(c);
+    const target = roleParam ?? readPendingRole();
+    if (target) {
+      const c = CARDS.find((x) => x.role === target) ?? null;
+      if (c) {
+        if (typeof window !== "undefined") window.localStorage.setItem(PENDING_ROLE_KEY, c.role);
+        setSelected(c);
+      }
     }
-  }, [selected]);
+  }, [selected, roleParam]);
 
   // Once the user is authenticated and a role is selected → set role + redirect
   useEffect(() => {
@@ -184,15 +193,14 @@ function RoleCards({
   onBackHome: () => void;
   err: string | null;
 }) {
+  const { t } = useI18n();
   return (
     <>
       <div className="text-center">
         <h1 className="font-display text-3xl font-bold tracking-tight md:text-4xl">
-          აირჩიეთ თქვენი როლი
+          {t("role.title")}
         </h1>
-        <p className="mt-2 text-sm text-muted-foreground md:text-base">
-          Choose Your Profile Purpose
-        </p>
+        <p className="mt-2 text-sm text-muted-foreground md:text-base">{t("role.subtitle")}</p>
       </div>
 
       {err && (
@@ -224,19 +232,18 @@ function RoleCards({
                 </div>
                 <div className="mt-4">
                   <div className="font-display text-lg font-semibold leading-snug">
-                    {c.titleKa}
+                    {t(c.titleKey)}
                   </div>
-                  <div className="text-sm text-muted-foreground">{c.titleEn}</div>
                 </div>
-                <p className="mt-3 text-sm text-muted-foreground">{c.desc}</p>
+                <p className="mt-3 text-sm text-muted-foreground">{t(c.descKey)}</p>
 
                 <div className="mt-5 flex items-center justify-between">
                   {active ? (
                     <span className="rounded-full bg-accent/15 px-2.5 py-1 text-xs font-medium text-accent">
-                      Current role
+                      {t("role.current")}
                     </span>
                   ) : (
-                    <span className="text-xs text-muted-foreground">Tap to select</span>
+                    <span className="text-xs text-muted-foreground">{t("role.tap")}</span>
                   )}
                   <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-1" />
                 </div>
@@ -249,7 +256,7 @@ function RoleCards({
       <div className="mt-8 text-center">
         <Button variant="ghost" onClick={onBackHome}>
           <ArrowLeft className="mr-1.5 h-4 w-4" />
-          უკან დაბრუნება / Go Back to Homepage
+          {t("auth.back")}
         </Button>
       </div>
     </>
@@ -271,29 +278,28 @@ function AuthStep({
   onBackToCards: () => void;
   onBackHome: () => void;
 }) {
+  const { t } = useI18n();
   const Icon = card.icon;
   return (
     <div className="mx-auto max-w-md">
       <div className="mb-4 flex items-center justify-between">
         <Button variant="ghost" size="sm" onClick={onBackToCards}>
           <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />
-          Change role
+          {t("role.change")}
         </Button>
         <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs">
           <Icon className="h-3.5 w-3.5 text-accent" />
-          <span className="font-medium">{card.titleEn}</span>
+          <span className="font-medium">{t(card.titleKey)}</span>
         </div>
       </div>
 
       {user || applying ? (
         <div className="card-elevated p-8 text-center">
           <Loader2 className="mx-auto h-6 w-6 animate-spin text-muted-foreground" />
-          <div className="mt-3 text-sm text-muted-foreground">
-            Setting up your {card.role} profile…
-          </div>
+          <div className="mt-3 text-sm text-muted-foreground">{t("role.setup")}</div>
         </div>
       ) : (
-        <InlineAuthCard role={card.role} onBackHome={onBackHome} />
+        <InlineAuthCard card={card} onBackHome={onBackHome} />
       )}
 
       {err && (
@@ -306,13 +312,15 @@ function AuthStep({
 }
 
 function InlineAuthCard({
-  role,
+  card,
   onBackHome,
 }: {
-  role: AppRole;
+  card: Card;
   onBackHome: () => void;
 }) {
   const { signIn, signUp } = useAuth();
+  const { t } = useI18n();
+  const role = card.role;
   const [mode, setMode] = useState<"signin" | "signup">("signup");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -341,13 +349,9 @@ function InlineAuthCard({
             <Lock className="h-5 w-5" />
           </div>
           <h2 className="mt-3 font-display text-2xl font-bold tracking-tight">
-            ავტორიზაცია / Create Your Account
+            {t("role.account.title")}
           </h2>
-          <p className="mt-2 text-sm text-foreground/80">
-            {role === "student"
-              ? "შემდეგ — 7-ნაბიჯიანი სტუდენტური ქვიზი."
-              : "შემდეგ — მასპინძლის დაფა და კალენდარი."}
-          </p>
+          <p className="mt-2 text-sm text-foreground/80">{t(card.nextKey)}</p>
           <Button
             variant="outline"
             size="sm"
@@ -355,7 +359,7 @@ function InlineAuthCard({
             onClick={onBackHome}
           >
             <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />
-            უკან დაბრუნება / Go Back to Homepage
+            {t("auth.back")}
           </Button>
         </div>
 
@@ -366,21 +370,21 @@ function InlineAuthCard({
               onClick={() => setMode("signup")}
               className={`flex-1 rounded px-3 py-1.5 transition ${mode === "signup" ? "bg-card font-medium shadow-sm" : "text-muted-foreground"}`}
             >
-              Create account
+              {t("auth.create")}
             </button>
             <button
               type="button"
               onClick={() => setMode("signin")}
               className={`flex-1 rounded px-3 py-1.5 transition ${mode === "signin" ? "bg-card font-medium shadow-sm" : "text-muted-foreground"}`}
             >
-              Sign in
+              {t("auth.signin")}
             </button>
           </div>
 
           <form onSubmit={submit} className="space-y-3">
             {mode === "signup" && (
               <div>
-                <Label htmlFor="rs-name">Full name</Label>
+                <Label htmlFor="rs-name">{t("auth.name")}</Label>
                 <Input
                   id="rs-name"
                   value={name}
@@ -391,7 +395,7 @@ function InlineAuthCard({
               </div>
             )}
             <div>
-              <Label htmlFor="rs-email">Email</Label>
+              <Label htmlFor="rs-email">{t("auth.email")}</Label>
               <Input
                 id="rs-email"
                 type="email"
@@ -403,7 +407,7 @@ function InlineAuthCard({
               />
             </div>
             <div>
-              <Label htmlFor="rs-password">Password</Label>
+              <Label htmlFor="rs-password">{t("auth.password")}</Label>
               <Input
                 id="rs-password"
                 type="password"
@@ -424,13 +428,13 @@ function InlineAuthCard({
 
             <Button type="submit" disabled={busy} className="w-full">
               {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {mode === "signin" ? "Sign in & continue" : "Create account & continue"}
+              {mode === "signin" ? t("role.signin.continue") : t("role.create.continue")}
             </Button>
           </form>
 
           <div className="mt-4 flex items-center gap-2 rounded-md bg-secondary/60 p-3 text-[11px] text-muted-foreground">
             <ShieldCheck className="h-3.5 w-3.5 text-accent" />
-            Your role ({role}) is saved and will be applied the moment your account is ready.
+            {t("role.saved")}
           </div>
         </div>
       </div>
