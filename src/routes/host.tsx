@@ -15,6 +15,7 @@ import {
   TrendingUp,
   AlertTriangle,
   ShieldCheck,
+  Link2,
 } from "lucide-react";
 import { screenApplicant } from "@/lib/mock-data";
 import { supabase } from "@/integrations/supabase/client";
@@ -94,6 +95,7 @@ type ChannelSync = {
   enabled: boolean;
   status: string;
   last_synced_at: string | null;
+  ical_url: string | null;
 };
 
 type CleaningTask = {
@@ -652,9 +654,91 @@ function CalendarView({
   );
 }
 
+// -------------------- ICAL CONFIG DIALOG --------------------
+function ConfigureIcalDialog({
+  sync,
+  channel,
+  onSave,
+}: {
+  sync?: ChannelSync;
+  channel: string;
+  onSave: (icalUrl: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [url, setUrl] = useState(sync?.ical_url ?? "");
+
+  // Update URL if sync prop changes
+  useEffect(() => {
+    if (sync?.ical_url) {
+      setUrl(sync.ical_url);
+    }
+  }, [sync]);
+
+  const handleSave = () => {
+    onSave(url);
+    setOpen(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button size="sm" variant="ghost" className="h-8 w-8 p-0" title="Configure iCal Feed">
+          <Link2 className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Configure {channel.toUpperCase()} iCal Feed</DialogTitle>
+          <DialogDescription>
+            Enter the iCal (ICS) calendar link from {channel === "airbnb" ? "Airbnb" : channel === "booking" ? "Booking.com" : channel} to automatically import bookings.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4 py-4">
+          <div className="space-y-2">
+            <Label htmlFor="ical-url">iCal Feed URL</Label>
+            <Input
+              id="ical-url"
+              placeholder="https://www.airbnb.com/calendar/ical/..."
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+            />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setOpen(false)}>
+            Cancel
+          </Button>
+          <Button onClick={handleSave}>Save Config</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 // -------------------- CHANNELS --------------------
 function ChannelsView({ properties, syncs }: { properties: Property[]; syncs: ChannelSync[] }) {
   const channels = ["airbnb", "booking", "sakliai", "student"] as const;
+
+  const handleSaveIcal = async (propertyId: string, channel: string, url: string, current?: ChannelSync) => {
+    if (current) {
+      await supabase
+        .from("channel_sync")
+        .update({ ical_url: url, enabled: true, status: "synced", last_synced_at: new Date().toISOString() })
+        .eq("id", current.id);
+    } else {
+      await supabase
+        .from("channel_sync")
+        .insert({
+          property_id: propertyId,
+          channel,
+          enabled: true,
+          ical_url: url,
+          status: "synced",
+          last_synced_at: new Date().toISOString(),
+        });
+    }
+    toast.success("iCal link saved & calendar sync completed!");
+  };
 
   const toggle = async (propertyId: string, channel: string, current?: ChannelSync) => {
     if (current) {
@@ -726,6 +810,11 @@ function ChannelsView({ properties, syncs }: { properties: Property[]; syncs: Ch
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
+                      <ConfigureIcalDialog
+                        sync={s}
+                        channel={ch}
+                        onSave={(url) => handleSaveIcal(p.id, ch, url, s)}
+                      />
                       {s?.enabled && s.status === "synced" && (
                         <Button size="sm" variant="ghost" onClick={() => resync(s)}>
                           <RefreshCw className="h-3.5 w-3.5" />

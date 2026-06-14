@@ -88,6 +88,8 @@ export type Database = {
           last_synced_at: string | null
           property_id: string
           status: string
+          ical_url: string | null
+          is_active: boolean
         }
         Insert: {
           channel: string
@@ -99,6 +101,8 @@ export type Database = {
           last_synced_at?: string | null
           property_id: string
           status?: string
+          ical_url?: string | null
+          is_active?: boolean
         }
         Update: {
           channel?: string
@@ -110,6 +114,8 @@ export type Database = {
           last_synced_at?: string | null
           property_id?: string
           status?: string
+          ical_url?: string | null
+          is_active?: boolean
         }
         Relationships: [
           {

@@ -185,6 +185,7 @@ CREATE TABLE public.channel_sync (
   status TEXT NOT NULL DEFAULT 'idle' CHECK (status IN ('idle','syncing','synced','error')),
   last_synced_at TIMESTAMPTZ,
   external_listing_id TEXT,
+  ical_url TEXT,
   error_message TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   UNIQUE(property_id, channel)
