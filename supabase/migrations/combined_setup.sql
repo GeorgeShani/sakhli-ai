@@ -209,6 +209,7 @@ CREATE TABLE public.channel_sync (
   property_id UUID NOT NULL REFERENCES public.properties(id) ON DELETE CASCADE,
   channel TEXT NOT NULL CHECK (channel IN ('airbnb','booking','sakliai','student')),
   enabled BOOLEAN NOT NULL DEFAULT false,
+  is_active BOOLEAN GENERATED ALWAYS AS (enabled) STORED,
   status TEXT NOT NULL DEFAULT 'idle' CHECK (status IN ('idle','syncing','synced','error')),
   last_synced_at TIMESTAMPTZ,
   external_listing_id TEXT,
