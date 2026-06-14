@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dialog";
 import { useI18n } from "@/lib/i18n";
 import { useMatches, useProfile } from "@/lib/student-store";
+import { supabase } from "@/integrations/supabase/client";
 import { flatmates, type Flatmate, properties, type Property } from "@/lib/mock-data";
 import {
   CheckCircle2,
@@ -68,15 +69,75 @@ function DashboardPage() {
   const tab: Tab = tabParam === "utilities" ? "utilities" : "matches";
   const [selectedFlatmate, setSelectedFlatmate] = useState<Flatmate | null>(null);
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
+  const [dbFlatmates, setDbFlatmates] = useState<Flatmate[]>([]);
+  const [dbProperties, setDbProperties] = useState<Property[]>([]);
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const { data: profilesData, error: profilesErr } = await supabase
+          .from("student_profiles")
+          .select("*");
+        
+        if (profilesData && !profilesErr) {
+          const mappedFlatmates = profilesData.map((sp: any) => ({
+            id: sp.id,
+            name: sp.display_name || "Student",
+            age: 20,
+            university: sp.university || "Tbilisi State University",
+            budget: sp.budget_max || 700,
+            sleep: sp.sleep_schedule || "flexible",
+            cleanliness: sp.cleanliness || 3,
+            smoking: sp.smoking || false,
+            pets: sp.pets || false,
+            parties: false,
+            quiet: true,
+            bio: sp.bio || "",
+            avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(sp.display_name || "student")}&backgroundColor=b6e3f4,c0aede,d1d4f9`,
+            salaryBracket: sp.salary_bracket || "under_500",
+            incomeSource: sp.income_source || "job",
+            verified: true,
+          }));
+          setDbFlatmates(mappedFlatmates);
+        }
+
+        const { data: propsData, error: propsErr } = await supabase
+          .from("properties")
+          .select("*");
+
+        if (propsData && !propsErr) {
+          const mappedProps = propsData.map((p: any) => ({
+            id: p.id,
+            title: p.title,
+            district: p.address ? p.address.split(",")[0] : p.city || "Tbilisi",
+            address: p.address || "",
+            description: p.description || "",
+            price: Number(p.price_per_month) || 1200,
+            bedrooms: p.bedrooms || 2,
+            flatmatesNeeded: p.bedrooms || 2,
+            amenities: p.amenities || [],
+            image: p.image_url || "",
+          }));
+          setDbProperties(mappedProps);
+        }
+      } catch (err) {
+        console.error("Error loading real data from Supabase:", err);
+      }
+    }
+    loadData();
+  }, []);
+
+  const activeFlatmates = dbFlatmates.length > 0 ? dbFlatmates : flatmates;
+  const activeProperties = dbProperties.length > 0 ? dbProperties : properties;
 
   const likedPeople = matches
     .filter((m) => m.kind === "person" && m.liked)
-    .map((m) => flatmates.find((f) => f.id === m.id))
+    .map((m) => activeFlatmates.find((f) => f.id === m.id))
     .filter((f): f is Flatmate => Boolean(f));
 
   const likedPlaces = matches
     .filter((m) => m.kind === "place" && m.liked)
-    .map((m) => properties.find((p) => p.id === m.id))
+    .map((m) => activeProperties.find((p) => p.id === m.id))
     .filter((p): p is Property => Boolean(p));
 
   const handleUnmatch = (id: string) => {

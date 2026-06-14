@@ -9,6 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useI18n } from "@/lib/i18n";
 import { useMatches, useProfile, defaultProfile, type StudentProfile } from "@/lib/student-store";
+import { supabase } from "@/integrations/supabase/client";
 import {
   flatmates,
   properties,
@@ -67,22 +68,81 @@ function MatchesPage() {
   const [pricingOpen, setPricingOpen] = useState(false);
   const [pricingReason, setPricingReason] = useState<"swipe_limit" | "ai_best_fit" | "manual">("manual");
   const [lastAction, setLastAction] = useState<{ tab: Tab; kind: "person" | "place"; id: string } | null>(null);
+  const [dbFlatmates, setDbFlatmates] = useState<Flatmate[]>([]);
+  const [dbProperties, setDbProperties] = useState<Property[]>([]);
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const { data: profilesData, error: profilesErr } = await supabase
+          .from("student_profiles")
+          .select("*");
+        
+        if (profilesData && !profilesErr) {
+          const mappedFlatmates = profilesData.map((sp: any) => ({
+            id: sp.id,
+            name: sp.display_name || "Student",
+            age: 20,
+            university: sp.university || "Tbilisi State University",
+            budget: sp.budget_max || 700,
+            sleep: sp.sleep_schedule || "flexible",
+            cleanliness: sp.cleanliness || 3,
+            smoking: sp.smoking || false,
+            pets: sp.pets || false,
+            parties: false,
+            quiet: true,
+            bio: sp.bio || "",
+            avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(sp.display_name || "student")}&backgroundColor=b6e3f4,c0aede,d1d4f9`,
+            salaryBracket: sp.salary_bracket || "under_500",
+            incomeSource: sp.income_source || "job",
+            verified: true,
+          }));
+          setDbFlatmates(mappedFlatmates);
+        }
+
+        const { data: propsData, error: propsErr } = await supabase
+          .from("properties")
+          .select("*");
+
+        if (propsData && !propsErr) {
+          const mappedProps = propsData.map((p: any) => ({
+            id: p.id,
+            title: p.title,
+            district: p.address ? p.address.split(",")[0] : p.city || "Tbilisi",
+            address: p.address || "",
+            description: p.description || "",
+            price: Number(p.price_per_month) || 1200,
+            bedrooms: p.bedrooms || 2,
+            flatmatesNeeded: p.bedrooms || 2,
+            amenities: p.amenities || [],
+            image: p.image_url || "",
+          }));
+          setDbProperties(mappedProps);
+        }
+      } catch (err) {
+        console.error("Error loading real data from Supabase:", err);
+      }
+    }
+    loadData();
+  }, []);
 
   const effectiveProfile: StudentProfile = profile ?? defaultProfile;
 
   const peopleStack = useMemo(() => {
-    const ranked = flatmates
+    const list = dbFlatmates.length > 0 ? dbFlatmates : flatmates;
+    const ranked = list
       .map((f) => ({ f, fit: fitScoreForFlatmate(effectiveProfile, f) }))
       .sort((a, b) => b.fit.score - a.fit.score);
     return aiBestFit && isPaid ? ranked.filter((r) => r.fit.score >= 85) : ranked;
-  }, [effectiveProfile, aiBestFit, isPaid]);
+  }, [dbFlatmates, effectiveProfile, aiBestFit, isPaid]);
 
   const placeStack = useMemo(() => {
-    const ranked = properties
+    const list = dbProperties.length > 0 ? dbProperties : properties;
+    const ranked = list
       .map((p) => ({ p, fit: fitScoreForProperty(effectiveProfile, p) }))
       .sort((a, b) => b.fit.score - a.fit.score);
     return aiBestFit && isPaid ? ranked.filter((r) => r.fit.score >= 85) : ranked;
-  }, [effectiveProfile, aiBestFit, isPaid]);
+  }, [dbProperties, effectiveProfile, aiBestFit, isPaid]);
 
   if (!loaded) return null;
 

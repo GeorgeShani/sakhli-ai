@@ -48,7 +48,7 @@ export function AgentEventRow({
   );
 }
 
-/** Animated, most-recent-first stream of agent + n8n events. */
+/** Animated, most-recent-first stream of agent + n8n events with silky-smooth springs and layout transitions. */
 export function AgentActivityFeed({
   events,
   compact = false,
@@ -59,16 +59,23 @@ export function AgentActivityFeed({
   className?: string;
 }) {
   return (
-    <ul className={`space-y-3 ${className}`}>
+    <ul className={`space-y-3 overflow-hidden p-0.5 ${className}`}>
       <AnimatePresence initial={false}>
         {events.map((event) => (
           <motion.li
             key={event.id}
-            initial={{ opacity: 0, y: -8, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.25 }}
-            className="rounded-xl border border-border bg-card/60 p-3"
+            layout
+            initial={{ opacity: 0, y: -20, scale: 0.95, height: 0 }}
+            animate={{ opacity: 1, y: 0, scale: 1, height: "auto" }}
+            exit={{ opacity: 0, y: 15, scale: 0.95, height: 0 }}
+            transition={{
+              type: "spring",
+              stiffness: 400,
+              damping: 28,
+              mass: 1,
+              opacity: { duration: 0.2 },
+            }}
+            className="rounded-xl border border-border bg-card/60 p-3 shadow-sm origin-top"
           >
             <AgentEventRow event={event} compact={compact} />
           </motion.li>
