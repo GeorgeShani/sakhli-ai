@@ -33,8 +33,8 @@ Automatically reads channel calendar events and inserts bookings into SakhliAI v
 1. **Trigger: Schedule Node**
    - Run every 15 minutes.
 2. **Node 2: Data Source Read**
-   - Read your active channel feed source table (your own table of iCal URLs and property IDs).
-   - Note: current repository `channel_sync` uses `enabled`, and does not include `ical_url`.
+   - Read your active channel feed source table (the `channel_sync` table).
+   - **Filter Configuration:** Filter for `is_active = true` AND `ical_url IS NOT NULL` (e.g. using a Supabase query filter or custom SQL `WHERE is_active = true AND ical_url IS NOT NULL`). This ensures that only fully configured active feeds are processed, preventing any "null/undefined URL" parameter errors.
 3. **Node 3: HTTP Request (Fetch ICS)**
    - Method: `GET`
    - URL: feed URL from Node 2.
@@ -178,7 +178,7 @@ The app currently calls the mediator URL from `VITE_N8N_MEDIATE_URL` (currently 
    - Method: `POST`
    - Path: `/webhook/mediate-conflict`
 2. **Node 2: OpenAI Chat**
-   - Use `issue`, `conflictDescription`, `user1`, `user2` for context.
+   - Use `issue` as the only required input.
    - Generate balanced bilingual verdict.
 3. **Node 3: Supabase (Log Agent Event)**
    - Table: `agent_events`
@@ -191,15 +191,16 @@ The app currently calls the mediator URL from `VITE_N8N_MEDIATE_URL` (currently 
    }
    ```
 
-Input contract from app:
+Input contract from app (required):
 ```json
 {
-  "issue": "string",
-  "conflictDescription": "string",
-  "user1": {},
-  "user2": {}
+  "issue": "string"
 }
 ```
+
+Optional compatibility note:
+- The current frontend may also send `conflictDescription`, `user1`, and `user2`.
+- Your n8n workflow can safely ignore them for now.
 
 ---
 
@@ -291,4 +292,3 @@ To enable in frontend:
 
 ### No live automation feed updates
 - Confirm `agent_events` inserts are happening and Supabase realtime is active.
-
