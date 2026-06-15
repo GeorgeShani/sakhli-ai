@@ -101,8 +101,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "description", content: "SakhliAI is a hybrid PropTech/EduTech platform for Georgia, matching student flatmates and automating short-term rentals." },
       { property: "og:description", content: "SakhliAI is a hybrid PropTech/EduTech platform for Georgia, matching student flatmates and automating short-term rentals." },
       { name: "twitter:description", content: "SakhliAI is a hybrid PropTech/EduTech platform for Georgia, matching student flatmates and automating short-term rentals." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/ac126174-6c17-461a-a1c5-afeae3ccb442/id-preview-18c293ba--e8a38f6d-1801-4fe5-b720-f1ea33cfebdb.lovable.app-1781356379028.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/ac126174-6c17-461a-a1c5-afeae3ccb442/id-preview-18c293ba--e8a38f6d-1801-4fe5-b720-f1ea33cfebdb.lovable.app-1781356379028.png" },
+      { property: "og:image", content: "/og-image.png" },
+      { name: "twitter:image", content: "/og-image.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
