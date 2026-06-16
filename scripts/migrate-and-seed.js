@@ -1,16 +1,17 @@
-import fs from 'node:fs';
-import path from 'node:path';
-import pg from 'pg';
+import fs from "node:fs";
+import path from "node:path";
+import pg from "pg";
 
-const connectionString = "postgresql://postgres:GaniviChemiTkivilia@db.xznfrlutpjaavswtbaci.supabase.co:5432/postgres";
+const connectionString =
+  "postgresql://postgres:GaniviChemiTkivilia@db.xznfrlutpjaavswtbaci.supabase.co:5432/postgres";
 
 async function run() {
   console.log("🔌 Connecting to Supabase PostgreSQL Database...");
   const client = new pg.Client({
     connectionString,
     ssl: {
-      rejectUnauthorized: false
-    }
+      rejectUnauthorized: false,
+    },
   });
 
   try {

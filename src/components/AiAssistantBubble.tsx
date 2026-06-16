@@ -21,11 +21,16 @@ const TEMPLATES: Record<"en" | "ka", string[]> = {
 
 type Msg = { role: "ai" | "user"; text: string };
 
-function contextGreeting(path: string, role: string | null | undefined, locale: "en" | "ka"): string {
+function contextGreeting(
+  path: string,
+  role: string | null | undefined,
+  locale: "en" | "ka",
+): string {
   const en = {
     host: "Hi host! 🏠 I can help with pricing, booking status, or channel sync.",
     matches: "Ready to surface your most compatible flatmate — try the AI Best Fit filter!",
-    dashboard: "From your dashboard I can split bills, optimize your budget, or check your contract.",
+    dashboard:
+      "From your dashboard I can split bills, optimize your budget, or check your contract.",
     onboarding: "Let's finish your profile — the more precise it is, the better your matches. 🎯",
     defHost: "I'm the SakhliAI assistant — I can share rental market trends across Georgia.",
     defStudent: "I'm the SakhliAI assistant — I'll help you pick a home, flatmate, or budget.",
@@ -33,10 +38,12 @@ function contextGreeting(path: string, role: string | null | undefined, locale: 
   const ka = {
     host: "გამარჯობა მასპინძელო! 🏠 დაგეხმარები ფასების ოპტიმიზაციაში, დაჯავშნების სტატუსში ან არხების სინქრონიზაციაში.",
     matches: "მზად ვარ შემოგთავაზო ყველაზე თავსებადი თანამცხოვრები. სცადე AI Best Fit ფილტრი!",
-    dashboard: "შენი დაფიდან შემიძლია გავყო კომუნალური, შემოგთავაზო ბიუჯეტის ოპტიმიზაცია ან ხელშეკრულების სტატუსი.",
+    dashboard:
+      "შენი დაფიდან შემიძლია გავყო კომუნალური, შემოგთავაზო ბიუჯეტის ოპტიმიზაცია ან ხელშეკრულების სტატუსი.",
     onboarding: "გავაგრძელოთ შენი პროფილი — რაც უფრო ზუსტია, მით უკეთესია მატჩები. 🎯",
     defHost: "მე ვარ SakhliAI ასისტენტი — შემიძლია გითხრა ბაზრის ტრენდები საქართველოში.",
-    defStudent: "მე ვარ SakhliAI ასისტენტი — დაგეხმარები ბინის, თანამცხოვრებლის ან ბიუჯეტის შერჩევაში.",
+    defStudent:
+      "მე ვარ SakhliAI ასისტენტი — დაგეხმარები ბინის, თანამცხოვრებლის ან ბიუჯეტის შერჩევაში.",
   };
   const d = locale === "ka" ? ka : en;
   if (path.startsWith("/host")) return d.host;
@@ -50,8 +57,16 @@ function contextGreeting(path: string, role: string | null | undefined, locale: 
 function contextChips(path: string, locale: "en" | "ka"): string[] {
   if (path.startsWith("/host")) {
     return locale === "ka"
-      ? ["რა ფასი დავაწესო ვაკეში?", "როგორ მუშაობს არხების სინქრონიზაცია?", ...TEMPLATES.ka.slice(2)]
-      : ["What price should I set in Vake?", "How does channel sync work?", ...TEMPLATES.en.slice(2)];
+      ? [
+          "რა ფასი დავაწესო ვაკეში?",
+          "როგორ მუშაობს არხების სინქრონიზაცია?",
+          ...TEMPLATES.ka.slice(2),
+        ]
+      : [
+          "What price should I set in Vake?",
+          "How does channel sync work?",
+          ...TEMPLATES.en.slice(2),
+        ];
   }
   if (path.startsWith("/matches")) {
     return locale === "ka"
@@ -124,7 +139,11 @@ export function AiAssistantBubble() {
         });
         if (res.ok) {
           const data = await res.json();
-          const replyText = data.text || data.reply || data.output || (typeof data === "string" ? data : JSON.stringify(data));
+          const replyText =
+            data.text ||
+            data.reply ||
+            data.output ||
+            (typeof data === "string" ? data : JSON.stringify(data));
           setTyping(false);
           streamReply(replyText);
           return;
@@ -137,9 +156,10 @@ export function AiAssistantBubble() {
     // Offline / connection error fallback
     window.setTimeout(() => {
       setTyping(false);
-      const errReply = locale === "ka"
-        ? "ამჟამად კავშირი ვერ ხერხდება. გთხოვთ შეამოწმოთ, რომ თქვენი n8n ასისტენტი გაშვებულია."
-        : "I cannot connect to the assistant right now. Please make sure your n8n workflow is active and running.";
+      const errReply =
+        locale === "ka"
+          ? "ამჟამად კავშირი ვერ ხერხდება. გთხოვთ შეამოწმოთ, რომ თქვენი n8n ასისტენტი გაშვებულია."
+          : "I cannot connect to the assistant right now. Please make sure your n8n workflow is active and running.";
       streamReply(errReply);
     }, 700);
   };

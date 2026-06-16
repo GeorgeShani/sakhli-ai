@@ -415,9 +415,12 @@ export function fitScoreForProperty(
 
   let score = aff.points; // up to 40
 
-  if (aff.status === "safe") reasons.push(`Safe financial range (₾${Math.round(perPerson)} / ₾${income} est.)`);
-  else if (aff.status === "stretch") reasons.push(`Stretch budget — ${Math.round(aff.pct * 100)}% of income`);
-  else if (aff.status === "tight") reasons.push(`Tight budget — ${Math.round(aff.pct * 100)}% of income`);
+  if (aff.status === "safe")
+    reasons.push(`Safe financial range (₾${Math.round(perPerson)} / ₾${income} est.)`);
+  else if (aff.status === "stretch")
+    reasons.push(`Stretch budget — ${Math.round(aff.pct * 100)}% of income`);
+  else if (aff.status === "tight")
+    reasons.push(`Tight budget — ${Math.round(aff.pct * 100)}% of income`);
   else reasons.push(`Rent share above sustainable income range`);
 
   // Budget intent match (25 pts)
@@ -427,7 +430,12 @@ export function fitScoreForProperty(
   if (intentPts > 18) reasons.push("Matches your stated budget intent");
 
   // Income stability (15 pts) — job / mixed > scholarship > family
-  const stabilityMap: Record<IncomeSource, number> = { job: 15, mixed: 13, scholarship: 11, family: 9 };
+  const stabilityMap: Record<IncomeSource, number> = {
+    job: 15,
+    mixed: 13,
+    scholarship: 11,
+    family: 9,
+  };
   score += stabilityMap[profile.incomeSource];
   reasons.push(`${INCOME_SOURCE_LABEL[profile.incomeSource]}-based income`);
 
@@ -438,7 +446,8 @@ export function fitScoreForProperty(
   if (amenityPts >= 10) reasons.push(`${p.amenities.length} amenities included`);
 
   score = Math.min(100, Math.round(score));
-  const tier: FitScore["tier"] = score >= 85 ? "excellent" : score >= 70 ? "good" : score >= 50 ? "fair" : "risky";
+  const tier: FitScore["tier"] =
+    score >= 85 ? "excellent" : score >= 70 ? "good" : score >= 50 ? "fair" : "risky";
   const summary = buildSummary(tier, reasons.slice(0, 2));
 
   return { score, tier, reasons, summary, financialSafe: aff.status === "safe" };
@@ -503,10 +512,17 @@ export function fitScoreForFlatmate(profile: StudentProfile, f: Flatmate): FitSc
   if (habitMatch >= 3) reasons.push("Lifestyle habits align");
 
   score = Math.min(100, Math.round(score));
-  const tier: FitScore["tier"] = score >= 85 ? "excellent" : score >= 70 ? "good" : score >= 50 ? "fair" : "risky";
+  const tier: FitScore["tier"] =
+    score >= 85 ? "excellent" : score >= 70 ? "good" : score >= 50 ? "fair" : "risky";
   const summary = buildSummary(tier, reasons.slice(0, 2));
 
-  return { score, tier, reasons, summary, financialSafe: myAff.status === "safe" && theirAff.status === "safe" };
+  return {
+    score,
+    tier,
+    reasons,
+    summary,
+    financialSafe: myAff.status === "safe" && theirAff.status === "safe",
+  };
 }
 
 function buildSummary(tier: FitScore["tier"], top: string[]): string {
@@ -565,9 +581,15 @@ export function aiAssistantBullets(profile: StudentProfile, f: Flatmate): Assist
     });
   } else {
     if (sameUni)
-      bullets.push({ icon: "match", text: `ორივე სწავლობთ ${uniKa(f.university)} — გზაზე და გრაფიკზე იოლი თანხვედრა.` });
+      bullets.push({
+        icon: "match",
+        text: `ორივე სწავლობთ ${uniKa(f.university)} — გზაზე და გრაფიკზე იოლი თანხვედრა.`,
+      });
     if (sameSleep)
-      bullets.push({ icon: "schedule", text: `ორივე ${SLEEP_KA[f.sleep]} ხართ — ძილის რეჟიმი ემთხვევა.` });
+      bullets.push({
+        icon: "schedule",
+        text: `ორივე ${SLEEP_KA[f.sleep]} ხართ — ძილის რეჟიმი ემთხვევა.`,
+      });
     if (closeClean)
       bullets.push({
         icon: "habit",
@@ -595,11 +617,20 @@ export function aiAssistantBullets(profile: StudentProfile, f: Flatmate): Assist
   if (profile.parties !== f.parties) habitDiffs.push("წვეულებები");
   if (profile.quiet !== f.quiet) habitDiffs.push("მშვიდი საათები");
   if (habitDiffs.length === 0) {
-    bullets.push({ icon: "habit", text: "ცხოვრების სტილის ჩვევები სრულად ემთხვევა — სახლის წესები ერთნაირია." });
+    bullets.push({
+      icon: "habit",
+      text: "ცხოვრების სტილის ჩვევები სრულად ემთხვევა — სახლის წესები ერთნაირია.",
+    });
   } else if (habitDiffs.length <= 2) {
-    bullets.push({ icon: "habit", text: `მცირე განსხვავება მხოლოდ: ${habitDiffs.join(", ")}. შეთანხმება ადვილია.` });
+    bullets.push({
+      icon: "habit",
+      text: `მცირე განსხვავება მხოლოდ: ${habitDiffs.join(", ")}. შეთანხმება ადვილია.`,
+    });
   } else {
-    bullets.push({ icon: "warning", text: `ჩვევებში განსხვავება: ${habitDiffs.join(", ")} — საჭიროა ღია საუბარი.` });
+    bullets.push({
+      icon: "warning",
+      text: `ჩვევებში განსხვავება: ${habitDiffs.join(", ")} — საჭიროა ღია საუბარი.`,
+    });
   }
 
   return bullets;
@@ -637,13 +668,18 @@ export function screenApplicant(a: ApplicantLike, propertyPrice = 1600): TenantS
   if (budgetMid >= propertyPrice * 0.5) score += 6;
   score = Math.min(100, score);
 
-  const verdict: TenantScreening["verdict"] = score >= 85 ? "ideal" : score >= 70 ? "good" : "review";
-  const churnRisk: TenantScreening["churnRisk"] = score >= 85 ? "დაბალი" : score >= 70 ? "საშუალო" : "მაღალი";
+  const verdict: TenantScreening["verdict"] =
+    score >= 85 ? "ideal" : score >= 70 ? "good" : "review";
+  const churnRisk: TenantScreening["churnRisk"] =
+    score >= 85 ? "დაბალი" : score >= 70 ? "საშუალო" : "მაღალი";
   const uniKaName = uniKa(uni || "უნივერსიტეტი");
   const smokeKa = a.smoking ? "ეწევა" : "არ ეწევა";
   const verdictKa =
-    verdict === "ideal" ? "იდეალური მდგმური" : verdict === "good" ? "ვარგისი მდგმური" : "საჭიროებს გადახედვას";
+    verdict === "ideal"
+      ? "იდეალური მდგმური"
+      : verdict === "good"
+        ? "ვარგისი მდგმური"
+        : "საჭიროებს გადახედვას";
   const summary = `AI შეფასება: ${verdictKa}. სწავლობს ${uniKaName}, ${smokeKa}, და ბინის მდებარეობა მისთვის იდეალურია აკადემიური თვალსაზრისით. Churn Risk: ${churnRisk}.`;
   return { verdict, summary, churnRisk, score };
 }
-

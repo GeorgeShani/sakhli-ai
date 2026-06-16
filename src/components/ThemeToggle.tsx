@@ -5,11 +5,7 @@ import { useTheme } from "@/lib/theme";
 export function ThemeToggle() {
   const { theme, toggle } = useTheme();
   const label =
-    theme === "light"
-      ? "Light · ნათელი"
-      : theme === "dark"
-        ? "Dark · მუქი"
-        : "System · სისტემური";
+    theme === "light" ? "Light · ნათელი" : theme === "dark" ? "Dark · მუქი" : "System · სისტემური";
   return (
     <Button
       size="icon"

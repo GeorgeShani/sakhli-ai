@@ -78,8 +78,9 @@ function DashboardPage() {
         const { data: profilesData, error: profilesErr } = await supabase
           .from("student_profiles")
           .select("*");
-        
+
         if (profilesData && !profilesErr) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any -- loose DB→app row mapping
           const mappedFlatmates = profilesData.map((sp: any) => ({
             id: sp.id,
             name: sp.name || "Student",
@@ -93,7 +94,9 @@ function DashboardPage() {
             parties: sp.parties || false,
             quiet: sp.quiet ?? true,
             bio: sp.bio || "",
-            avatar: sp.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(sp.name || "student")}&backgroundColor=b6e3f4,c0aede,d1d4f9`,
+            avatar:
+              sp.avatar ||
+              `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(sp.name || "student")}&backgroundColor=b6e3f4,c0aede,d1d4f9`,
             salaryBracket: sp.salary_bracket || "under_500",
             incomeSource: sp.income_source || "job",
             verified: sp.verified ?? true,
@@ -101,11 +104,10 @@ function DashboardPage() {
           setDbFlatmates(mappedFlatmates);
         }
 
-        const { data: propsData, error: propsErr } = await supabase
-          .from("properties")
-          .select("*");
+        const { data: propsData, error: propsErr } = await supabase.from("properties").select("*");
 
         if (propsData && !propsErr) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any -- loose DB→app row mapping
           const mappedProps = propsData.map((p: any) => ({
             id: p.id,
             title: p.title,
@@ -150,11 +152,11 @@ function DashboardPage() {
     setSelectedProperty(null);
   };
 
-
-
   const tabBtn = (v: Tab, label: string) => (
     <button
-      onClick={() => navigate({ to: "/dashboard", search: v === "utilities" ? { tab: "utilities" } : {} })}
+      onClick={() =>
+        navigate({ to: "/dashboard", search: v === "utilities" ? { tab: "utilities" } : {} })
+      }
       className={[
         "flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors",
         tab === v ? "bg-card shadow-sm" : "text-muted-foreground hover:text-foreground",
@@ -189,7 +191,9 @@ function DashboardPage() {
               {likedPeople.length === 0 && likedPlaces.length === 0 ? (
                 <div className="card-elevated p-10 text-center">
                   <Users className="mx-auto h-8 w-8 text-muted-foreground" />
-                  <p className="mt-3 text-sm text-muted-foreground">{t("dashboard.matches.empty")}</p>
+                  <p className="mt-3 text-sm text-muted-foreground">
+                    {t("dashboard.matches.empty")}
+                  </p>
                   <Button asChild className="mt-4">
                     <Link to="/matches">{t("dashboard.matches.go")}</Link>
                   </Button>
@@ -199,7 +203,9 @@ function DashboardPage() {
                   {likedPeople.length > 0 && (
                     <section>
                       <div className="mb-3 flex items-center justify-between gap-2">
-                        <h2 className="font-display text-lg font-semibold">{t("matches.tab.people")}</h2>
+                        <h2 className="font-display text-lg font-semibold">
+                          {t("matches.tab.people")}
+                        </h2>
                         <Button asChild size="sm" variant="outline">
                           <Link to="/matches">
                             <Plus className="mr-1 h-3.5 w-3.5" />
@@ -215,12 +221,20 @@ function DashboardPage() {
                             onClick={() => setSelectedFlatmate(f)}
                             className="card-elevated flex items-center gap-3 p-4 text-left transition-all hover:-translate-y-0.5 hover:shadow-lg hover:ring-1 hover:ring-primary/40"
                           >
-                            <img src={f.avatar} alt={f.name} className="h-12 w-12 rounded-full bg-secondary" />
+                            <img
+                              src={f.avatar}
+                              alt={f.name}
+                              className="h-12 w-12 rounded-full bg-secondary"
+                            />
                             <div className="min-w-0 flex-1">
                               <div className="truncate font-medium">{f.name}</div>
-                              <div className="truncate text-xs text-muted-foreground">{f.university}</div>
+                              <div className="truncate text-xs text-muted-foreground">
+                                {f.university}
+                              </div>
                             </div>
-                            {f.verified && <ShieldCheck className="h-4 w-4 shrink-0 text-emerald-500" />}
+                            {f.verified && (
+                              <ShieldCheck className="h-4 w-4 shrink-0 text-emerald-500" />
+                            )}
                           </button>
                         ))}
                       </div>
@@ -230,7 +244,9 @@ function DashboardPage() {
                   {likedPlaces.length > 0 && (
                     <section>
                       <div className="mb-3 flex items-center justify-between gap-2">
-                        <h2 className="font-display text-lg font-semibold">{t("matches.tab.places")}</h2>
+                        <h2 className="font-display text-lg font-semibold">
+                          {t("matches.tab.places")}
+                        </h2>
                         <Button asChild size="sm" variant="outline">
                           <Link to="/matches">
                             <Plus className="mr-1 h-3.5 w-3.5" />
@@ -246,7 +262,10 @@ function DashboardPage() {
                             onClick={() => setSelectedProperty(p)}
                             className="card-elevated overflow-hidden text-left transition-all hover:-translate-y-0.5 hover:shadow-lg hover:ring-1 hover:ring-primary/40"
                           >
-                            <div className="h-28 bg-cover bg-center" style={{ backgroundImage: `url(${p.image})` }} />
+                            <div
+                              className="h-28 bg-cover bg-center"
+                              style={{ backgroundImage: `url(${p.image})` }}
+                            />
                             <div className="p-3">
                               <div className="truncate font-medium">{p.title}</div>
                               <div className="mt-0.5 flex items-center justify-between text-xs text-muted-foreground">
@@ -336,7 +355,9 @@ function PropertyDetailsDialog({
                 </div>
               </div>
               <div className="text-right text-xs text-muted-foreground">
-                <div>{property.bedrooms} BR · need {property.flatmatesNeeded}</div>
+                <div>
+                  {property.bedrooms} BR · need {property.flatmatesNeeded}
+                </div>
                 <div className="mt-0.5">{property.district}</div>
               </div>
             </div>
@@ -404,9 +425,7 @@ function FlatmateDetailsDialog({
     flexible: "🔄 Flexible",
   };
   // Deterministic mock compatibility breakdown
-  const score = flatmate
-    ? 70 + ((flatmate.id.charCodeAt(flatmate.id.length - 1) * 7) % 30)
-    : 0;
+  const score = flatmate ? 70 + ((flatmate.id.charCodeAt(flatmate.id.length - 1) * 7) % 30) : 0;
   const breakdown = flatmate
     ? [
         { label: "Lifestyle", value: Math.min(100, score + 5) },
@@ -524,7 +543,6 @@ function FlatmateDetailsDialog({
   );
 }
 
-
 /* -------- Profile card (lifestyle only, no income) -------- */
 function ProfileCard({ profile }: { profile: ReturnType<typeof useProfile>["profile"] }) {
   if (!profile) return null;
@@ -554,8 +572,12 @@ function ProfileCard({ profile }: { profile: ReturnType<typeof useProfile>["prof
           <Users className="h-3.5 w-3.5" /> Lifestyle
         </div>
         <div className="mt-1 text-sm">
-          {profile.sleep === "night_owl" ? "🌙 Night owl" : profile.sleep === "early_bird" ? "🌅 Early bird" : "🔄 Flexible"} ·
-          🧹 {profile.cleanliness}/5
+          {profile.sleep === "night_owl"
+            ? "🌙 Night owl"
+            : profile.sleep === "early_bird"
+              ? "🌅 Early bird"
+              : "🔄 Flexible"}{" "}
+          · 🧹 {profile.cleanliness}/5
         </div>
       </div>
     </div>
@@ -590,9 +612,9 @@ function UtilitySplitter({
   ]);
   const [roommates, setRoommates] = useState<Roommate[]>(() => {
     const base: Roommate[] = [{ id: "me", name: "You", moveInDay: 1 }];
-    flatmateNames.slice(0, 2).forEach((n, i) =>
-      base.push({ id: `r${i}`, name: n, moveInDay: i === 0 ? 8 : 15 }),
-    );
+    flatmateNames
+      .slice(0, 2)
+      .forEach((n, i) => base.push({ id: `r${i}`, name: n, moveInDay: i === 0 ? 8 : 15 }));
     if (base.length === 1) {
       base.push({ id: "r0", name: "Nino", moveInDay: 8 });
       base.push({ id: "r1", name: "Giorgi", moveInDay: 15 });
@@ -665,7 +687,8 @@ function UtilitySplitter({
                 {activeProperty.title}
               </div>
               <div className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
-                <MapPin className="h-3.5 w-3.5" /> {activeProperty.district} · ₾{activeProperty.price}/mo
+                <MapPin className="h-3.5 w-3.5" /> {activeProperty.district} · ₾
+                {activeProperty.price}/mo
               </div>
             </div>
           </div>
@@ -706,7 +729,10 @@ function UtilitySplitter({
             {bills.map((b) => {
               const Icon = CATEGORY_ICONS[b.category] ?? Zap;
               return (
-                <div key={b.id} className="flex items-center gap-3 rounded-lg border border-border bg-card p-3">
+                <div
+                  key={b.id}
+                  className="flex items-center gap-3 rounded-lg border border-border bg-card p-3"
+                >
                   <div className="rounded-md bg-primary/10 p-2 text-primary">
                     <Icon className="h-4 w-4" />
                   </div>
@@ -720,7 +746,9 @@ function UtilitySplitter({
                     value={b.amount}
                     onChange={(e) =>
                       setBills((bs) =>
-                        bs.map((x) => (x.id === b.id ? { ...x, amount: Number(e.target.value) || 0 } : x)),
+                        bs.map((x) =>
+                          x.id === b.id ? { ...x, amount: Number(e.target.value) || 0 } : x,
+                        ),
                       )
                     }
                   />
@@ -744,7 +772,9 @@ function UtilitySplitter({
               onChange={(e) => setCategory(e.target.value)}
             >
               {Object.keys(CATEGORY_ICONS).map((c) => (
-                <option key={c} value={c}>{c}</option>
+                <option key={c} value={c}>
+                  {c}
+                </option>
               ))}
             </select>
             <Input
@@ -759,7 +789,12 @@ function UtilitySplitter({
                 if (!Number.isFinite(a) || a <= 0) return;
                 setBills((bs) => [
                   ...bs,
-                  { id: crypto.randomUUID(), category, icon: CATEGORY_ICONS[category] ?? Zap, amount: a },
+                  {
+                    id: crypto.randomUUID(),
+                    category,
+                    icon: CATEGORY_ICONS[category] ?? Zap,
+                    amount: a,
+                  },
                 ]);
                 setAmount("");
               }}
@@ -775,17 +810,24 @@ function UtilitySplitter({
 
           <div className="mt-4 space-y-2">
             {roommates.map((r, i) => (
-              <div key={r.id} className="flex items-center gap-2 rounded-md border border-border bg-card p-2">
+              <div
+                key={r.id}
+                className="flex items-center gap-2 rounded-md border border-border bg-card p-2"
+              >
                 <Input
                   value={r.name}
                   onChange={(e) =>
-                    setRoommates((rs) => rs.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)))
+                    setRoommates((rs) =>
+                      rs.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)),
+                    )
                   }
                   className="h-8 flex-1"
                 />
                 {mode === "movein" && (
                   <div className="flex items-center gap-1">
-                    <Label className="text-[10px] uppercase tracking-wide text-muted-foreground">{t("util.day")}</Label>
+                    <Label className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                      {t("util.day")}
+                    </Label>
                     <Input
                       type="number"
                       min={1}
@@ -794,7 +836,14 @@ function UtilitySplitter({
                       value={r.moveInDay}
                       onChange={(e) =>
                         setRoommates((rs) =>
-                          rs.map((x, j) => (j === i ? { ...x, moveInDay: Math.max(1, Math.min(30, Number(e.target.value) || 1)) } : x)),
+                          rs.map((x, j) =>
+                            j === i
+                              ? {
+                                  ...x,
+                                  moveInDay: Math.max(1, Math.min(30, Number(e.target.value) || 1)),
+                                }
+                              : x,
+                          ),
                         )
                       }
                     />
@@ -818,18 +867,20 @@ function UtilitySplitter({
             className="mt-3 w-full"
             onClick={() =>
               setRoommates((rs) => [
-                ...rs, 
-                { 
-                  id: crypto.randomUUID(), 
-                  name: locale === "ka" ? `თანამცხოვრები ${rs.length + 1}` : `Flatmate ${rs.length + 1}`, 
-                  moveInDay: 1 
-                }
+                ...rs,
+                {
+                  id: crypto.randomUUID(),
+                  name:
+                    locale === "ka"
+                      ? `თანამცხოვრები ${rs.length + 1}`
+                      : `Flatmate ${rs.length + 1}`,
+                  moveInDay: 1,
+                },
               ])
             }
           >
             <Plus className="mr-1 h-4 w-4" /> {t("util.addFlatmate")}
           </Button>
-
         </div>
       </div>
 
@@ -853,7 +904,8 @@ function UtilitySplitter({
               <div className="flex-1">
                 {t("util.paid")}
                 <div className="text-[11px] font-normal opacity-80">
-                  {t("util.via")} {payBank === "TBC" ? t("util.pay.tbc") : t("util.pay.bog")} · ₾{total.toFixed(2)}
+                  {t("util.via")} {payBank === "TBC" ? t("util.pay.tbc") : t("util.pay.bog")} · ₾
+                  {total.toFixed(2)}
                 </div>
               </div>
             </div>
@@ -906,7 +958,9 @@ function UtilitySplitter({
               <div className="flex items-center justify-between">
                 <div className="font-medium">{s.name}</div>
                 {mode === "movein" && (
-                  <Badge variant="secondary" className="text-[10px]">{s.days} {t("util.days")}</Badge>
+                  <Badge variant="secondary" className="text-[10px]">
+                    {s.days} {t("util.days")}
+                  </Badge>
                 )}
               </div>
               <div className="mt-2 font-display text-2xl font-bold text-gradient">
@@ -931,7 +985,8 @@ function UtilitySplitter({
         <div className="mt-4 flex items-start gap-2 rounded-md border border-accent/30 bg-accent/5 p-3 text-xs text-muted-foreground">
           <ShieldCheck className="mt-0.5 h-4 w-4 text-accent" />
           <div>
-            <strong className="text-foreground">{t("util.fairness")}</strong> {locale === "ka" ? "ჯამი ემთხვევა" : "totals reconcile to"} ₾{total.toFixed(2)}.
+            <strong className="text-foreground">{t("util.fairness")}</strong>{" "}
+            {locale === "ka" ? "ჯამი ემთხვევა" : "totals reconcile to"} ₾{total.toFixed(2)}.
             {t("util.fairness.desc")}
           </div>
         </div>
@@ -941,9 +996,7 @@ function UtilitySplitter({
         <div className="mb-2 text-xs uppercase tracking-wide text-muted-foreground">
           {t("dashboard.aiHouseRules")}
         </div>
-        <p className="mb-3 text-sm text-muted-foreground">
-          {t("dashboard.aiHouseRulesDesc")}
-        </p>
+        <p className="mb-3 text-sm text-muted-foreground">{t("dashboard.aiHouseRulesDesc")}</p>
         <DisputeResolver />
       </div>
 
@@ -952,4 +1005,3 @@ function UtilitySplitter({
     </div>
   );
 }
-

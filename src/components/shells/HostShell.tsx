@@ -52,8 +52,12 @@ function N8nBadge() {
         <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
       </span>
       <Zap className="h-3 w-3 text-emerald-500" />
-      <span className="font-medium text-emerald-700 dark:text-emerald-300">{t("host.n8n.connected")}</span>
-      <span className="text-muted-foreground">· {t("host.n8n.lastsync")} {secs}s</span>
+      <span className="font-medium text-emerald-700 dark:text-emerald-300">
+        {t("host.n8n.connected")}
+      </span>
+      <span className="text-muted-foreground">
+        · {t("host.n8n.lastsync")} {secs}s
+      </span>
     </div>
   );
 }
@@ -76,7 +80,10 @@ export function HostShell({ children }: { children: ReactNode }) {
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-30 border-b border-border/60 bg-background/80 backdrop-blur">
         <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4">
-          <Link to="/host" className="flex items-center gap-2 font-syne text-lg md:text-xl font-semibold tracking-tight">
+          <Link
+            to="/host"
+            className="flex items-center gap-2 font-syne text-lg md:text-xl font-semibold tracking-tight"
+          >
             {t("app.name")}
             <span className="ml-1 rounded-full bg-secondary px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
               Host
@@ -131,7 +138,9 @@ export function HostShell({ children }: { children: ReactNode }) {
                   to="/host"
                   search={n.section === "overview" ? {} : { section: n.section }}
                   className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
-                    active ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"
+                    active
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-secondary text-muted-foreground"
                   }`}
                 >
                   <n.Icon className="h-3.5 w-3.5" />

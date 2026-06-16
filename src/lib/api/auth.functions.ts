@@ -29,7 +29,10 @@ export const signUpConfirmed = createServerFn({ method: "POST" })
     });
 
     if (error) {
-      return { error: error.message, alreadyExists: /already|registered|exists/i.test(error.message) };
+      return {
+        error: error.message,
+        alreadyExists: /already|registered|exists/i.test(error.message),
+      };
     }
     return { ok: true as const, userId: created.user?.id ?? null };
   });

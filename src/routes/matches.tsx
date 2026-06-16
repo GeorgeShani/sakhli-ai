@@ -65,8 +65,14 @@ function MatchesPage() {
   const [tab, setTab] = useState<Tab>("people");
   const [aiBestFit, setAiBestFit] = useState(false);
   const [pricingOpen, setPricingOpen] = useState(false);
-  const [pricingReason, setPricingReason] = useState<"swipe_limit" | "ai_best_fit" | "manual">("manual");
-  const [lastAction, setLastAction] = useState<{ tab: Tab; kind: "person" | "place"; id: string } | null>(null);
+  const [pricingReason, setPricingReason] = useState<"swipe_limit" | "ai_best_fit" | "manual">(
+    "manual",
+  );
+  const [lastAction, setLastAction] = useState<{
+    tab: Tab;
+    kind: "person" | "place";
+    id: string;
+  } | null>(null);
   const [dbFlatmates, setDbFlatmates] = useState<Flatmate[]>([]);
   const [dbProperties, setDbProperties] = useState<Property[]>([]);
 
@@ -76,8 +82,9 @@ function MatchesPage() {
         const { data: profilesData, error: profilesErr } = await supabase
           .from("student_profiles")
           .select("*");
-        
+
         if (profilesData && !profilesErr) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any -- loose DB→app row mapping
           const mappedFlatmates = profilesData.map((sp: any) => ({
             id: sp.id,
             name: sp.name || "Student",
@@ -91,7 +98,9 @@ function MatchesPage() {
             parties: sp.parties || false,
             quiet: sp.quiet ?? true,
             bio: sp.bio || "",
-            avatar: sp.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(sp.name || "student")}&backgroundColor=b6e3f4,c0aede,d1d4f9`,
+            avatar:
+              sp.avatar ||
+              `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(sp.name || "student")}&backgroundColor=b6e3f4,c0aede,d1d4f9`,
             salaryBracket: sp.salary_bracket || "under_500",
             incomeSource: sp.income_source || "job",
             verified: sp.verified ?? true,
@@ -99,11 +108,10 @@ function MatchesPage() {
           setDbFlatmates(mappedFlatmates);
         }
 
-        const { data: propsData, error: propsErr } = await supabase
-          .from("properties")
-          .select("*");
+        const { data: propsData, error: propsErr } = await supabase.from("properties").select("*");
 
         if (propsData && !propsErr) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any -- loose DB→app row mapping
           const mappedProps = propsData.map((p: any) => ({
             id: p.id,
             title: p.title,
@@ -193,9 +201,7 @@ function MatchesPage() {
   };
 
   const stackDone =
-    (tab === "people" && peopleStack.length === 0) ||
-    (tab === "places" && placeStack.length === 0);
-
+    (tab === "people" && peopleStack.length === 0) || (tab === "places" && placeStack.length === 0);
 
   const tabBtn = (v: Tab, label: string) => (
     <button
@@ -220,7 +226,9 @@ function MatchesPage() {
         {!profile && (
           <div className="mt-4 rounded-lg border border-accent/40 bg-accent/10 p-3 text-center text-xs text-foreground">
             Browsing as guest.{" "}
-            <Link to="/onboarding" className="font-semibold underline">Build your profile</Link>{" "}
+            <Link to="/onboarding" className="font-semibold underline">
+              Build your profile
+            </Link>{" "}
             for personalized SakhliAI Fit Scores.
           </div>
         )}
@@ -249,18 +257,21 @@ function MatchesPage() {
                   </span>
                 )}
               </div>
-              <div className="text-[11px] text-muted-foreground">
-                {t("matches.aiBestFitDesc")}
-              </div>
+              <div className="text-[11px] text-muted-foreground">{t("matches.aiBestFitDesc")}</div>
             </div>
           </div>
-          <Switch checked={aiBestFit && isPaid} onCheckedChange={handleAiToggle} aria-label="AI Best Fit" />
+          <Switch
+            checked={aiBestFit && isPaid}
+            onCheckedChange={handleAiToggle}
+            aria-label="AI Best Fit"
+          />
         </div>
 
         {!isPaid && (
           <div className="mt-2 flex items-center justify-between rounded-lg border border-primary/30 bg-primary/5 px-3 py-2 text-[11px]">
             <span className="text-muted-foreground">
-              Free plan · <span className="font-semibold text-foreground">{swipesLeft}</span> swipes left
+              Free plan · <span className="font-semibold text-foreground">{swipesLeft}</span> swipes
+              left
             </span>
             <button
               type="button"
@@ -279,12 +290,8 @@ function MatchesPage() {
           {swipeBlocked ? (
             <div className="card-elevated p-10 text-center">
               <Lock className="mx-auto h-8 w-8 text-primary" />
-              <h3 className="mt-3 font-display text-xl font-semibold">
-                {t("matches.freeLimit")}
-              </h3>
-              <p className="mt-2 text-sm text-muted-foreground">
-                {t("matches.upgradeUnlimited")}
-              </p>
+              <h3 className="mt-3 font-display text-xl font-semibold">{t("matches.freeLimit")}</h3>
+              <p className="mt-2 text-sm text-muted-foreground">{t("matches.upgradeUnlimited")}</p>
               <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
                 <Button
                   onClick={() => {
@@ -331,7 +338,9 @@ function MatchesPage() {
         </div>
 
         <div className="mt-6 flex items-center justify-center gap-3 text-xs text-muted-foreground">
-          <span>{matches.filter((m) => m.liked).length} {t("matches.connections")}</span>
+          <span>
+            {matches.filter((m) => m.liked).length} {t("matches.connections")}
+          </span>
           {lastAction && !stackDone && !swipeBlocked && (
             <Button size="sm" variant="ghost" onClick={undo} className="h-7">
               <Undo2 className="mr-1 h-3.5 w-3.5" /> {t("matches.undo")}
@@ -391,7 +400,8 @@ function PersonCard({ data }: { data: { f: Flatmate; fit: FitScore } }) {
         <div className="flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="font-display text-2xl font-bold">
-              {f.name} <span className="text-base font-normal text-muted-foreground">· {f.age}</span>
+              {f.name}{" "}
+              <span className="text-base font-normal text-muted-foreground">· {f.age}</span>
             </h3>
             {isAiPick && (
               <span className="relative inline-flex items-center gap-1 rounded-full border border-emerald-500/60 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-600 dark:text-emerald-400 shadow-[0_0_14px_rgba(16,185,129,0.55)]">
@@ -422,7 +432,11 @@ function PersonCard({ data }: { data: { f: Flatmate; fit: FitScore } }) {
         <div className="flex flex-wrap gap-1.5">
           <Pill>Budget: ₾{f.budget}</Pill>
           <Pill>
-            {f.sleep === "night_owl" ? "🌙 night owl" : f.sleep === "early_bird" ? "🌅 early bird" : "🔄 flexible"}
+            {f.sleep === "night_owl"
+              ? "🌙 night owl"
+              : f.sleep === "early_bird"
+                ? "🌅 early bird"
+                : "🔄 flexible"}
           </Pill>
           <Pill>🧹 {f.cleanliness}/5</Pill>
           {f.pets && <Pill>🐾 pets ok</Pill>}
@@ -489,7 +503,6 @@ function AssistantBubble({ bullets }: { bullets: AssistantBullet[] }) {
   );
 }
 
-
 function PlaceCard({ data }: { data: { p: Property; fit: FitScore } }) {
   const { p, fit } = data;
   const { profile } = useProfile();
@@ -514,8 +527,12 @@ function PlaceCard({ data }: { data: { p: Property; fit: FitScore } }) {
         </div>
         <FitBadge fit={fit} />
         <div className="flex items-center gap-4 text-sm text-muted-foreground">
-          <span className="inline-flex items-center gap-1"><Bed className="h-4 w-4" /> {p.bedrooms} BR</span>
-          <span className="inline-flex items-center gap-1"><BedDouble className="h-4 w-4" /> Need {p.flatmatesNeeded}</span>
+          <span className="inline-flex items-center gap-1">
+            <Bed className="h-4 w-4" /> {p.bedrooms} BR
+          </span>
+          <span className="inline-flex items-center gap-1">
+            <BedDouble className="h-4 w-4" /> Need {p.flatmatesNeeded}
+          </span>
         </div>
         <div className="flex flex-wrap gap-1.5">
           {p.amenities.map((a) => (

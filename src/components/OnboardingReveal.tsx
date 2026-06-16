@@ -7,7 +7,11 @@ import type { StudentProfile } from "@/lib/student-store";
 /** Derive a short "housing personality" from the quiz answers. */
 function persona(profile: StudentProfile, t: (k: string) => string) {
   const clean =
-    profile.cleanliness >= 4 ? t("persona.neat") : profile.cleanliness <= 2 ? t("persona.relaxed") : t("persona.balanced");
+    profile.cleanliness >= 4
+      ? t("persona.neat")
+      : profile.cleanliness <= 2
+        ? t("persona.relaxed")
+        : t("persona.balanced");
   const sleep =
     profile.sleep === "night_owl"
       ? t("persona.nightowl")

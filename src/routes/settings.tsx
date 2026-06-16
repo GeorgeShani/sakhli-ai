@@ -136,7 +136,12 @@ function SettingsPage() {
                     <ShieldCheck className="h-3 w-3" /> Verified
                   </span>
                 ) : (
-                  <Button size="sm" className="ml-1 h-7 px-2 text-[11px]" onClick={handleSendCode} disabled={sendingCode}>
+                  <Button
+                    size="sm"
+                    className="ml-1 h-7 px-2 text-[11px]"
+                    onClick={handleSendCode}
+                    disabled={sendingCode}
+                  >
                     {sendingCode ? (
                       <Loader2 className="mr-1 h-3 w-3 animate-spin" />
                     ) : (
@@ -177,7 +182,9 @@ function SettingsPage() {
                       onClick={() => handlePickAvatar(url)}
                       className={[
                         "relative aspect-square overflow-hidden rounded-full border-2 transition-all hover:scale-105",
-                        selected ? "border-primary shadow-[0_0_14px_var(--primary)]" : "border-border",
+                        selected
+                          ? "border-primary shadow-[0_0_14px_var(--primary)]"
+                          : "border-border",
                       ].join(" ")}
                     >
                       <img src={url} alt="avatar option" className="h-full w-full object-cover" />
@@ -237,7 +244,11 @@ function SettingsPage() {
               </div>
             </div>
             <Button variant="outline" onClick={toggle}>
-              {theme === "dark" ? <Sun className="mr-2 h-4 w-4" /> : <Moon className="mr-2 h-4 w-4" />}
+              {theme === "dark" ? (
+                <Sun className="mr-2 h-4 w-4" />
+              ) : (
+                <Moon className="mr-2 h-4 w-4" />
+              )}
               Toggle theme
             </Button>
           </div>

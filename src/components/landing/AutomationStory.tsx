@@ -6,10 +6,18 @@ import { AgentActivityFeed } from "@/components/agent/AgentActivityFeed";
 
 export function AutomationStory() {
   const { t, locale } = useI18n();
-  const { events } = useAgentFeed(locale, { persona: "marketing", intervalMs: 3200, max: 4, seed: 4 });
+  const { events } = useAgentFeed(locale, {
+    persona: "marketing",
+    intervalMs: 3200,
+    max: 4,
+    seed: 4,
+  });
 
   return (
-    <section id="automation" className="relative overflow-hidden bg-primary text-primary-foreground">
+    <section
+      id="automation"
+      className="relative overflow-hidden bg-primary text-primary-foreground"
+    >
       <div className="pointer-events-none absolute inset-0 opacity-30 [background:radial-gradient(ellipse_at_top_right,var(--accent),transparent_55%)]" />
       <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-4 py-20 md:grid-cols-2 md:py-28">
         <Reveal>
@@ -17,7 +25,9 @@ export function AutomationStory() {
             <Workflow className="h-3.5 w-3.5" />
             {t("land.auto.tag")}
           </div>
-          <h2 className="mt-4 font-display text-3xl font-bold md:text-4xl">{t("land.auto.title")}</h2>
+          <h2 className="mt-4 font-display text-3xl font-bold md:text-4xl">
+            {t("land.auto.title")}
+          </h2>
           <p className="mt-4 max-w-lg text-primary-foreground/70">{t("land.auto.subtitle")}</p>
         </Reveal>
 

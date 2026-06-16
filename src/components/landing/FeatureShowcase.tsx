@@ -65,7 +65,9 @@ function SplitMock() {
           </div>
         </div>
       ))}
-      <p className="mt-2 text-[11px] text-muted-foreground">Nino moved in 8 days late → pays less.</p>
+      <p className="mt-2 text-[11px] text-muted-foreground">
+        Nino moved in 8 days late → pays less.
+      </p>
     </div>
   );
 }
@@ -111,17 +113,29 @@ function LeaseMock() {
 export function FeatureShowcase() {
   const { t } = useI18n();
   const features: Feature[] = [
-    { titleKey: "land.feat.discover.title", descKey: "land.feat.discover.desc", visual: <DiscoverMock /> },
+    {
+      titleKey: "land.feat.discover.title",
+      descKey: "land.feat.discover.desc",
+      visual: <DiscoverMock />,
+    },
     { titleKey: "land.feat.split.title", descKey: "land.feat.split.desc", visual: <SplitMock /> },
-    { titleKey: "land.feat.mediator.title", descKey: "land.feat.mediator.desc", visual: <MediatorMock /> },
+    {
+      titleKey: "land.feat.mediator.title",
+      descKey: "land.feat.mediator.desc",
+      visual: <MediatorMock />,
+    },
     { titleKey: "land.feat.lease.title", descKey: "land.feat.lease.desc", visual: <LeaseMock /> },
   ];
 
   return (
     <section id="features" className="mx-auto max-w-6xl px-4 py-20 md:py-28">
       <Reveal className="mx-auto max-w-2xl text-center">
-        <p className="text-sm font-semibold uppercase tracking-wide text-accent">{t("land.features.tag")}</p>
-        <h2 className="mt-3 font-display text-3xl font-bold md:text-4xl">{t("land.features.title")}</h2>
+        <p className="text-sm font-semibold uppercase tracking-wide text-accent">
+          {t("land.features.tag")}
+        </p>
+        <h2 className="mt-3 font-display text-3xl font-bold md:text-4xl">
+          {t("land.features.title")}
+        </h2>
       </Reveal>
 
       <div className="mt-16 space-y-16 md:space-y-24">

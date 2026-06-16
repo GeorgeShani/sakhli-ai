@@ -22,7 +22,9 @@ export function HostTeaser() {
                 <Building2 className="h-3.5 w-3.5 text-accent" />
                 {t("land.host.tag")}
               </div>
-              <h2 className="mt-4 font-display text-3xl font-bold md:text-4xl">{t("land.host.title")}</h2>
+              <h2 className="mt-4 font-display text-3xl font-bold md:text-4xl">
+                {t("land.host.title")}
+              </h2>
               <p className="mt-4 max-w-lg text-muted-foreground">{t("land.host.desc")}</p>
               <Button asChild size="lg" className="mt-6 h-12 px-6">
                 <Link to="/role-select" search={{ role: "host" }}>
@@ -32,7 +34,10 @@ export function HostTeaser() {
             </div>
             <div className="space-y-3">
               {PILLS.map(({ Icon, label }) => (
-                <div key={label} className="flex items-center gap-3 rounded-xl border border-border bg-card p-3">
+                <div
+                  key={label}
+                  className="flex items-center gap-3 rounded-xl border border-border bg-card p-3"
+                >
                   <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-accent/15 text-accent-foreground">
                     <Icon className="h-4 w-4" />
                   </span>

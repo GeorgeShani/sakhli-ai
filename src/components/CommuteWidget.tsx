@@ -1,7 +1,10 @@
 import { Bike, Bus, Footprints, GraduationCap } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 
-const UNI_HUBS: Record<string, { walk: number; metro: number; bus: number; hub: string; hubKa: string }> = {
+const UNI_HUBS: Record<
+  string,
+  { walk: number; metro: number; bus: number; hub: string; hubKa: string }
+> = {
   "Tbilisi State University": { walk: 12, metro: 2, bus: 4, hub: "TSU", hubKa: "თსუ მაღლივი" },
   "Ilia State University": { walk: 25, metro: 3, bus: 6, hub: "Iliauni", hubKa: "ილიაუნი" },
   "Free University": { walk: 35, metro: 5, bus: 9, hub: "Freeuni", hubKa: "Freeuni კამპუსი" },
@@ -10,10 +13,22 @@ const UNI_HUBS: Record<string, { walk: number; metro: number; bus: number; hub: 
 };
 
 function pickHub(uni?: string, district?: string) {
-  const base = (uni ? UNI_HUBS[uni] : undefined) ?? { walk: 20, metro: 3, bus: 5, hub: uni ?? "Campus", hubKa: uni ?? "კამპუსი" };
+  const base = (uni ? UNI_HUBS[uni] : undefined) ?? {
+    walk: 20,
+    metro: 3,
+    bus: 5,
+    hub: uni ?? "Campus",
+    hubKa: uni ?? "კამპუსი",
+  };
   // distance scaling by district
   const f =
-    district === "Saburtalo" ? 0.7 : district === "Vake" ? 1 : district === "Old Tbilisi" ? 1.2 : 1.4;
+    district === "Saburtalo"
+      ? 0.7
+      : district === "Vake"
+        ? 1
+        : district === "Old Tbilisi"
+          ? 1.2
+          : 1.4;
   return {
     hub: base.hub,
     hubKa: base.hubKa ?? base.hub,
@@ -23,7 +38,13 @@ function pickHub(uni?: string, district?: string) {
   };
 }
 
-export function CommuteWidget({ university, district }: { university?: string; district?: string }) {
+export function CommuteWidget({
+  university,
+  district,
+}: {
+  university?: string;
+  district?: string;
+}) {
   const { locale } = useI18n();
   const c = pickHub(university, district);
   const isKa = locale === "ka";
@@ -31,24 +52,24 @@ export function CommuteWidget({ university, district }: { university?: string; d
   return (
     <div className="rounded-lg border border-accent/30 bg-accent/5 p-3">
       <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-primary">
-        <GraduationCap className="h-3.5 w-3.5" /> 
+        <GraduationCap className="h-3.5 w-3.5" />
         {isKa ? `ტრანსპორტი ${c.hubKa}-მდე` : `Commute to ${c.hub}`}
       </div>
       <div className="mt-2 grid grid-cols-3 gap-2 text-xs">
-        <Metric 
-          icon={<Footprints className="h-3.5 w-3.5" />} 
-          label={isKa ? "ფეხით" : "Walk"} 
-          value={isKa ? `${c.walk} წთ` : `${c.walk} min`} 
+        <Metric
+          icon={<Footprints className="h-3.5 w-3.5" />}
+          label={isKa ? "ფეხით" : "Walk"}
+          value={isKa ? `${c.walk} წთ` : `${c.walk} min`}
         />
-        <Metric 
-          icon={<Bus className="h-3.5 w-3.5" />} 
-          label={isKa ? "მეტრო" : "Metro"} 
-          value={isKa ? `${c.metro} გაჩერება` : `${c.metro} ${c.metro === 1 ? "stop" : "stops"}`} 
+        <Metric
+          icon={<Bus className="h-3.5 w-3.5" />}
+          label={isKa ? "მეტრო" : "Metro"}
+          value={isKa ? `${c.metro} გაჩერება` : `${c.metro} ${c.metro === 1 ? "stop" : "stops"}`}
         />
-        <Metric 
-          icon={<Bike className="h-3.5 w-3.5" />} 
-          label={isKa ? "ავტობუსი" : "Bus"} 
-          value={isKa ? `${c.bus} წთ` : `${c.bus} min`} 
+        <Metric
+          icon={<Bike className="h-3.5 w-3.5" />}
+          label={isKa ? "ავტობუსი" : "Bus"}
+          value={isKa ? `${c.bus} წთ` : `${c.bus} min`}
         />
       </div>
     </div>
@@ -58,7 +79,9 @@ export function CommuteWidget({ university, district }: { university?: string; d
 function Metric({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
     <div className="rounded-md bg-card p-2">
-      <div className="flex items-center gap-1 text-[10px] text-muted-foreground">{icon} {label}</div>
+      <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+        {icon} {label}
+      </div>
       <div className="mt-0.5 text-sm font-semibold">{value}</div>
     </div>
   );

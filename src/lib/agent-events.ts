@@ -188,7 +188,10 @@ export function useAgentFeed(locale: Locale, opts: FeedOptions = {}) {
           .limit(max);
 
         if (error) {
-          console.warn("Supabase agent_events table not loaded/accessible, falling back to mock stream.", error);
+          console.warn(
+            "Supabase agent_events table not loaded/accessible, falling back to mock stream.",
+            error,
+          );
           return;
         }
 
@@ -238,7 +241,7 @@ export function useAgentFeed(locale: Locale, opts: FeedOptions = {}) {
             const base = prev.filter((item) => !item.id.startsWith("ev_"));
             return [ev, ...base].slice(0, max);
           });
-        }
+        },
       )
       .subscribe();
 

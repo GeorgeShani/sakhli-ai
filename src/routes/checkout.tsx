@@ -140,19 +140,31 @@ function CheckoutPage() {
 
           <div className="mt-8 rounded-2xl border border-border bg-card p-6 text-left space-y-4">
             <div className="flex justify-between border-b border-border pb-3 text-sm">
-              <span className="text-muted-foreground">{locale === "ka" ? "ტრანზაქცია" : "Transaction ID"}</span>
-              <span className="font-mono font-medium">SAKHLI-{Math.floor(Math.random() * 900000 + 100000)}</span>
+              <span className="text-muted-foreground">
+                {locale === "ka" ? "ტრანზაქცია" : "Transaction ID"}
+              </span>
+              <span className="font-mono font-medium">
+                SAKHLI-{Math.floor(Math.random() * 900000 + 100000)}
+              </span>
             </div>
             <div className="flex justify-between border-b border-border pb-3 text-sm">
-              <span className="text-muted-foreground">{locale === "ka" ? "პაკეტი" : "Subscribed Plan"}</span>
-              <span className="font-semibold">{locale === "ka" ? planInfo.nameKa : planInfo.name}</span>
+              <span className="text-muted-foreground">
+                {locale === "ka" ? "პაკეტი" : "Subscribed Plan"}
+              </span>
+              <span className="font-semibold">
+                {locale === "ka" ? planInfo.nameKa : planInfo.name}
+              </span>
             </div>
             <div className="flex justify-between border-b border-border pb-3 text-sm">
-              <span className="text-muted-foreground">{locale === "ka" ? "საფასური" : "Amount Paid"}</span>
+              <span className="text-muted-foreground">
+                {locale === "ka" ? "საფასური" : "Amount Paid"}
+              </span>
               <span className="font-display font-bold">₾{priceGEL.toFixed(2)} GEL</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">{locale === "ka" ? "გადახდის მეთოდი" : "Payment Method"}</span>
+              <span className="text-muted-foreground">
+                {locale === "ka" ? "გადახდის მეთოდი" : "Payment Method"}
+              </span>
               <span className="uppercase font-medium flex items-center gap-1.5">
                 {paymentMethod === "stripe" ? (
                   <>
@@ -271,13 +283,21 @@ function CheckoutPage() {
                   <div className="space-y-1">
                     <p className="text-sm font-semibold">
                       {processingStep === 1
-                        ? (locale === "ka" ? "მიმდინარეობს კავშირი ბანკის სერვერთან…" : "Contacting secure payment gateway…")
+                        ? locale === "ka"
+                          ? "მიმდინარეობს კავშირი ბანკის სერვერთან…"
+                          : "Contacting secure payment gateway…"
                         : processingStep === 2
-                          ? (locale === "ka" ? "მოწმდება 3D Secure უსაფრთხოება…" : "Verifying 3D Secure authentication…")
-                          : (locale === "ka" ? "ხდება ტარიფის აქტივაცია Supabase-ში…" : "Syncing premium subscription state…")}
+                          ? locale === "ka"
+                            ? "მოწმდება 3D Secure უსაფრთხოება…"
+                            : "Verifying 3D Secure authentication…"
+                          : locale === "ka"
+                            ? "ხდება ტარიფის აქტივაცია Supabase-ში…"
+                            : "Syncing premium subscription state…"}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {locale === "ka" ? "გთხოვთ არ დახუროთ ფანჯარა" : "Do not close this window during execution"}
+                      {locale === "ka"
+                        ? "გთხოვთ არ დახუროთ ფანჯარა"
+                        : "Do not close this window during execution"}
                     </p>
                   </div>
                 </div>
@@ -287,7 +307,11 @@ function CheckoutPage() {
                   <div className="flex justify-between items-center bg-accent/5 rounded-xl border border-accent/20 px-4 py-3 text-xs text-muted-foreground">
                     <div className="flex items-center gap-1.5">
                       <Sparkles className="h-4 w-4 text-accent" />
-                      <span>{locale === "ka" ? "სატესტო რეჟიმი გააქტიურებულია" : "Hackathon Sandbox Mode Active"}</span>
+                      <span>
+                        {locale === "ka"
+                          ? "სატესტო რეჟიმი გააქტიურებულია"
+                          : "Hackathon Sandbox Mode Active"}
+                      </span>
                     </div>
                     <button
                       type="button"
@@ -299,7 +323,9 @@ function CheckoutPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="card-name">{locale === "ka" ? "ბარათის მფლობელი" : "Cardholder Name"}</Label>
+                    <Label htmlFor="card-name">
+                      {locale === "ka" ? "ბარათის მფლობელი" : "Cardholder Name"}
+                    </Label>
                     <Input
                       id="card-name"
                       required
@@ -310,7 +336,9 @@ function CheckoutPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="card-number">{locale === "ka" ? "ბარათის ნომერი" : "Card Number"}</Label>
+                    <Label htmlFor="card-number">
+                      {locale === "ka" ? "ბარათის ნომერი" : "Card Number"}
+                    </Label>
                     <div className="relative">
                       <Input
                         id="card-number"
@@ -326,7 +354,9 @@ function CheckoutPage() {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="card-expiry">{locale === "ka" ? "მოქმედების ვადა" : "Expiration Date"}</Label>
+                      <Label htmlFor="card-expiry">
+                        {locale === "ka" ? "მოქმედების ვადა" : "Expiration Date"}
+                      </Label>
                       <Input
                         id="card-expiry"
                         required
@@ -351,7 +381,9 @@ function CheckoutPage() {
 
                   <Button type="submit" className="w-full bg-primary py-6 text-sm mt-6">
                     <Lock className="mr-1.5 h-4 w-4" />
-                    {locale === "ka" ? `გადაიხადე ₾${priceGEL.toFixed(2)} GEL` : `Pay ₾${priceGEL.toFixed(2)} GEL Securely`}
+                    {locale === "ka"
+                      ? `გადაიხადე ₾${priceGEL.toFixed(2)} GEL`
+                      : `Pay ₾${priceGEL.toFixed(2)} GEL Securely`}
                   </Button>
                 </form>
               ) : paymentMethod === "tbc" ? (
@@ -365,7 +397,9 @@ function CheckoutPage() {
                       TBC Pay Gateway Redirect
                     </h3>
                     <p className="text-xs text-muted-foreground leading-relaxed">
-                      This triggers a server call to create a TBC Checkout session. In production, this redirects the user to TBC's official credit card page with a secure signature, then returns back to SakhliAI.
+                      This triggers a server call to create a TBC Checkout session. In production,
+                      this redirects the user to TBC's official credit card page with a secure
+                      signature, then returns back to SakhliAI.
                     </p>
                   </div>
                   <Button
@@ -386,7 +420,8 @@ function CheckoutPage() {
                       Bank of Georgia Express Checkout
                     </h3>
                     <p className="text-xs text-muted-foreground leading-relaxed">
-                      Triggers a postback requesting the BOG Payment Session ID. SakhliAI securely exchanges credentials and opens BOG Orange gateway.
+                      Triggers a postback requesting the BOG Payment Session ID. SakhliAI securely
+                      exchanges credentials and opens BOG Orange gateway.
                     </p>
                   </div>
                   <Button
@@ -427,11 +462,15 @@ function CheckoutPage() {
 
               <div className="space-y-2 text-sm pt-2">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">{locale === "ka" ? "შუალედური (დღგ-ს გარეშე)" : "Subtotal (excl. VAT)"}</span>
+                  <span className="text-muted-foreground">
+                    {locale === "ka" ? "შუალედური (დღგ-ს გარეშე)" : "Subtotal (excl. VAT)"}
+                  </span>
                   <span>₾{subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">{locale === "ka" ? "დღგ (18% საქართველო)" : "Georgian VAT (18%)"}</span>
+                  <span className="text-muted-foreground">
+                    {locale === "ka" ? "დღგ (18% საქართველო)" : "Georgian VAT (18%)"}
+                  </span>
                   <span>₾{vatAmount.toFixed(2)}</span>
                 </div>
                 <div className="border-t border-border my-2 pt-2 flex justify-between font-display text-lg font-bold">
@@ -443,9 +482,12 @@ function CheckoutPage() {
 
             {/* PLATFORM TRUST CARD */}
             <div className="rounded-2xl border border-border bg-card p-5 space-y-3">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">SakhliAI Protection</h3>
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                SakhliAI Protection
+              </h3>
               <p className="text-[11px] text-muted-foreground leading-relaxed">
-                By purchasing, you authorize SakhliAI to activate immediate premium matching access. Subscriptions can be canceled at any time from your setting profile options.
+                By purchasing, you authorize SakhliAI to activate immediate premium matching access.
+                Subscriptions can be canceled at any time from your setting profile options.
               </p>
               <div className="flex gap-4 pt-1">
                 <div className="flex items-center gap-1 text-[10px] text-muted-foreground font-medium">

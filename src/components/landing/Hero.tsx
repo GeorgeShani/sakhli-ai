@@ -1,7 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowRight, Building2, GraduationCap, Sparkles, BadgeCheck, Heart, HeartOff } from "lucide-react";
+import {
+  ArrowRight,
+  Building2,
+  GraduationCap,
+  Sparkles,
+  BadgeCheck,
+  Heart,
+  HeartOff,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n";
 import { flatmates } from "@/lib/mock-data";
@@ -20,7 +28,8 @@ const DEMO_STATES = [
     score: 98,
     statusEn: "Super Match!",
     statusKa: "სუპერ მატჩი!",
-    colorClass: "border-success text-success bg-background/95 shadow-[0_4px_12px_rgba(34,197,94,0.15)]",
+    colorClass:
+      "border-success text-success bg-background/95 shadow-[0_4px_12px_rgba(34,197,94,0.15)]",
     bgClass: "from-success/20 to-accent/20",
     barColor: "bg-success",
     isSuper: true,
@@ -40,12 +49,13 @@ const DEMO_STATES = [
     score: 42,
     statusEn: "Match Failed",
     statusKa: "არ დაემთხვა",
-    colorClass: "border-destructive text-destructive bg-background/95 shadow-[0_4px_12px_rgba(239,68,68,0.15)]",
+    colorClass:
+      "border-destructive text-destructive bg-background/95 shadow-[0_4px_12px_rgba(239,68,68,0.15)]",
     bgClass: "from-destructive/15 to-muted/15",
     barColor: "bg-destructive",
     isSuper: false,
     isFailed: true,
-  }
+  },
 ];
 
 /** A looping, self-swiping demo deck that shows the product in ~3 seconds. */
@@ -88,7 +98,9 @@ function HeroDemo() {
           transition={{ type: "spring", stiffness: 220, damping: 26 }}
           className="card-elevated absolute inset-0 overflow-hidden rounded-3xl"
         >
-          <div className={`relative h-1/2 bg-gradient-to-br ${demoState.bgClass} transition-colors duration-500`}>
+          <div
+            className={`relative h-1/2 bg-gradient-to-br ${demoState.bgClass} transition-colors duration-500`}
+          >
             <img src={f.avatar} alt={f.name} className="h-full w-full object-contain p-6" />
             <AnimatePresence>
               {stamp && (
@@ -100,9 +112,13 @@ function HeroDemo() {
                   {demoState.isFailed ? (
                     <HeartOff className="h-3.5 w-3.5 fill-destructive/10" />
                   ) : (
-                    <Heart className={`h-3.5 w-3.5 ${demoState.isSuper ? "fill-success animate-pulse" : "fill-primary/20"}`} />
+                    <Heart
+                      className={`h-3.5 w-3.5 ${demoState.isSuper ? "fill-success animate-pulse" : "fill-primary/20"}`}
+                    />
                   )}
-                  <span>{score}% {status}</span>
+                  <span>
+                    {score}% {status}
+                  </span>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -111,7 +127,9 @@ function HeroDemo() {
             <div className="flex items-center gap-1.5">
               <h3 className="font-display text-lg font-bold">{f.name}</h3>
               {f.verified && <BadgeCheck className="h-4 w-4 text-accent" />}
-              <span className={`ml-auto font-display text-lg font-extrabold ${demoState.isFailed ? "text-destructive" : demoState.isSuper ? "text-success" : "text-primary"}`}>
+              <span
+                className={`ml-auto font-display text-lg font-extrabold ${demoState.isFailed ? "text-destructive" : demoState.isSuper ? "text-success" : "text-primary"}`}
+              >
                 {score}%
               </span>
             </div>
@@ -149,8 +167,7 @@ export function Hero() {
             {t("land.hero.badge")}
           </div>
           <h1 className="mt-6 font-display text-4xl font-extrabold leading-[1.05] tracking-tight md:text-5xl lg:text-6xl">
-            {t("land.hero.title.a")}{" "}
-            <span className="text-gradient">{t("land.hero.title.b")}</span>
+            {t("land.hero.title.a")} <span className="text-gradient">{t("land.hero.title.b")}</span>
           </h1>
           <p className="mt-6 max-w-xl text-base leading-relaxed text-muted-foreground md:text-lg">
             {t("land.hero.subtitle")}

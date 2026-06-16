@@ -41,10 +41,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   };
 
   // Cycle: light → dark → system → light …
-  const toggle = () =>
-    setTheme(theme === "light" ? "dark" : theme === "dark" ? "system" : "light");
+  const toggle = () => setTheme(theme === "light" ? "dark" : theme === "dark" ? "system" : "light");
 
-  return <ThemeContext.Provider value={{ theme, setTheme, toggle }}>{children}</ThemeContext.Provider>;
+  return (
+    <ThemeContext.Provider value={{ theme, setTheme, toggle }}>{children}</ThemeContext.Provider>
+  );
 }
 
 export function useTheme() {

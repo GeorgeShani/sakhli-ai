@@ -38,9 +38,7 @@ export function AgentEventRow({
               {event.source}
             </span>
           </div>
-          <span className="shrink-0 text-[11px] text-muted-foreground">
-            {relTime(event.at)}
-          </span>
+          <span className="shrink-0 text-[11px] text-muted-foreground">{relTime(event.at)}</span>
         </div>
         {!compact && (
           <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{event.detail}</p>

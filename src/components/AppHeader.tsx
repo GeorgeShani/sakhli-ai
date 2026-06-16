@@ -37,14 +37,18 @@ export function AppHeader() {
   return (
     <header className="sticky top-0 z-30 border-b border-border/60 bg-background/80 backdrop-blur">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
-        <Link to="/" className="flex items-center gap-2 font-syne text-lg md:text-xl font-semibold tracking-tight">
+        <Link
+          to="/"
+          className="flex items-center gap-2 font-syne text-lg md:text-xl font-semibold tracking-tight"
+        >
           {t("app.name")}
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex">
           {navItem("/", t("nav.home"))}
           {(!profile?.role || profile.role === "student") && navItem("/matches", t("nav.matches"))}
-          {(!profile?.role || profile.role === "student") && navItem("/dashboard", t("nav.dashboard"))}
+          {(!profile?.role || profile.role === "student") &&
+            navItem("/dashboard", t("nav.dashboard"))}
           {(!profile?.role || profile.role === "host") && navItem("/host", "Host")}
         </nav>
 
@@ -53,7 +57,13 @@ export function AppHeader() {
           <LanguageToggle />
           {user ? (
             <>
-              <Button asChild size="sm" variant="ghost" className="hidden sm:inline-flex" title="User settings">
+              <Button
+                asChild
+                size="sm"
+                variant="ghost"
+                className="hidden sm:inline-flex"
+                title="User settings"
+              >
                 <Link to="/settings">
                   {studentProfile?.avatar ? (
                     <img

@@ -23,8 +23,7 @@ import { createFileRoute } from "@tanstack/react-router";
 export const Route = createFileRoute("/api/public/n8n/cleaning")({
   server: {
     handlers: {
-      OPTIONS: async () =>
-        new Response(null, { status: 204, headers: corsHeaders() }),
+      OPTIONS: async () => new Response(null, { status: 204, headers: corsHeaders() }),
       POST: async ({ request }) => {
         const expected = process.env.N8N_WEBHOOK_SECRET;
         if (expected) {

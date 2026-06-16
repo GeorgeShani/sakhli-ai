@@ -227,7 +227,9 @@ function RoleCards({
                 className={`pointer-events-none absolute -right-12 -top-12 h-44 w-44 rounded-full bg-gradient-to-br ${c.tint} blur-2xl opacity-60`}
               />
               <div className="relative">
-                <div className={`inline-flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br ${c.tint} ring-1 ring-border`}>
+                <div
+                  className={`inline-flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br ${c.tint} ring-1 ring-border`}
+                >
                   <Icon className="h-5 w-5" />
                 </div>
                 <div className="mt-4">
@@ -311,13 +313,7 @@ function AuthStep({
   );
 }
 
-function InlineAuthCard({
-  card,
-  onBackHome,
-}: {
-  card: Card;
-  onBackHome: () => void;
-}) {
+function InlineAuthCard({ card, onBackHome }: { card: Card; onBackHome: () => void }) {
   const { signIn, signUp } = useAuth();
   const { t } = useI18n();
   const role = card.role;
@@ -358,12 +354,7 @@ function InlineAuthCard({
             {t("role.account.title")}
           </h2>
           <p className="mt-2 text-sm text-foreground/80">{t(card.nextKey)}</p>
-          <Button
-            variant="outline"
-            size="sm"
-            className="mt-4 w-full"
-            onClick={onBackHome}
-          >
+          <Button variant="outline" size="sm" className="mt-4 w-full" onClick={onBackHome}>
             <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />
             {t("auth.back")}
           </Button>

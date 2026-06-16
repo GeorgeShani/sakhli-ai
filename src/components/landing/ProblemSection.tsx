@@ -10,14 +10,20 @@ export function ProblemSection() {
   return (
     <section className="mx-auto max-w-6xl px-4 py-20 md:py-28">
       <Reveal className="mx-auto max-w-2xl text-center">
-        <p className="text-sm font-semibold uppercase tracking-wide text-accent">{t("land.problem.tag")}</p>
-        <h2 className="mt-3 font-display text-3xl font-bold md:text-4xl">{t("land.problem.title")}</h2>
+        <p className="text-sm font-semibold uppercase tracking-wide text-accent">
+          {t("land.problem.tag")}
+        </p>
+        <h2 className="mt-3 font-display text-3xl font-bold md:text-4xl">
+          {t("land.problem.title")}
+        </h2>
       </Reveal>
 
       <div className="mx-auto mt-12 grid max-w-4xl gap-5 md:grid-cols-2">
         <Reveal>
           <div className="h-full rounded-2xl border border-border bg-surface p-6">
-            <h3 className="font-display text-lg font-semibold text-muted-foreground">{t("land.before.title")}</h3>
+            <h3 className="font-display text-lg font-semibold text-muted-foreground">
+              {t("land.before.title")}
+            </h3>
             <ul className="mt-5 space-y-3">
               {before.map((k) => (
                 <li key={k} className="flex items-start gap-3 text-sm">

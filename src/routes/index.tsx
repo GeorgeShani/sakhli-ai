@@ -14,13 +14,13 @@ export const Route = createFileRoute("/")({
       { title: "SakhliAI — Smart rentals for Georgia" },
       {
         name: "description",
-        content:
-          "Behavior-based flatmate matching and long-term rentals for students in Georgia.",
+        content: "Behavior-based flatmate matching and long-term rentals for students in Georgia.",
       },
       { property: "og:title", content: "SakhliAI — Smart rentals for Georgia" },
       {
         property: "og:description",
-        content: "Match with compatible flatmates and long-term homes in Tbilisi, Batumi and beyond.",
+        content:
+          "Match with compatible flatmates and long-term homes in Tbilisi, Batumi and beyond.",
       },
     ],
   }),

@@ -53,7 +53,11 @@ export function SmartContractCard({
         });
         if (res.ok) {
           const data = await res.json();
-          fetchedLease = data.leaseText || data.text || data.output || (typeof data === "string" ? data : JSON.stringify(data));
+          fetchedLease =
+            data.leaseText ||
+            data.text ||
+            data.output ||
+            (typeof data === "string" ? data : JSON.stringify(data));
         }
       } catch (err) {
         console.warn("Failed to generate lease from n8n webhook, falling back", err);
@@ -81,7 +85,9 @@ export function SmartContractCard({
       className={[
         "card-elevated relative overflow-hidden p-5 transition-all",
         signed && "border-emerald-500/60 shadow-[0_0_40px_-10px_rgba(16,185,129,0.5)]",
-      ].filter(Boolean).join(" ")}
+      ]
+        .filter(Boolean)
+        .join(" ")}
     >
       <div className="flex items-start justify-between gap-3">
         <div>
@@ -118,9 +124,17 @@ export function SmartContractCard({
         </div>
       ) : (
         <ol className="mt-4 space-y-1 text-xs text-muted-foreground">
-          <li>1. მდგმური იხდის თვის ქირას ყოველი თვის 1 რიცხვამდე / Tenant pays rent by the 1st of each month.</li>
-          <li>2. დეპოზიტი = 1 თვის ქირა, დაბრუნებადი / Deposit equals one month's rent, refundable.</li>
-          <li>3. დავის შემთხვევაში გამოიყენება SakhliAI AI მედიატორი / Disputes are mediated via SakhliAI AI.</li>
+          <li>
+            1. მდგმური იხდის თვის ქირას ყოველი თვის 1 რიცხვამდე / Tenant pays rent by the 1st of
+            each month.
+          </li>
+          <li>
+            2. დეპოზიტი = 1 თვის ქირა, დაბრუნებადი / Deposit equals one month's rent, refundable.
+          </li>
+          <li>
+            3. დავის შემთხვევაში გამოიყენება SakhliAI AI მედიატორი / Disputes are mediated via
+            SakhliAI AI.
+          </li>
         </ol>
       )}
 
@@ -142,7 +156,9 @@ export function SmartContractCard({
                 ) : (
                   <span className="h-3.5 w-3.5 rounded-full border border-border" />
                 )}
-                <span className={i <= step ? "text-foreground" : "text-muted-foreground"}>{label}</span>
+                <span className={i <= step ? "text-foreground" : "text-muted-foreground"}>
+                  {label}
+                </span>
               </div>
             ))}
           </motion.div>
@@ -151,10 +167,15 @@ export function SmartContractCard({
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-          <ShieldCheck className="h-3.5 w-3.5 text-accent" /> Secured by SakhliAI Vault (eIDAS-equivalent)
+          <ShieldCheck className="h-3.5 w-3.5 text-accent" /> Secured by SakhliAI Vault
+          (eIDAS-equivalent)
         </div>
         {!signed ? (
-          <Button onClick={handleSign} disabled={signing} className="bg-gradient-to-r from-primary to-accent text-primary-foreground">
+          <Button
+            onClick={handleSign}
+            disabled={signing}
+            className="bg-gradient-to-r from-primary to-accent text-primary-foreground"
+          >
             {signing ? (
               <>
                 <Sparkles className="mr-1.5 h-4 w-4 animate-spin" /> ვამოწმებთ…

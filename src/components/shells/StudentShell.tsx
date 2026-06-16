@@ -21,7 +21,12 @@ type NavDest = {
 
 const NAV: NavDest[] = [
   { to: "/matches", labelKey: "nav.discover", Icon: Compass, match: (p) => p === "/matches" },
-  { to: "/dashboard", labelKey: "nav.saved", Icon: Heart, match: (p, tab) => p === "/dashboard" && tab !== "utilities" },
+  {
+    to: "/dashboard",
+    labelKey: "nav.saved",
+    Icon: Heart,
+    match: (p, tab) => p === "/dashboard" && tab !== "utilities",
+  },
   {
     to: "/dashboard",
     search: { tab: "utilities" },
@@ -56,7 +61,10 @@ export function StudentShell({ children }: { children: ReactNode }) {
       {/* Top bar */}
       <header className="sticky top-0 z-30 border-b border-border/60 bg-background/80 backdrop-blur">
         <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
-          <Link to="/matches" className="flex items-center gap-2 font-syne text-lg md:text-xl font-semibold tracking-tight">
+          <Link
+            to="/matches"
+            className="flex items-center gap-2 font-syne text-lg md:text-xl font-semibold tracking-tight"
+          >
             {t("app.name")}
           </Link>
 

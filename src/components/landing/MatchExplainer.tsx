@@ -21,8 +21,12 @@ export function MatchExplainer() {
     <section className="border-y border-border bg-surface">
       <div className="mx-auto max-w-6xl px-4 py-20 md:py-28">
         <Reveal className="mx-auto max-w-2xl text-center">
-          <p className="text-sm font-semibold uppercase tracking-wide text-accent">{t("land.match.tag")}</p>
-          <h2 className="mt-3 font-display text-3xl font-bold md:text-4xl">{t("land.match.title")}</h2>
+          <p className="text-sm font-semibold uppercase tracking-wide text-accent">
+            {t("land.match.tag")}
+          </p>
+          <h2 className="mt-3 font-display text-3xl font-bold md:text-4xl">
+            {t("land.match.title")}
+          </h2>
           <p className="mt-4 text-muted-foreground">{t("land.match.subtitle")}</p>
         </Reveal>
 
@@ -52,7 +56,10 @@ export function MatchExplainer() {
           </Reveal>
         </div>
 
-        <Reveal delay={0.1} className="mx-auto mt-12 max-w-xl rounded-2xl border border-border bg-card p-6">
+        <Reveal
+          delay={0.1}
+          className="mx-auto mt-12 max-w-xl rounded-2xl border border-border bg-card p-6"
+        >
           <CompatibilityBreakdown factors={factors} />
           <div className="mt-5 border-t border-border pt-4">
             <CompatibilityMeter value={86} label={t("land.match.overall")} size="lg" />

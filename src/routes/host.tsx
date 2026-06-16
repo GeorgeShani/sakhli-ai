@@ -29,7 +29,13 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -108,7 +114,10 @@ type CleaningTask = {
   notes: string | null;
 };
 
-const CHANNEL_META: Record<string, { label: string; color: string; logo: string; logoColor: string }> = {
+const CHANNEL_META: Record<
+  string,
+  { label: string; color: string; logo: string; logoColor: string }
+> = {
   airbnb: { label: "Airbnb", color: "bg-rose-500", logo: "A", logoColor: "text-rose-500" },
   booking: { label: "Booking.com", color: "bg-blue-500", logo: "B.", logoColor: "text-blue-500" },
   sakliai: { label: "SakhliAI", color: "bg-primary", logo: "Sა", logoColor: "text-primary" },
@@ -192,7 +201,9 @@ function HostPage() {
           setBookings((prev) => [...prev, nb].sort((a, b) => a.check_in.localeCompare(b.check_in)));
           setPulse(nb.id);
           setTimeout(() => setPulse(null), 2500);
-          toast.success(`New booking: ${nb.guest_name ?? "Guest"} via ${CHANNEL_META[nb.channel]?.label ?? nb.channel}`);
+          toast.success(
+            `New booking: ${nb.guest_name ?? "Guest"} via ${CHANNEL_META[nb.channel]?.label ?? nb.channel}`,
+          );
         } else if (payload.eventType === "UPDATE") {
           const nb = payload.new as Booking;
           setBookings((prev) => prev.map((x) => (x.id === nb.id ? nb : x)));
@@ -201,30 +212,38 @@ function HostPage() {
           setBookings((prev) => prev.filter((x) => x.id !== old.id));
         }
       })
-      .on("postgres_changes", { event: "*", schema: "public", table: "channel_sync" }, (payload) => {
-        if (payload.eventType === "UPDATE") {
-          const n = payload.new as ChannelSync;
-          setSyncs((prev) => prev.map((s) => (s.id === n.id ? n : s)));
-        } else if (payload.eventType === "INSERT") {
-          setSyncs((prev) => [...prev, payload.new as ChannelSync]);
-        }
-      })
-      .on("postgres_changes", { event: "*", schema: "public", table: "cleaning_tasks" }, (payload) => {
-        if (payload.eventType === "INSERT") {
-          setTasks((prev) =>
-            [...prev, payload.new as CleaningTask].sort((a, b) =>
-              a.scheduled_for.localeCompare(b.scheduled_for),
-            ),
-          );
-          toast.success("New cleaning task scheduled");
-        } else if (payload.eventType === "UPDATE") {
-          const n = payload.new as CleaningTask;
-          setTasks((prev) => prev.map((t) => (t.id === n.id ? n : t)));
-        } else if (payload.eventType === "DELETE") {
-          const o = payload.old as CleaningTask;
-          setTasks((prev) => prev.filter((t) => t.id !== o.id));
-        }
-      })
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "channel_sync" },
+        (payload) => {
+          if (payload.eventType === "UPDATE") {
+            const n = payload.new as ChannelSync;
+            setSyncs((prev) => prev.map((s) => (s.id === n.id ? n : s)));
+          } else if (payload.eventType === "INSERT") {
+            setSyncs((prev) => [...prev, payload.new as ChannelSync]);
+          }
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "cleaning_tasks" },
+        (payload) => {
+          if (payload.eventType === "INSERT") {
+            setTasks((prev) =>
+              [...prev, payload.new as CleaningTask].sort((a, b) =>
+                a.scheduled_for.localeCompare(b.scheduled_for),
+              ),
+            );
+            toast.success("New cleaning task scheduled");
+          } else if (payload.eventType === "UPDATE") {
+            const n = payload.new as CleaningTask;
+            setTasks((prev) => prev.map((t) => (t.id === n.id ? n : t)));
+          } else if (payload.eventType === "DELETE") {
+            const o = payload.old as CleaningTask;
+            setTasks((prev) => prev.filter((t) => t.id !== o.id));
+          }
+        },
+      )
       .subscribe();
 
     return () => {
@@ -257,7 +276,8 @@ function HostPage() {
     return Math.min(100, Math.round((nights / next30) * 100));
   }, [bookings, properties]);
 
-  const visibleProps = selectedProp === "all" ? properties : properties.filter((p) => p.id === selectedProp);
+  const visibleProps =
+    selectedProp === "all" ? properties : properties.filter((p) => p.id === selectedProp);
 
   return (
     <HostShell>
@@ -297,7 +317,11 @@ function HostPage() {
 
           {/* Stats */}
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-            <StatCard label="Properties" value={properties.length} icon={<MapPin className="h-4 w-4" />} />
+            <StatCard
+              label="Properties"
+              value={properties.length}
+              icon={<MapPin className="h-4 w-4" />}
+            />
             <StatCard
               label="Active bookings"
               value={upcomingBookings.length}
@@ -351,7 +375,15 @@ function HostPage() {
   );
 }
 
-function StatCard({ label, value, icon }: { label: string; value: number | string; icon: React.ReactNode }) {
+function StatCard({
+  label,
+  value,
+  icon,
+}: {
+  label: string;
+  value: number | string;
+  icon: React.ReactNode;
+}) {
   return (
     <Card>
       <CardContent className="flex items-center justify-between p-4">
@@ -454,8 +486,8 @@ function AirbnbPriorityToggle() {
               Airbnb პრიორიტეტი / Airbnb Priority
             </div>
             <div className="text-xs text-muted-foreground">
-              Tourist-season override — pushes Airbnb / Booking calendars to the top of the n8n
-              sync queue.
+              Tourist-season override — pushes Airbnb / Booking calendars to the top of the n8n sync
+              queue.
             </div>
           </div>
         </div>
@@ -501,7 +533,13 @@ function CalendarView({
   }, []);
 
   if (properties.length === 0) {
-    return <Card><CardContent className="p-8 text-center text-muted-foreground">No properties yet.</CardContent></Card>;
+    return (
+      <Card>
+        <CardContent className="p-8 text-center text-muted-foreground">
+          No properties yet.
+        </CardContent>
+      </Card>
+    );
   }
 
   return (
@@ -589,7 +627,9 @@ function CalendarView({
                             width: `calc((100% - 200px) * ${span} / ${days.length} - 4px)`,
                           }}
                         >
-                          <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded bg-white text-[10px] font-bold ${meta.logoColor}`}>
+                          <span
+                            className={`flex h-5 w-5 shrink-0 items-center justify-center rounded bg-white text-[10px] font-bold ${meta.logoColor}`}
+                          >
                             {meta.logo}
                           </span>
                           <span className="truncate">{b.guest_name ?? "Guest"}</span>
@@ -597,11 +637,15 @@ function CalendarView({
                       </HoverCardTrigger>
                       <HoverCardContent className="w-72" align="start">
                         <div className="flex items-center gap-2">
-                          <span className={`flex h-7 w-7 items-center justify-center rounded ${meta.color} text-xs font-bold text-white`}>
+                          <span
+                            className={`flex h-7 w-7 items-center justify-center rounded ${meta.color} text-xs font-bold text-white`}
+                          >
                             {meta.logo}
                           </span>
                           <div className="min-w-0">
-                            <div className="truncate text-sm font-semibold">{b.guest_name ?? "Guest"}</div>
+                            <div className="truncate text-sm font-semibold">
+                              {b.guest_name ?? "Guest"}
+                            </div>
                             <div className="text-xs text-muted-foreground">via {meta.label}</div>
                           </div>
                           <Badge variant="secondary" className="ml-auto text-[10px] capitalize">
@@ -624,7 +668,9 @@ function CalendarView({
                           <div>
                             <div className="text-muted-foreground">Payment</div>
                             <div className="font-medium">
-                              {b.total_price ? `₾ ${Number(b.total_price).toLocaleString()} · Paid` : "Pending"}
+                              {b.total_price
+                                ? `₾ ${Number(b.total_price).toLocaleString()} · Paid`
+                                : "Pending"}
                             </div>
                           </div>
                         </div>
@@ -690,7 +736,9 @@ function ConfigureIcalDialog({
         <DialogHeader>
           <DialogTitle>Configure {channel.toUpperCase()} iCal Feed</DialogTitle>
           <DialogDescription>
-            Enter the iCal (ICS) calendar link from {channel === "airbnb" ? "Airbnb" : channel === "booking" ? "Booking.com" : channel} to automatically import bookings.
+            Enter the iCal (ICS) calendar link from{" "}
+            {channel === "airbnb" ? "Airbnb" : channel === "booking" ? "Booking.com" : channel} to
+            automatically import bookings.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-4">
@@ -719,23 +767,31 @@ function ConfigureIcalDialog({
 function ChannelsView({ properties, syncs }: { properties: Property[]; syncs: ChannelSync[] }) {
   const channels = ["airbnb", "booking", "sakliai", "student"] as const;
 
-  const handleSaveIcal = async (propertyId: string, channel: string, url: string, current?: ChannelSync) => {
+  const handleSaveIcal = async (
+    propertyId: string,
+    channel: string,
+    url: string,
+    current?: ChannelSync,
+  ) => {
     if (current) {
       await supabase
         .from("channel_sync")
-        .update({ ical_url: url, enabled: true, status: "synced", last_synced_at: new Date().toISOString() })
-        .eq("id", current.id);
-    } else {
-      await supabase
-        .from("channel_sync")
-        .insert({
-          property_id: propertyId,
-          channel,
-          enabled: true,
+        .update({
           ical_url: url,
+          enabled: true,
           status: "synced",
           last_synced_at: new Date().toISOString(),
-        });
+        })
+        .eq("id", current.id);
+    } else {
+      await supabase.from("channel_sync").insert({
+        property_id: propertyId,
+        channel,
+        enabled: true,
+        ical_url: url,
+        status: "synced",
+        last_synced_at: new Date().toISOString(),
+      });
     }
     toast.success("iCal link saved & calendar sync completed!");
   };
@@ -866,7 +922,10 @@ function OpsView({
       in_progress: "completed",
       completed: "completed",
     };
-    await supabase.from("cleaning_tasks").update({ status: next[t.status] ?? "completed" }).eq("id", t.id);
+    await supabase
+      .from("cleaning_tasks")
+      .update({ status: next[t.status] ?? "completed" })
+      .eq("id", t.id);
   };
 
   return (
@@ -910,7 +969,10 @@ function OpsView({
                   <Sparkles className="h-3.5 w-3.5 text-muted-foreground" />
                   {t.cleaner_name ?? "Unassigned"}
                   {t.cleaner_phone && (
-                    <a href={`tel:${t.cleaner_phone}`} className="flex items-center gap-1 text-xs text-primary">
+                    <a
+                      href={`tel:${t.cleaner_phone}`}
+                      className="flex items-center gap-1 text-xs text-primary"
+                    >
                       <Phone className="h-3 w-3" /> {t.cleaner_phone}
                     </a>
                   )}
@@ -919,7 +981,12 @@ function OpsView({
                 <div className="ml-auto">
                   {t.status !== "completed" && (
                     <Button size="sm" variant="outline" onClick={() => advance(t)}>
-                      Mark {t.status === "pending" ? "assigned" : t.status === "assigned" ? "in progress" : "complete"}
+                      Mark{" "}
+                      {t.status === "pending"
+                        ? "assigned"
+                        : t.status === "assigned"
+                          ? "in progress"
+                          : "complete"}
                     </Button>
                   )}
                 </div>
@@ -986,7 +1053,8 @@ function SmartAccess({
             Smart Access · ჭკვიანი საკეტი
           </CardTitle>
           <CardDescription>
-            Dynamic QR + lockbox code for the active booking. n8n rotates this at 03:00 for late-night check-ins.
+            Dynamic QR + lockbox code for the active booking. n8n rotates this at 03:00 for
+            late-night check-ins.
           </CardDescription>
         </div>
         <Button size="sm" variant="outline" onClick={regenerate}>
@@ -1003,13 +1071,17 @@ function SmartAccess({
             <div className="space-y-3">
               <div>
                 <div className="text-xs uppercase tracking-wide text-muted-foreground">Guest</div>
-                <div className="font-medium">{active.guest_name ?? "Guest"} · {property?.title}</div>
+                <div className="font-medium">
+                  {active.guest_name ?? "Guest"} · {property?.title}
+                </div>
                 <div className="text-xs text-muted-foreground">
                   {active.check_in} → {active.check_out}
                 </div>
               </div>
               <div className="rounded-lg bg-gradient-to-r from-primary/10 to-accent/10 p-4">
-                <div className="text-xs uppercase tracking-wide text-muted-foreground">Lockbox code</div>
+                <div className="text-xs uppercase tracking-wide text-muted-foreground">
+                  Lockbox code
+                </div>
                 <div className="font-display text-4xl font-bold tracking-[0.3em] text-gradient">
                   {code}
                 </div>
@@ -1018,13 +1090,15 @@ function SmartAccess({
                 </div>
               </div>
               <div className="text-xs text-muted-foreground">
-                Tip: n8n cron at 03:00 calls <code>/api/public/n8n/booking</code> to refresh codes for arrivals.
+                Tip: n8n cron at 03:00 calls <code>/api/public/n8n/booking</code> to refresh codes
+                for arrivals.
               </div>
             </div>
           </div>
         ) : (
           <div className="rounded-md border border-dashed p-6 text-center text-sm text-muted-foreground">
-            No active booking. A code will be generated automatically when a guest is within 48 hours of check-in.
+            No active booking. A code will be generated automatically when a guest is within 48
+            hours of check-in.
           </div>
         )}
       </CardContent>
@@ -1034,15 +1108,37 @@ function SmartAccess({
 
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, { label: string; icon: React.ReactNode; cls: string }> = {
-    pending: { label: "Pending", icon: <Clock className="h-3 w-3" />, cls: "bg-muted text-foreground" },
-    assigned: { label: "Assigned", icon: <Clock className="h-3 w-3" />, cls: "bg-amber-500/15 text-amber-700 dark:text-amber-300" },
-    in_progress: { label: "In progress", icon: <RefreshCw className="h-3 w-3" />, cls: "bg-primary/15 text-primary" },
-    completed: { label: "Done", icon: <CheckCircle2 className="h-3 w-3" />, cls: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300" },
-    cancelled: { label: "Cancelled", icon: <AlertCircle className="h-3 w-3" />, cls: "bg-destructive/15 text-destructive" },
+    pending: {
+      label: "Pending",
+      icon: <Clock className="h-3 w-3" />,
+      cls: "bg-muted text-foreground",
+    },
+    assigned: {
+      label: "Assigned",
+      icon: <Clock className="h-3 w-3" />,
+      cls: "bg-amber-500/15 text-amber-700 dark:text-amber-300",
+    },
+    in_progress: {
+      label: "In progress",
+      icon: <RefreshCw className="h-3 w-3" />,
+      cls: "bg-primary/15 text-primary",
+    },
+    completed: {
+      label: "Done",
+      icon: <CheckCircle2 className="h-3 w-3" />,
+      cls: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300",
+    },
+    cancelled: {
+      label: "Cancelled",
+      icon: <AlertCircle className="h-3 w-3" />,
+      cls: "bg-destructive/15 text-destructive",
+    },
   };
   const m = map[status] ?? map.pending;
   return (
-    <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${m.cls}`}>
+    <span
+      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${m.cls}`}
+    >
       {m.icon}
       {m.label}
     </span>
@@ -1050,7 +1146,13 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 // -------------------- DIALOGS --------------------
-function NewBookingDialog({ properties, defaultProp }: { properties: Property[]; defaultProp: string }) {
+function NewBookingDialog({
+  properties,
+  defaultProp,
+}: {
+  properties: Property[];
+  defaultProp: string;
+}) {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
     property_id: defaultProp !== "all" ? defaultProp : "",
@@ -1104,11 +1206,18 @@ function NewBookingDialog({ properties, defaultProp }: { properties: Property[];
         <div className="space-y-3">
           <div>
             <Label>Property</Label>
-            <Select value={form.property_id} onValueChange={(v) => setForm({ ...form, property_id: v })}>
-              <SelectTrigger><SelectValue placeholder="Choose property" /></SelectTrigger>
+            <Select
+              value={form.property_id}
+              onValueChange={(v) => setForm({ ...form, property_id: v })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Choose property" />
+              </SelectTrigger>
               <SelectContent>
                 {properties.map((p) => (
-                  <SelectItem key={p.id} value={p.id}>{p.title}</SelectItem>
+                  <SelectItem key={p.id} value={p.id}>
+                    {p.title}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -1116,15 +1225,22 @@ function NewBookingDialog({ properties, defaultProp }: { properties: Property[];
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Label>Guest name</Label>
-              <Input value={form.guest_name} onChange={(e) => setForm({ ...form, guest_name: e.target.value })} />
+              <Input
+                value={form.guest_name}
+                onChange={(e) => setForm({ ...form, guest_name: e.target.value })}
+              />
             </div>
             <div>
               <Label>Channel</Label>
               <Select value={form.channel} onValueChange={(v) => setForm({ ...form, channel: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   {Object.entries(CHANNEL_META).map(([k, m]) => (
-                    <SelectItem key={k} value={k}>{m.label}</SelectItem>
+                    <SelectItem key={k} value={k}>
+                      {m.label}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -1133,20 +1249,34 @@ function NewBookingDialog({ properties, defaultProp }: { properties: Property[];
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Label>Check-in</Label>
-              <Input type="date" value={form.check_in} onChange={(e) => setForm({ ...form, check_in: e.target.value })} />
+              <Input
+                type="date"
+                value={form.check_in}
+                onChange={(e) => setForm({ ...form, check_in: e.target.value })}
+              />
             </div>
             <div>
               <Label>Check-out</Label>
-              <Input type="date" value={form.check_out} onChange={(e) => setForm({ ...form, check_out: e.target.value })} />
+              <Input
+                type="date"
+                value={form.check_out}
+                onChange={(e) => setForm({ ...form, check_out: e.target.value })}
+              />
             </div>
           </div>
           <div>
             <Label>Total price (GEL)</Label>
-            <Input type="number" value={form.total_price} onChange={(e) => setForm({ ...form, total_price: e.target.value })} />
+            <Input
+              type="number"
+              value={form.total_price}
+              onChange={(e) => setForm({ ...form, total_price: e.target.value })}
+            />
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+          <Button variant="outline" onClick={() => setOpen(false)}>
+            Cancel
+          </Button>
           <Button onClick={submit}>Save</Button>
         </DialogFooter>
       </DialogContent>
@@ -1154,7 +1284,13 @@ function NewBookingDialog({ properties, defaultProp }: { properties: Property[];
   );
 }
 
-function NewTaskDialog({ properties, defaultProp }: { properties: Property[]; defaultProp: string | null }) {
+function NewTaskDialog({
+  properties,
+  defaultProp,
+}: {
+  properties: Property[];
+  defaultProp: string | null;
+}) {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
     property_id: defaultProp ?? "",
@@ -1203,34 +1339,58 @@ function NewTaskDialog({ properties, defaultProp }: { properties: Property[]; de
         <div className="space-y-3">
           <div>
             <Label>Property</Label>
-            <Select value={form.property_id} onValueChange={(v) => setForm({ ...form, property_id: v })}>
-              <SelectTrigger><SelectValue placeholder="Property" /></SelectTrigger>
+            <Select
+              value={form.property_id}
+              onValueChange={(v) => setForm({ ...form, property_id: v })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Property" />
+              </SelectTrigger>
               <SelectContent>
-                {properties.map((p) => (<SelectItem key={p.id} value={p.id}>{p.title}</SelectItem>))}
+                {properties.map((p) => (
+                  <SelectItem key={p.id} value={p.id}>
+                    {p.title}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Label>Cleaner name</Label>
-              <Input value={form.cleaner_name} onChange={(e) => setForm({ ...form, cleaner_name: e.target.value })} />
+              <Input
+                value={form.cleaner_name}
+                onChange={(e) => setForm({ ...form, cleaner_name: e.target.value })}
+              />
             </div>
             <div>
               <Label>Phone</Label>
-              <Input value={form.cleaner_phone} onChange={(e) => setForm({ ...form, cleaner_phone: e.target.value })} />
+              <Input
+                value={form.cleaner_phone}
+                onChange={(e) => setForm({ ...form, cleaner_phone: e.target.value })}
+              />
             </div>
           </div>
           <div>
             <Label>When</Label>
-            <Input type="datetime-local" value={form.scheduled_for} onChange={(e) => setForm({ ...form, scheduled_for: e.target.value })} />
+            <Input
+              type="datetime-local"
+              value={form.scheduled_for}
+              onChange={(e) => setForm({ ...form, scheduled_for: e.target.value })}
+            />
           </div>
           <div>
             <Label>Notes</Label>
-            <Input value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
+            <Input
+              value={form.notes}
+              onChange={(e) => setForm({ ...form, notes: e.target.value })}
+            />
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+          <Button variant="outline" onClick={() => setOpen(false)}>
+            Cancel
+          </Button>
           <Button onClick={submit}>Save</Button>
         </DialogFooter>
       </DialogContent>
@@ -1282,7 +1442,8 @@ function SmartRentPredictor() {
           AI Smart Rent Predictor · ქირის პროგნოზირების AI კალკულატორი
         </CardTitle>
         <CardDescription>
-          Enter property details — SakhliAI compares Tbilisi market data to recommend split-season pricing.
+          Enter property details — SakhliAI compares Tbilisi market data to recommend split-season
+          pricing.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -1291,8 +1452,13 @@ function SmartRentPredictor() {
           <div className="space-y-3">
             <div>
               <Label className="text-xs">Location · ლოკაცია</Label>
-              <Select value={location} onValueChange={(v) => setLocation(v as keyof typeof LOCATION_MULT)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+              <Select
+                value={location}
+                onValueChange={(v) => setLocation(v as keyof typeof LOCATION_MULT)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   {Object.entries(LOCATION_MULT).map(([k, v]) => (
                     <SelectItem key={k} value={k}>
@@ -1342,7 +1508,8 @@ function SmartRentPredictor() {
                 სასწავლო სეზონი (სტუდენტები) · Academic Season
               </div>
               <div className="mt-1 font-display text-2xl font-bold text-gradient">
-                {studentMonth.toLocaleString()} GEL<span className="text-sm font-medium text-muted-foreground">/თვე · /month</span>
+                {studentMonth.toLocaleString()} GEL
+                <span className="text-sm font-medium text-muted-foreground">/თვე · /month</span>
               </div>
               <div className="mt-1 text-[11px] text-muted-foreground">9-month long-term lease</div>
             </div>
@@ -1351,15 +1518,19 @@ function SmartRentPredictor() {
                 ტურისტული სეზონი (მოკლევადიანი) · Tourist Season
               </div>
               <div className="mt-1 font-display text-2xl font-bold text-gradient">
-                {tourismNight.toLocaleString()} GEL<span className="text-sm font-medium text-muted-foreground">/დღე · /night</span>
+                {tourismNight.toLocaleString()} GEL
+                <span className="text-sm font-medium text-muted-foreground">/დღე · /night</span>
               </div>
-              <div className="mt-1 text-[11px] text-muted-foreground">June–September peak demand</div>
+              <div className="mt-1 text-[11px] text-muted-foreground">
+                June–September peak demand
+              </div>
             </div>
           </div>
         </div>
         <div className="mt-4 flex items-start gap-2 rounded-md border border-accent/20 bg-accent/5 p-3 text-xs text-muted-foreground">
           <Sparkles className="mt-0.5 h-3.5 w-3.5 text-accent" />
-          Hybrid model: switch between student tenants in academic months and short-term tourists in summer to maximize yearly revenue.
+          Hybrid model: switch between student tenants in academic months and short-term tourists in
+          summer to maximize yearly revenue.
         </div>
       </CardContent>
     </Card>
@@ -1404,17 +1575,23 @@ function TenantScreeningView({ properties }: { properties: Property[] }) {
 
     const ch = supabase
       .channel("applicants-realtime")
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "student_profiles" }, (payload) => {
-        setApplicants((prev) => [payload.new as Applicant, ...prev]);
-        toast.success("New tenant application received");
-      })
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "student_profiles" },
+        (payload) => {
+          setApplicants((prev) => [payload.new as Applicant, ...prev]);
+          toast.success("New tenant application received");
+        },
+      )
       .subscribe();
     return () => {
       supabase.removeChannel(ch);
     };
   }, []);
 
-  const refPrice = properties[0]?.price_per_night ? Number(properties[0].price_per_night) * 30 : 1600;
+  const refPrice = properties[0]?.price_per_night
+    ? Number(properties[0].price_per_night) * 30
+    : 1600;
 
   return (
     <Card>
@@ -1423,7 +1600,8 @@ function TenantScreeningView({ properties }: { properties: Property[] }) {
           <Sparkles className="h-4 w-4 text-accent" /> Tenant Screening · მდგმურის შემოწმება
         </CardTitle>
         <CardDescription>
-          Live applicant pool from <code>student_profiles</code>. Each card carries an AI risk / fit analysis.
+          Live applicant pool from <code>student_profiles</code>. Each card carries an AI risk / fit
+          analysis.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -1462,20 +1640,20 @@ function ApplicantRow({ a, refPrice }: { a: Applicant; refPrice: number }) {
         <div className="flex items-center gap-2">
           <div className="font-display text-lg font-bold">{a.name ?? "Anonymous"}</div>
           <Badge variant="secondary" className="text-[10px] uppercase">
-            {screening.verdict === "ideal" ? "Ideal" : screening.verdict === "good" ? "Good" : "Review"}
+            {screening.verdict === "ideal"
+              ? "Ideal"
+              : screening.verdict === "good"
+                ? "Good"
+                : "Review"}
           </Badge>
         </div>
         <div className="flex items-center gap-1 text-xs text-muted-foreground">
           <GraduationCap className="h-3.5 w-3.5" /> {a.university ?? "—"}
         </div>
         <div className="flex flex-wrap gap-1 text-[11px]">
-          <span className="rounded-full bg-card px-2 py-0.5">
-            ₾{a.budget ?? 0}
-          </span>
+          <span className="rounded-full bg-card px-2 py-0.5">₾{a.budget ?? 0}</span>
           <span className="rounded-full bg-card px-2 py-0.5">{a.income_source ?? "—"}</span>
-          <span className="rounded-full bg-card px-2 py-0.5">
-            🧹 {a.cleanliness ?? 3}/5
-          </span>
+          <span className="rounded-full bg-card px-2 py-0.5">🧹 {a.cleanliness ?? 3}/5</span>
           <span className="rounded-full bg-card px-2 py-0.5">
             {a.smoking ? "🚬 ეწევა" : "🚭 არ ეწევა"}
           </span>

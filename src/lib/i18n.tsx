@@ -39,11 +39,13 @@ const en: Dict = {
 
   "features.title": "Built for student life in Georgia",
   "features.match.title": "Behavioral matching",
-  "features.match.desc": "We pair flatmates by sleep schedule, cleanliness, study habits, and budget — not vibes.",
+  "features.match.desc":
+    "We pair flatmates by sleep schedule, cleanliness, study habits, and budget — not vibes.",
   "features.swipe.title": "Swipe to discover",
   "features.swipe.desc": "Browse compatible flatmates and homes like a feed. Match and move in.",
   "features.split.title": "Split utilities easily",
-  "features.split.desc": "Built-in calculator splits rent, internet, and bills fairly across the household.",
+  "features.split.desc":
+    "Built-in calculator splits rent, internet, and bills fairly across the household.",
 
   "how.title": "Three steps to your new home",
   "how.s1.title": "Tell us about you",
@@ -301,7 +303,8 @@ const en: Dict = {
   "dashboard.removeProperty": "Remove Property",
   "dashboard.unmatch": "Unmatch",
   "dashboard.aiHouseRules": "AI House Rules",
-  "dashboard.aiHouseRulesDesc": "Disagree with a flatmate? The AI reads both onboarding profiles and proposes a fair compromise.",
+  "dashboard.aiHouseRulesDesc":
+    "Disagree with a flatmate? The AI reads both onboarding profiles and proposes a fair compromise.",
 
   /* ---------- Matches ---------- */
   "matches.aiBestFitDesc": "Show only matches ≥ 85%",
@@ -371,7 +374,8 @@ const ka: Dict = {
   "features.match.title": "ქცევაზე დაფუძნებული შერჩევა",
   "features.match.desc": "ვამოწმებთ ძილის რეჟიმს, სისუფთავეს, სწავლის ჩვევებსა და ბიუჯეტს.",
   "features.swipe.title": "აღმოაჩინე გადაცურვით",
-  "features.swipe.desc": "ნახე თავსებადი თანამცხოვრებლები და ბინები ფიდის სტილში. მოიწონე და გადადი.",
+  "features.swipe.desc":
+    "ნახე თავსებადი თანამცხოვრებლები და ბინები ფიდის სტილში. მოიწონე და გადადი.",
   "features.split.title": "გაიყავი კომუნალური მარტივად",
   "features.split.desc": "ჩაშენებული კალკულატორი სამართლიანად ანაწილებს გადასახადებს.",
 
@@ -531,7 +535,8 @@ const ka: Dict = {
     "ერთი ცოცხალი კალენდარი Airbnb-ზე, Booking.com-სა და სტუდენტურ ხელშეკრულებებზე. AI ფასწარმოქმნა, ავტომატური დასუფთავება და ჭკვიანი საკეტის კოდები — რეალურ დროში n8n-ით სინქრონიზებული.",
   "land.host.cta": "ნახე მასპინძლის დაფა",
 
-  "land.footer.tagline": "ქცევაზე დაფუძნებული თანამცხოვრებლების შერჩევა და ავტომატური ქირაობა საქართველოსთვის.",
+  "land.footer.tagline":
+    "ქცევაზე დაფუძნებული თანამცხოვრებლების შერჩევა და ავტომატური ქირაობა საქართველოსთვის.",
   "land.footer.product": "პროდუქტი",
   "land.footer.company": "კომპანია",
   "land.footer.students": "სტუდენტებს",
@@ -578,7 +583,8 @@ const ka: Dict = {
   "util.linked": "ანგარიშები ბინისთვის",
   "util.notlinked": "აირჩიეთ ბინა Matches გვერდზე, რომ კალკულატორი დაუკავშირდეს კონკრეტულ ბინას.",
   "util.title": "AI კომუნალურების გამყოფი",
-  "util.desc": "თვალი ადევნეთ თვიურ გადასახადებს და გაყავით სამართლიანად — შესვლის თარიღით ან თანაბრად.",
+  "util.desc":
+    "თვალი ადევნეთ თვიურ გადასახადებს და გაყავით სამართლიანად — შესვლის თარიღით ან თანაბრად.",
   "util.mode.movein": "შესვლის თარიღით",
   "util.mode.equal": "თანაბარი გაყოფა",
   "util.bills": "თვიური გადასახადები",
@@ -629,7 +635,8 @@ const ka: Dict = {
   "dashboard.removeProperty": "ბინის წაშლა",
   "dashboard.unmatch": "კავშირის გაწყვეტა",
   "dashboard.aiHouseRules": "AI კონფლიქტების მედიატორი",
-  "dashboard.aiHouseRulesDesc": "არ ეთანხმები flatmate-ს? AI გააანალიზებს onboarding-ის ჩვევებს და გასცემს კომპრომისს.",
+  "dashboard.aiHouseRulesDesc":
+    "არ ეთანხმები flatmate-ს? AI გააანალიზებს onboarding-ის ჩვევებს და გასცემს კომპრომისს.",
 
   /* ---------- Matches ---------- */
   "matches.aiBestFitDesc": "მხოლოდ ≥85%-ის ჩვენება",
@@ -676,7 +683,10 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>("en");
 
   useEffect(() => {
-    const saved = typeof window !== "undefined" ? (localStorage.getItem("sakli.locale") as Locale | null) : null;
+    const saved =
+      typeof window !== "undefined"
+        ? (localStorage.getItem("sakli.locale") as Locale | null)
+        : null;
     if (saved === "en" || saved === "ka") setLocaleState(saved);
   }, []);
 

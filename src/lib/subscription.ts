@@ -77,5 +77,15 @@ export function useSubscription() {
   const swipesLeft = isPaid ? Infinity : Math.max(0, FREE_SWIPE_LIMIT - swipes);
   const swipeBlocked = !isPaid && swipes >= FREE_SWIPE_LIMIT;
 
-  return { plan, setPlan, swipes, bumpSwipes, resetSwipes, isPaid, swipesLeft, swipeBlocked, loaded };
+  return {
+    plan,
+    setPlan,
+    swipes,
+    bumpSwipes,
+    resetSwipes,
+    isPaid,
+    swipesLeft,
+    swipeBlocked,
+    loaded,
+  };
 }

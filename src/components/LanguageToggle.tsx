@@ -15,7 +15,9 @@ export function LanguageToggle() {
           onClick={() => setLocale(o.code)}
           className={[
             "px-2 py-1 rounded-sm font-medium transition-colors",
-            locale === o.code ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
+            locale === o.code
+              ? "bg-primary text-primary-foreground"
+              : "text-muted-foreground hover:text-foreground",
           ].join(" ")}
         >
           {o.label}

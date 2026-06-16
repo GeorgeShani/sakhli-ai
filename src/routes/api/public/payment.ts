@@ -3,12 +3,12 @@ import { createFileRoute } from "@tanstack/react-router";
 /**
  * SakhliAI Unified Payment API Endpoint
  * POST /api/public/payment
- * 
+ *
  * Pre-architected to handle:
  * 1) Stripe checkout sessions (direct key fallback)
  * 2) TBC Checkout (bilingual Georgian card acquisition)
  * 3) BOG Express (Bank of Georgia signature-based API)
- * 
+ *
  * Also serves as the callback route for bank webhooks:
  * - GET/POST /api/public/payment/callback/bog
  * - GET/POST /api/public/payment/callback/tbc
@@ -46,10 +46,10 @@ export const Route = createFileRoute("/api/public/payment")({
               "line_items[0][price_data][product_data][name]": `SakhliAI ${plan.toUpperCase()} Subscription`,
               "line_items[0][price_data][unit_amount]": String(prices[plan]),
               "line_items[0][quantity]": "1",
-              "mode": "subscription",
-              "success_url": `${request.url.split("/api")[0]}/checkout?success=true`,
-              "cancel_url": `${request.url.split("/api")[0]}/checkout?cancel=true`,
-              "customer_email": email,
+              mode: "subscription",
+              success_url: `${request.url.split("/api")[0]}/checkout?success=true`,
+              cancel_url: `${request.url.split("/api")[0]}/checkout?cancel=true`,
+              customer_email: email,
             });
 
             const stripeRes = await fetch("https://api.stripe.com/v1/checkout/sessions", {
@@ -133,7 +133,7 @@ export const Route = createFileRoute("/api/public/payment")({
           return jsonResponse({ ok: true, status: "TBC webhook parsed" });
         }
         return jsonResponse({ ok: false, error: "Method not allowed" }, 405);
-      }
+      },
     },
   },
 });

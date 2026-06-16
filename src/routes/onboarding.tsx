@@ -29,13 +29,31 @@ import { ArrowLeft, ArrowRight, Check, Loader2, Mail, ShieldCheck } from "lucide
 import { toast } from "sonner";
 
 const GE_UNIVERSITIES: { value: string; label: string }[] = [
-  { value: "თბილისის სახელმწიფო უნივერსიტეტი (TSU)", label: "თბილისის სახელმწიფო უნივერსიტეტი (TSU)" },
-  { value: "ილიას სახელმწიფო უნივერსიტეტი (Iliauni)", label: "ილიას სახელმწიფო უნივერსიტეტი (Iliauni)" },
-  { value: "საქართველოს ტექნიკური უნივერსიტეტი (GTU)", label: "საქართველოს ტექნიკური უნივერსიტეტი (GTU)" },
+  {
+    value: "თბილისის სახელმწიფო უნივერსიტეტი (TSU)",
+    label: "თბილისის სახელმწიფო უნივერსიტეტი (TSU)",
+  },
+  {
+    value: "ილიას სახელმწიფო უნივერსიტეტი (Iliauni)",
+    label: "ილიას სახელმწიფო უნივერსიტეტი (Iliauni)",
+  },
+  {
+    value: "საქართველოს ტექნიკური უნივერსიტეტი (GTU)",
+    label: "საქართველოს ტექნიკური უნივერსიტეტი (GTU)",
+  },
   { value: "თავისუფალი უნივერსიტეტი (Freeuni)", label: "თავისუფალი უნივერსიტეტი (Freeuni)" },
-  { value: "ბიზნესისა და ტექნოლოგიების უნივერსიტეტი (BTU)", label: "ბიზნესისა და ტექნოლოგიების უნივერსიტეტი (BTU)" },
-  { value: "ქუთაისის საერთაშორისო უნივერსიტეტი (KIU)", label: "ქუთაისის საერთაშორისო უნივერსიტეტი (KIU)" },
-  { value: "შავი ზღვის საერთაშორისო უნივერსიტეტი (IBSU)", label: "შავი ზღვის საერთაშორისო უნივერსიტეტი (IBSU)" },
+  {
+    value: "ბიზნესისა და ტექნოლოგიების უნივერსიტეტი (BTU)",
+    label: "ბიზნესისა და ტექნოლოგიების უნივერსიტეტი (BTU)",
+  },
+  {
+    value: "ქუთაისის საერთაშორისო უნივერსიტეტი (KIU)",
+    label: "ქუთაისის საერთაშორისო უნივერსიტეტი (KIU)",
+  },
+  {
+    value: "შავი ზღვის საერთაშორისო უნივერსიტეტი (IBSU)",
+    label: "შავი ზღვის საერთაშორისო უნივერსიტეტი (IBSU)",
+  },
 ];
 const OTHER_VALUE = "__other__";
 
@@ -83,9 +101,8 @@ function OnboardingInner() {
             .from("users")
             .upsert({ id: user.id, email: user.email ?? null }, { onConflict: "id" });
 
-          const { error } = await supabase
-            .from("student_profiles")
-            .upsert({
+          const { error } = await supabase.from("student_profiles").upsert(
+            {
               user_id: user.id,
               name: profile.name,
               university: profile.university,
@@ -100,8 +117,10 @@ function OnboardingInner() {
               verified: profile.verified,
               salary_bracket: profile.salaryBracket,
               income_source: profile.incomeSource,
-              avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(profile.name || "student")}&backgroundColor=b6e3f4,c0aede,d1d4f9`
-            }, { onConflict: "user_id" });
+              avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(profile.name || "student")}&backgroundColor=b6e3f4,c0aede,d1d4f9`,
+            },
+            { onConflict: "user_id" },
+          );
 
           if (error) {
             console.error("Error saving onboarding profile to Supabase:", error.message);
@@ -138,12 +157,11 @@ function OnboardingInner() {
     </button>
   );
 
-  const habitToggle = (
-    field: "smoking" | "pets" | "parties" | "quiet",
-    label: string,
-  ) => (
+  const habitToggle = (field: "smoking" | "pets" | "parties" | "quiet", label: string) => (
     <div className="flex items-center justify-between rounded-lg border border-border bg-card p-3">
-      <Label htmlFor={field} className="cursor-pointer text-sm">{label}</Label>
+      <Label htmlFor={field} className="cursor-pointer text-sm">
+        {label}
+      </Label>
       <Switch id={field} checked={profile[field]} onCheckedChange={(v) => update(field, v)} />
     </div>
   );
@@ -260,7 +278,11 @@ function OnboardingInner() {
                 onValueChange={([v]) => update("cleanliness", v)}
               />
               <div className="flex justify-between text-xs text-muted-foreground">
-                <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
+                <span>1</span>
+                <span>2</span>
+                <span>3</span>
+                <span>4</span>
+                <span>5</span>
               </div>
             </div>
           )}
@@ -310,7 +332,18 @@ function OnboardingInner() {
 }
 
 /* -------- Academic email + OTP verification -------- */
-const ACADEMIC_DOMAINS = [".edu.ge", ".edu", ".ac.ge", "tsu.edu.ge", "iliauni.edu.ge", "gtu.ge", "freeuni.edu.ge", "btu.edu.ge", "kiu.edu.ge", "ibsu.edu.ge"];
+const ACADEMIC_DOMAINS = [
+  ".edu.ge",
+  ".edu",
+  ".ac.ge",
+  "tsu.edu.ge",
+  "iliauni.edu.ge",
+  "gtu.ge",
+  "freeuni.edu.ge",
+  "btu.edu.ge",
+  "kiu.edu.ge",
+  "ibsu.edu.ge",
+];
 
 function isAcademicEmail(email: string) {
   const lower = email.trim().toLowerCase();
@@ -335,7 +368,9 @@ export function AcademicEmailVerify({
   const sendCode = () => {
     setError(null);
     if (!isAcademicEmail(email)) {
-      setError("გთხოვთ შეიყვანოთ აკადემიური ელ-ფოსტა (e.g. .edu.ge) / Please enter a valid academic email.");
+      setError(
+        "გთხოვთ შეიყვანოთ აკადემიური ელ-ფოსტა (e.g. .edu.ge) / Please enter a valid academic email.",
+      );
       return;
     }
     setSending(true);
@@ -413,13 +448,16 @@ export function AcademicEmailVerify({
       {sent && (
         <div className="space-y-3 rounded-xl border border-border bg-secondary/40 p-4">
           <div className="text-xs text-muted-foreground">
-            შეიყვანეთ 4-ნიშნა კოდი გაგზავნილი მისამართზე <span className="font-medium text-foreground">{email}</span>
+            შეიყვანეთ 4-ნიშნა კოდი გაგზავნილი მისამართზე{" "}
+            <span className="font-medium text-foreground">{email}</span>
           </div>
           <div className="flex justify-center gap-3">
             {code.map((d, i) => (
               <input
                 key={i}
-                ref={(el) => { inputsRef.current[i] = el; }}
+                ref={(el) => {
+                  inputsRef.current[i] = el;
+                }}
                 value={d}
                 disabled={verified}
                 inputMode="numeric"
@@ -464,10 +502,7 @@ function UniversitySelect({
   onChange: (v: string) => void;
   placeholder?: string;
 }) {
-  const isPreset = useMemo(
-    () => GE_UNIVERSITIES.some((u) => u.value === value),
-    [value],
-  );
+  const isPreset = useMemo(() => GE_UNIVERSITIES.some((u) => u.value === value), [value]);
   const [otherMode, setOtherMode] = useState<boolean>(!!value && !isPreset);
 
   const selectValue = otherMode ? OTHER_VALUE : isPreset ? value : "";

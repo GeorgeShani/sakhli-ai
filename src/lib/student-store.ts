@@ -49,7 +49,10 @@ export const defaultProfile: StudentProfile = {
 };
 
 /* Salary bracket → estimated monthly income range (GEL), bilingual labels */
-export const SALARY_RANGES: Record<SalaryBracket, { min: number; max: number; label: string; labelKa: string }> = {
+export const SALARY_RANGES: Record<
+  SalaryBracket,
+  { min: number; max: number; label: string; labelKa: string }
+> = {
   under_500: { min: 0, max: 500, label: "< 500 GEL", labelKa: "< 500 ლარი" },
   "500_1000": { min: 500, max: 1000, label: "500 – 1,000 GEL", labelKa: "500 – 1,000 ლარი" },
   "1000_2000": { min: 1000, max: 2000, label: "1,000 – 2,000 GEL", labelKa: "1,000 – 2,000 ლარი" },

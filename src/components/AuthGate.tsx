@@ -18,7 +18,8 @@ export function AuthGate({ children, requireRole = true }: Props) {
   const { t } = useI18n();
 
   // If the user is on the /onboarding page, we want them to be able to build their profile first
-  const isOnboardingPath = typeof window !== "undefined" && window.location.pathname.startsWith("/onboarding");
+  const isOnboardingPath =
+    typeof window !== "undefined" && window.location.pathname.startsWith("/onboarding");
   const effectiveRequireRole = isOnboardingPath ? false : requireRole;
 
   if (loading) {
@@ -91,7 +92,7 @@ function AuthCard() {
     e.preventDefault();
     setError(null);
     setBusy(true);
-    
+
     if (mode === "signin") {
       const res = await signIn(email, password);
       setBusy(false);

@@ -68,12 +68,16 @@ export function DisputeResolver() {
               pets: false,
               parties: true,
               quiet: false,
-            }
+            },
           }),
         });
         if (res.ok) {
           const data = await res.json();
-          const verdictText = data.verdict || data.text || data.output || (typeof data === "string" ? data : JSON.stringify(data));
+          const verdictText =
+            data.verdict ||
+            data.text ||
+            data.output ||
+            (typeof data === "string" ? data : JSON.stringify(data));
           setVerdict(verdictText);
           setThinking(false);
           return;
@@ -91,9 +95,21 @@ export function DisputeResolver() {
   };
 
   return (
-    <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) { setVerdict(null); setIssue(""); } }}>
+    <Dialog
+      open={open}
+      onOpenChange={(o) => {
+        setOpen(o);
+        if (!o) {
+          setVerdict(null);
+          setIssue("");
+        }
+      }}
+    >
       <DialogTrigger asChild>
-        <Button variant="outline" className="w-full border-accent/40 bg-accent/5 hover:bg-accent/10">
+        <Button
+          variant="outline"
+          className="w-full border-accent/40 bg-accent/5 hover:bg-accent/10"
+        >
           <Gavel className="mr-2 h-4 w-4 text-accent" />
           მოაგვარე უთანხმოება AI-ით / Resolve Dispute via AI
         </Button>
@@ -104,7 +120,8 @@ export function DisputeResolver() {
             <Sparkles className="h-4 w-4 text-accent" /> AI House Rules Mediator
           </DialogTitle>
           <DialogDescription>
-            აღწერე კონფლიქტი — AI გააანალიზებს თქვენი onboarding-ის ჩვევებს და გასცემს სამართლიან, ბალანსირებულ (და ცოტა იუმორიან) გადაწყვეტილებას.
+            აღწერე კონფლიქტი — AI გააანალიზებს თქვენი onboarding-ის ჩვევებს და გასცემს სამართლიან,
+            ბალანსირებულ (და ცოტა იუმორიან) გადაწყვეტილებას.
           </DialogDescription>
         </DialogHeader>
         <div className="flex flex-wrap gap-1.5">

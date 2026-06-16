@@ -9,16 +9,19 @@ This version follows the same style as your previous guide so you can copy each 
 Before building workflows, configure these credentials in n8n:
 
 ### 1. OpenAI Credential
+
 - Use your OpenAI API key.
 - Recommended models:
   - `gpt-4o-mini` for assistant/screening
   - `gpt-4o` for contracts/mediation
 
 ### 2. Supabase Admin Credential
+
 - Host: your project URL (example: `https://<project-ref>.supabase.co`)
 - API Key: `service_role` key
 
 ### 3. SakhliAI Webhook Header Credential
+
 - Header Name: `x-n8n-secret`
 - Header Value: same as app server `N8N_WEBHOOK_SECRET`
 
@@ -27,9 +30,11 @@ Before building workflows, configure these credentials in n8n:
 ## Part A: Automation Workflows (n8n -> SakhliAI)
 
 ### A1. Channel Sync (iCal -> Booking Ingest)
+
 Automatically reads channel calendar events and inserts bookings into SakhliAI via the public n8n booking endpoint.
 
 #### Step-by-Step Build:
+
 1. **Trigger: Schedule Node**
    - Run every 15 minutes.
 2. **Node 2: Data Source Read**
@@ -74,9 +79,11 @@ Automatically reads channel calendar events and inserts bookings into SakhliAI v
 ---
 
 ### A2. Cleaning Auto-Dispatch
+
 Finds checkout bookings and auto-creates cleaning tasks in SakhliAI.
 
 #### Step-by-Step Build:
+
 1. **Trigger: Schedule Node**
    - Daily at 08:00.
 2. **Node 2: Supabase (Find Checkouts)**
@@ -119,9 +126,11 @@ Finds checkout bookings and auto-creates cleaning tasks in SakhliAI.
 ---
 
 ### A3. Smart-Lock Code Rotation (Optional)
+
 Rotates access code for check-ins and notifies guests.
 
 #### Step-by-Step Build:
+
 1. **Trigger: Schedule Node**
    - Daily before check-in window.
 2. **Node 2: Supabase (Check-ins Today)**
@@ -141,9 +150,11 @@ Rotates access code for check-ins and notifies guests.
 ## Part B: Agentic AI Workflows (App -> n8n -> OpenAI)
 
 ### B1. AI Assistant Chatbot (Already Implemented)
+
 This workflow is already connected in the app through `VITE_N8N_ASSISTANT_URL`.
 
 #### Step-by-Step Build:
+
 1. **Trigger: Webhook**
    - Method: `POST`
    - Path: `/webhook/assistant`
@@ -160,6 +171,7 @@ This workflow is already connected in the app through `VITE_N8N_ASSISTANT_URL`.
    ```
 
 Input contract from app:
+
 ```json
 {
   "question": "string",
@@ -171,9 +183,11 @@ Input contract from app:
 ---
 
 ### B2. Dispute Mediator (Implemented in UI)
+
 The app currently calls the mediator URL from `VITE_N8N_MEDIATE_URL` (currently using `/webhook/mediate-conflict`).
 
 #### Step-by-Step Build:
+
 1. **Trigger: Webhook**
    - Method: `POST`
    - Path: `/webhook/mediate-conflict`
@@ -192,6 +206,7 @@ The app currently calls the mediator URL from `VITE_N8N_MEDIATE_URL` (currently 
    ```
 
 Input contract from app (required):
+
 ```json
 {
   "issue": "string"
@@ -199,15 +214,18 @@ Input contract from app (required):
 ```
 
 Optional compatibility note:
+
 - The current frontend may also send `conflictDescription`, `user1`, and `user2`.
 - Your n8n workflow can safely ignore them for now.
 
 ---
 
 ### B3. Student Applicant Screening
+
 Scores student profile risk/fit and stores results in `applicant_screenings`.
 
 #### Step-by-Step Build:
+
 1. **Trigger: Schedule or DB-trigger webhook**
    - Poll new profiles from `student_profiles`.
 2. **Node 2: OpenAI Node**
@@ -229,9 +247,11 @@ Scores student profile risk/fit and stores results in `applicant_screenings`.
 ---
 
 ### B4. Lease Draft Generation
+
 Generates bilingual lease text for Smart Contract flow.
 
 #### Step-by-Step Build:
+
 1. **Trigger: Webhook**
    - Method: `POST`
    - Path: `/webhook/lease`
@@ -249,6 +269,7 @@ Generates bilingual lease text for Smart Contract flow.
    ```
 
 Input contract from app:
+
 ```json
 {
   "propertyTitle": "string",
@@ -260,6 +281,7 @@ Input contract from app:
 ```
 
 To enable in frontend:
+
 - Set `VITE_N8N_LEASE_URL` in `.env`
 
 ---
@@ -281,14 +303,18 @@ To enable in frontend:
 ## Troubleshooting (Quick)
 
 ### 401 on `/api/public/n8n/booking` or `/api/public/n8n/cleaning`
+
 - `x-n8n-secret` is missing/wrong.
 
 ### Assistant/Mediator silent failure in UI
+
 - Webhook URL wrong or workflow inactive.
 - Check n8n Executions panel.
 
 ### Lease fallback appears instead of generated text
+
 - `VITE_N8N_LEASE_URL` not set or webhook failing.
 
 ### No live automation feed updates
+
 - Confirm `agent_events` inserts are happening and Supabase realtime is active.

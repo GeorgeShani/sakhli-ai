@@ -1,4 +1,10 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Check, Crown, Sparkles, Zap } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
@@ -15,10 +21,19 @@ type Props = {
 const PLAN_FEATURES: Record<Plan, { en: string[]; ka: string[] }> = {
   free: {
     en: ["5 Daily Swipes (limit resets daily)", "Browse public listings", "Basic profile"],
-    ka: ["5 დღიური სვაიპი (ლიმიტი ახლდება ყოველდღიურად)", "საჯარო განცხადებები", "ძირითადი პროფილი"],
+    ka: [
+      "5 დღიური სვაიპი (ლიმიტი ახლდება ყოველდღიურად)",
+      "საჯარო განცხადებები",
+      "ძირითადი პროფილი",
+    ],
   },
   plus: {
-    en: ["Unlimited swipes", "AI Best Fit filter", "Basic compatibility filters", "Verified student badge"],
+    en: [
+      "Unlimited swipes",
+      "AI Best Fit filter",
+      "Basic compatibility filters",
+      "Verified student badge",
+    ],
     ka: ["შეუზღუდავი სვაიპები", "AI Best Fit ფილტრი", "ძირითადი ფილტრები", "ვერიფიცირებული ბეჯი"],
   },
   ultra: {
